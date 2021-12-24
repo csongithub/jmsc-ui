@@ -1,0 +1,90 @@
+import { date } from "quasar";
+import { LocalStorage } from "quasar";
+export const commonMixin = {
+  data() {
+    return {};
+  },
+  methods: {
+    notify(message) {
+      this.$q.notify({
+        message: message,
+        color: "primary"
+      });
+    },
+    success(message) {
+      this.$q.notify({
+        message: message,
+        caption: "",
+        type: "positive"
+      });
+    },
+    fail(message) {
+      this.$q.notify({
+        message: message,
+        caption: "",
+        type: "negative"
+      });
+    },
+    warning(message) {
+      this.$q.notify({
+        message: message,
+        caption: "",
+        type: "warning"
+      });
+    },
+    info(message) {
+      this.$q.notify({
+        message: message,
+        caption: "",
+        type: "info"
+        //position: "top-right"
+      });
+    },
+    sortby(list, col) {
+      console.log("sortby: " + col);
+      this.sortparam = col;
+      if (this.order === 1) {
+        list.sort(function(a, b) {
+          return a[col] > b[col];
+        });
+        this.order = 0;
+      } else {
+        list.sort(function(a, b) {
+          return a[col] < b[col];
+        });
+        this.order = 1;
+      }
+    },
+    sortbyOrder(list, col, order) {
+      console.log("sortby: " + col);
+      this.sortparam = col;
+      if (order === "asc") {
+        list.sort(function(a, b) {
+          return a[col] > b[col];
+        });
+      } else if (order === "desc") {
+        list.sort(function(a, b) {
+          return a[col] < b[col];
+        });
+      }
+    },
+    formateDateInResponse(response) {
+      for (var i = 0; i < response.length; i++) {
+        response[i].created_dt = date.formatDate(
+          response[i].created_dt,
+          "YYYY-MM-DD HH:mm:ss Z"
+        );
+        response[i].updated_dt = date.formatDate(
+          response[i].updated_dt,
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      }
+    },
+    formateDate(input_date, format) {
+      var output_date = date.formatDate(input_date, format);
+      return output_date;
+    }
+  },
+  computed: {},
+  watch: {}
+};
