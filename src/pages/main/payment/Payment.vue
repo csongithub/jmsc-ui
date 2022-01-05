@@ -14,11 +14,19 @@
           <q-route-tab
            name="create" label="Create Payment"
            to="/create_payment"
+           :icon="icon.pencil"
            exact
           />
           <q-route-tab
-            name="print" label="Payemnt Draft"
+            name="print" label="Print Challan"
             to="/print_payment"
+            icon="print"
+            exact
+          />
+          <q-route-tab
+            name="printed" label="History"
+            to="/printed_payment"
+            :icon="icon.print"
             exact
           />
         </q-tabs>
@@ -29,6 +37,10 @@
 
 <script>
 import { ref } from 'vue'
+import {
+  fasPencilAlt,
+  fasPrint  
+} from "@quasar/extras/fontawesome-v5";
 export default {
 
   setup () {
@@ -41,7 +53,11 @@ export default {
   },
   data() {
     return {
-      tab: ref('create')
+      tab: ref('create'),
+      icon: {
+        pencil: fasPencilAlt,
+        print: fasPrint
+      }
     };
   },
   methods: {

@@ -25,10 +25,17 @@
               />
           <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm" 
                color="primary"
+               label="View" 
+               size="sm"
+               glossy
+               @click="openView"
+              />
+          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm" 
+               color="primary"
                label="Discard" 
                size="sm"
                glossy
-               @click="discard"
+               @click="confirmDiscard"
               />
         </template>
       </q-table>
@@ -42,18 +49,81 @@
           ref="createPaymentRef"
         >
           <q-card flat bordered style="width: 100%px; max-width: 80vw;">
-            <q-bar class="bg-primary glossy">
-              {{ 'Print Challan' }}
-              <q-space />
-              <q-btn dense flat icon="close" v-close-popup>
-                <q-tooltip>Close</q-tooltip>
-              </q-btn>
-            </q-bar>
-            <IndianBankRTGS v-if="selected.length > 0" :payments="payments"/>
+            <IndianBankRTGS v-if="selected.length > 0"
+                            :payments="payments"
+                            @printed="markPrinted"
+                            @cancel="cancelPrint">
+            </IndianBankRTGS>
         </q-card>
         </q-dialog>
       </div>
-
+      <div>
+        <q-dialog
+        v-model="view"
+        persistent
+        ref="paymentView">
+        <q-card flat bordered>
+          <q-bar class="bg-primary glossy">
+            {{ dialogLabel }}
+            <q-space />
+            <q-btn dense flat icon="close" v-close-popup>
+              <q-tooltip>Close</q-tooltip>
+            </q-btn>
+          </q-bar>
+          <q-card-actions v-for="(payment, index) of selected" v-bind:key="index">
+          <q-card-section>
+            <div class="text-h6">From Account</div>
+            <div class="row">
+              <div class="col">Account Name:</div>
+              <div class="col">{{payment.fromAccount}}</div>
+            </div>
+            <div class="row">
+              <div class="col">Bank Name:</div>
+              <div class="col">{{payment.fromBank}}</div>
+            </div>
+            <div class="row">
+              <div class="col">Account Number:</div>
+              <div class="col">{{payment.fromAccountNumber}}</div>
+            </div>
+            <div class="row">
+              <div class="col">IFSC Code:</div>
+              <div class="col">{{payment.fromIFSC}}</div>
+            </div>
+          </q-card-section>
+          <q-separator/>
+          <q-card-section>
+            <div class="text-h6">To Account</div>
+            <div class="row">
+              <div class="col">Party Name:</div>
+              <div class="col">{{payment.toParty}}</div>
+            </div>
+            <div class="row">
+              <div class="col">Account Name:</div>
+              <div class="col">{{payment.toAccount}}</div>
+            </div>
+            <div class="row">
+              <div class="col">Account Number:</div>
+              <div class="col">{{payment.toAccountNumber}}</div>
+            </div>
+            <div class="row">
+              <div class="col">IFSC Code:</div>
+              <div class="col">{{payment.toIFSC}}</div>
+            </div>
+            <q-separator/>
+            <div class="row">
+              <div class="col">Amount:</div>
+              <div class="col">{{payment.amount}} ({{payment.inWords}})</div>
+            </div>
+            <q-separator/>
+            <div class="row">
+              <div class="col">Note:</div>
+              <div class="col">{{payment.note}}</div>
+            </div>
+          </q-card-section>
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+      </div>
     </div>
 </template>
 
@@ -64,17 +134,11 @@ import { commonMixin } from "../../../mixin/common"
 import Payment from "../payment/Payment.vue"
 import IndianBankRTGS from "../payment/templates/IndianBankRTGS.vue"
 import { ref } from 'vue'
-import print from 'vue3-print-nb'
-
-
 export default {
   name: 'PrintPayment',
   components: {
     Payment,
     IndianBankRTGS
-  },
-  directives: {
-    print   
   },
   mixins: [commonMixin],
   setup () {
@@ -104,18 +168,20 @@ export default {
   },
   created() {},
   mounted() {
-    this.getActiveAccounts()
+    this.getAllDrafts()
   },
   data() {
     return {
       loading: true,
       drafts: [],
       open: false,
-      payments: []
+      view: false,
+      payload: {},
+      payments:[]
     };
   },
   methods: {
-    getActiveAccounts() {
+    getAllDrafts() {
       this.loading = true;
       PaymentService.getAllDrafts().then(response => {
         this.drafts.splice(0, this.drafts.length)
@@ -128,6 +194,8 @@ export default {
             id: t.id,
             fromAccount: payment.fromAccount.accountHolder,
             fromBranch: payment.fromAccount.branchName,
+            fromBank: payment.fromAccount.bankName,
+            fromIFSC: payment.fromAccount.ifscCode,
             fromAccountNumber: payment.fromAccount.accountNumber,
             fromMobile: payment.fromAccount.mobileNo,
             toParty: payment.toAccount.partyName,
@@ -135,7 +203,8 @@ export default {
             toAccountNumber: payment.toAccount.accountNumber,
             toIFSC: payment.toAccount.ifscCode,
             amount: payment.amount,
-            inWords: payment.inWords
+            inWords: payment.inWords,
+            note: payment.note
           }
           this.drafts.push(draft)
         }
@@ -147,17 +216,22 @@ export default {
         
       });
     },
+    openView() {
+      this.view = true
+    },
     openPrinter() {
       if(this.selected.length > 2) {
         this.warning('Please select maximum two payments to print')
         return
       }
-      this.payments.splice(0, this.payments.length);
-      let index= 1;
+      this.payments.splice(0, this.payments.length)
       for(let s of this.selected){
           this.payments.push(s)
       }
       this.open = true
+    },
+    cancelPrint() {
+       this.open = false
     },
     beforeShow() {
 
@@ -165,8 +239,44 @@ export default {
     onHide() {
       this.open = false
     },
-    discard() {
-
+    confirmDiscard() {
+      this.$q.dialog({
+        title: 'Are You Sure?',
+        message: 'It will delete all selected challan(s)',
+        cancel: true,
+        persistent: true
+      }).onOk(() => {
+        this.deleteSelected()
+      }).onOk(() => {
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+    },
+    deleteSelected(){
+      for(let s of this.selected){
+        PaymentService.deletePayments(s.id).then(response => {
+        this.getAllDrafts()
+        this.selected.splice(0, this.selected.length)
+        this.success("Challan deleted successfully")
+      }).catch(err => {
+      });
+      }
+    },
+    markPrinted(payments){
+      let list = []
+      for(var i=0; i<payments.length; i++) {
+        list.push(payments[i].id)
+      }
+      PaymentService.markPrinted(list).then(response => {
+        this.success('Payments has been marked printed')
+        this.getAllDrafts()
+        this.open = false
+        this.selected.splice(0, this.selected.length)
+      }).catch(err => {
+        this.open = false
+      });
     }
   }
 };

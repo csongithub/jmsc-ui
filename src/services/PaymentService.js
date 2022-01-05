@@ -28,6 +28,42 @@ export default {
             return Promise.reject(err);
         });
     },
+    markPrinted(listOfIds) {
+        return api.put( '/v1/payment/markPrinted/', listOfIds).then(response => {
+            let status = response.data;
+            return status;
+        }).catch(err => {
+            console.log("Error in marking as printed: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
+    getAllPrinted() {
+        return api.get('/v1/payment/getAllPrinted/').then(response => {
+            let records = response.data;
+            return records;
+        }).catch(err => {
+            console.log("Error in getting records: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
+    getByRange(req) {
+        return api.put('/v1/payment/getAllPrintedByRange/', req).then(response => {
+            let records = response.data;
+            return records;
+        }).catch(err => {
+            console.log("Error in getting records: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
+    deletePayments(id) {
+        return api.delete('/v1/payment/delete/' +  id).then(response => {
+            let status = response.data;
+            console.log(status)
+        }).catch(err => {
+            console.log("Error in deletion of records: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
   convertNumberToWords(amount) {
     var words = new Array();
     words[0] = '';

@@ -2,14 +2,28 @@
     <div>
         <Payment/>
 
-        <div class="q-pa-md" style="max-width: 600px">
-            <q-select label="Select From Account"
-                behavior="menu"
-                :lazy-rules="true"
-                :rules="[val => !!val || 'Select From Account']"
-                dense outlined v-model="fromAccount" :options="accounts"
-                option-label="displayName" option-value="id">
-            </q-select>
+        <div class="q-pa-md">
+            <div class="row">
+              <div class="col param">
+                <q-select label="Select From Account"
+                  behavior="menu"
+                  :lazy-rules="true"
+                  :rules="[val => !!val || 'Select From Account']"
+                  dense outlined v-model="fromAccount" :options="accounts"
+                  option-label="displayName" option-value="id">
+                </q-select>
+              </div>
+              <div class="col param">
+                <q-btn v-if="selected.length > 0" class="q-ml-sm" 
+                  color="primary"
+                  label="Create" 
+                  size="md"
+                  glossy 
+                  @click="openCreatePaymentDialog()"
+                />
+              </div>
+            </div>
+           
         </div>
         <div v-if="fromAccount !== null">
         <q-table
@@ -20,7 +34,7 @@
         flat
         :rows="partyAccounts"
         :columns="columns"
-        row-key="partyName"
+        row-key="accountNumber"
         :loading="loading"
         :pagination="myPagination"
         :filter="filter"
@@ -28,13 +42,13 @@
         v-model:selected="selected"
       >
         <template v-slot:top-right>
-        <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm" 
+        <!-- <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm" 
                color="primary"
                label="Create" 
-               size="sm"
+               size="md"
                glossy 
                @click="openCreatePaymentDialog()"
-              />
+              /> -->
           <q-input
             borderless
             dense
@@ -91,7 +105,16 @@
                 lazy-rules
                 :rules="[val => (val && val > 0) || 'Enter valid amount']"
               />
-              <div>{{getWords()}}</div>
+            <div>{{getWords()}}</div>
+            <q-input class="q-mt-md"
+                dense
+                outlined
+                v-model="paymentDraft.note"
+                label="Write a note here"
+                full-width
+                lazy-rules
+                :rules="[val => (val && val.length > 0) || 'What is the purpose of this payment']"
+              />
            <q-separator />
           <q-card-section>
             <q-form @submit="createPayment" @reset="cancelPayment" class="q-gutter-md">
@@ -179,7 +202,8 @@ export default {
           fromAccount: null,
           toAccount: null,
           amount: 0.0,
-          inWords:''
+          inWords:'',
+          note:''
       }
     };
   },

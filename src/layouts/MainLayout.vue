@@ -67,9 +67,7 @@ import { commonMixin } from "../mixin/common";
 
 import {
   fasCreditCard,
-  fasUserFriends
-
-  
+  fasUserFriends  
 } from "@quasar/extras/fontawesome-v5";
 export default {
   name: "MainLayout",

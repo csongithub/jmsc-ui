@@ -7,9 +7,8 @@
           </q-avatar>
           <q-toolbar-title>
           </q-toolbar-title>
-  
             <q-btn class="q-mr-sm" color="primary" glossy size="sm"   label="Print" v-print="printObj"/>
-            <q-btn class="q-mr-sm" color="primary" glossy  size="sm"  label="Done" @click="printed" />
+            <q-btn v-if="done" class="q-mr-sm" color="primary" glossy  size="sm"  label="Done" @click="printed" />
             <q-btn color="primary" glossy size="sm"   label="Cancel" @click="cancelPrint"/>
         </q-toolbar>
       </q-header>
@@ -139,11 +138,11 @@ export default {
     print   
   },
   props: {
-      payments: {default:null, type: Array}
+      payments: {default:null, type: Array},
+      done: {default: true, type: Boolean}
   },
   created() {},
   mounted() {
-      //window.prompt(JSON.stringify(this.payment))
   },
   data() {
     return {
@@ -174,10 +173,14 @@ export default {
       return date;
     },
     printed() {
-      window.alert('document has been printed')
+      // let list = []
+      // for(let p in this.payload.payments){
+      //   list.push(p.id)
+      // }
+      this.$emit('printed', this.payments)
     },
     cancelPrint() {
-      window.alert('print cancel')
+      this.$emit('cancel')
     }
   }
 };
