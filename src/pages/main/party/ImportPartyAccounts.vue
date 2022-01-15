@@ -37,24 +37,32 @@
         flat
         :rows="records"
         :columns="columns"
-        row-key="partyName"
+        row-key="accountNumber"
         :loading="loading"
-        v-model="myPagination"
+        :pagination="myPagination"
         :filter="filter"
-        :selected-rows-label="getSelectedString"
+        v-model:selected="selected"
         selection="multiple"
       >
         <template v-slot:top-right>
+        <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm" 
+               color="primary"
+               label="Delete" 
+               size="sm"
+               glossy
+               @click="deleteSelected"
+              />
           <q-input
             borderless
             dense
             outlined
+            size="sm"
             debounce="300"
             v-model="filter"
             placeholder="Search"
           >
             <template v-slot:append>
-              <q-icon name="search" />
+              <q-icon name="search" size="sm"/>
             </template>
           </q-input>
         </template>
@@ -111,6 +119,7 @@ export default {
   mixins: [commonMixin],
   setup () {
     return {
+      selected: ref([]),
       step: ref(1)
     }
   },
@@ -142,7 +151,7 @@ export default {
         {name: "bankName",  align: "left", label: "Bank", field: "bankName", sortable: true},
         {name: "branchName",  align: "left", label: "Branch", field: "branchName", sortable: true},
       ],
-      myPagination: { rowsPerPage: 50 },
+      myPagination: { rowsPerPage: 20 },
       filter: "",
       loading: true,
       accounts: [],
@@ -157,7 +166,10 @@ export default {
            this.filePath = response;
            this.getFileRecords(this.filePath)
            this.uploaded = true
-        }).catch(err => {});
+        }).catch(err => {
+          files = []
+          this.fail(err.message)
+        });
     },
     getFileRecords() {
       this.loading = true;
@@ -187,6 +199,23 @@ export default {
       this.importDone = false
       this.accounts.splice(0, this.accounts.length)
       this.records.splice(0, this.records.length)
+    },
+    deleteSelected() {
+      window.alert(JSON.stringify(this.selected[0]))
+      for(let acc of this.selected) {
+         this.removeByAttr(this.records, 'accountNumber', acc.accountNumber);
+      }
+    },
+    removeByAttr(arr, attr, value) {
+    var i = arr.length;
+    while(i--){
+       if( arr[i] 
+           && arr[i].hasOwnProperty(attr) 
+           && (arguments.length > 2 && arr[i][attr] === value ) ){ 
+           arr.splice(i,1);
+       }
+    }
+    return arr;
     }
   }
 };

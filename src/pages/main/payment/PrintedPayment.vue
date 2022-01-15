@@ -25,7 +25,7 @@
                 @click="getAllPrinted()"/>
           <q-btn class="q-mt-sm q-mr-sm" 
                color="primary"
-               label="Select Range" 
+               label="Select Date" 
                size="sm"
                glossy
                @click="selectRange = !selectRange"
