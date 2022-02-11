@@ -221,7 +221,8 @@ export default {
         branchCode:'',
         accountNumber:'',
         ifscCode:'',
-        address:''
+        address:'',
+        update: false
       }
     },
     getPartyAccounts() {
@@ -254,8 +255,12 @@ export default {
       this.mode = mode;
       if (this.mode === "add") {
         this.dialogLabel = "New Account";
+        this.account.update = false
+        console.log(JSON.stringify(this.account))
       } else if (this.mode === "edit") {
         this.account = this.selected[0];
+        this.account.update = true
+        console.log(JSON.stringify(this.account))
         this.dialogLabel = "Update Account";
       }
       this.open = true;
