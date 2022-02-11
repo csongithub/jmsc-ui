@@ -6,6 +6,10 @@
           <q-avatar>
           </q-avatar>
           <q-toolbar-title>
+            <div class="q-gutter-sm">
+              <q-checkbox size="xs" v-model="branch" val="xs" label="Branch" color="yellow"/>
+              <q-checkbox size="xs" v-model="date" val="xs" label="Date" color="yellow"/>
+            </div>
           </q-toolbar-title>
             <q-btn class="q-mr-sm" color="primary" glossy size="sm"   label="Print" v-print="printObj"/>
             <q-btn v-if="done" class="q-mr-sm" color="primary" glossy  size="sm"  label="Done" @click="printed" />
@@ -30,10 +34,12 @@
       <div class="row justify-center param"> <b>Challan for remittance through RTGS/NEFT</b></div>
       <br>
       <div class="row">
-        <div class="col param"><b>Branch: {{payment.fromBranch}}</b></div>
+        <div class="col param" v-if="branch"><b>Branch: {{payment.fromBranch}}</b></div>
+        <div class="col param" v-else><b>Branch:_______________________</b></div>
         <div class="col param"></div>
         <div class="col param"></div>
-        <div class="col param"><b>Date: {{currentDate()}}</b></div>
+        <div class="col param" v-if="date"><b>Date: {{currentDate()}}</b></div>
+        <div class="col param" v-else><b>Date:_____/_____/__________</b></div>
       </div>
       <table style="width:100%;">
        <tr>
@@ -146,16 +152,20 @@ export default {
   },
   data() {
     return {
+      branch: true,
+      date: true,
       tab: ref('create'),
       image_ulr: require('../../../../assets/images/indian_bank.png'),
       printObj: {
               id: "printMe",
               preview: false,
               previewTitle: 'Preview',
-              popTitle: 'RTGS',
+              popTitle: '.',
+              url: '',
               previewBeforeOpenCallback (vue) {
               },
               previewOpenCallback (vue) {
+                
               },
               beforeOpenCallback (vue) {
               },
@@ -194,7 +204,7 @@ table, th, td {
 }
 /* Create two equal columns that floats next to each other */
 .print-column {
-  float: left;
+  float: right;
   width: 50%;
   padding: 10px;
 }

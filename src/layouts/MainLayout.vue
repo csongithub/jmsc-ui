@@ -38,17 +38,17 @@
             </q-item-section>
             <q-item-section>Accounts</q-item-section>
           </q-item>
-          <q-item exact clickable v-ripple to="/payment">
-            <q-item-section avatar>
-              <q-icon :name="icons.plan" />
-            </q-item-section>
-            <q-item-section>Payments</q-item-section>
-          </q-item>
           <q-item exact clickable v-ripple to="/party_accounts">
             <q-item-section avatar>
               <q-icon :name="icons.creditors" />
             </q-item-section>
-            <q-item-section>Party Accounts</q-item-section>
+            <q-item-section>Party</q-item-section>
+          </q-item>
+           <q-item exact clickable v-ripple to="/payment">
+            <q-item-section avatar>
+              <q-icon :name="icons.plan" />
+            </q-item-section>
+            <q-item-section>Payments</q-item-section>
           </q-item>
           <q-separator></q-separator>
         </q-list>
