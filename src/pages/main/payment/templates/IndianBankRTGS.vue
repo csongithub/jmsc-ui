@@ -19,10 +19,9 @@
       <q-page-container>  
       </q-page-container>
     </q-layout>
-  <div class="row">
-  </div>
+
     <div class="print-row" id="printMe">
-      <div class="print-column" v-for="(payment, index) of payments" v-bind:key="index">
+      <div class="print-column" style="font-family: 'Arial'" v-for="(payment, index) of payments" v-bind:key="index">
       <div class="row justify-center">
         <q-img :src="image_ulr"
           class="vertical-middle"
@@ -31,7 +30,7 @@
           height="5%"
           style="max-width: 30%"/>
       </div>
-      <div class="row justify-center param"> <b>Challan for remittance through RTGS/NEFT</b></div>
+      <div class="row justify-center param"> <b><p>Challan for remittance through RTGS/NEFT</p></b></div>
       <br>
       <div class="row">
         <div class="col param" v-if="branch"><b>Branch: {{payment.fromBranch}}</b></div>
@@ -98,7 +97,7 @@
       <div class="row param">Remit the amount as per above details by debiting my/our account of the amount of remittance plus 
       applicable charges.</div>
       <br>
-      <div class="row justify-center"><u>Condition of Transfer</u></div>
+      <div class="row justify-center"><u><span>Condition of Transfer</span></u></div>
       <div class="row param">1. Remitting bank shall not be liable for any loss of damage arising or resulting from delay in transmission
         delivery or Non-delivery of Electronic message or any mistake, omission, or error in transmission of delivery
         thereof or in deciphering the message from any couse whatsover or from its misinterpretation received or the action of the destination
