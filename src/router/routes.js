@@ -14,7 +14,12 @@ const routes = [
       { name: 'importPartyAccounts', path: '/import_party_accounts', component: () => import('src/pages/main/party/ImportPartyAccounts.vue') }
     ]
   },
-
+  {
+    path: "/login",
+    name: "login",
+    component: () => import("layouts/LoginLayout.vue"),
+    children: []
+  },
   // Always leave this as last one,
   // but you can also remove it
   {

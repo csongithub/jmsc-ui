@@ -5,6 +5,15 @@ export const commonMixin = {
     return {};
   },
   methods: {
+    openLoginLayout() {
+      this.$router.push({ name: "login" });
+    },
+    openMainLayout() {
+      this.$router.push({ name: "home" });
+    },
+    getClient() {
+      return LocalStorage.getItem("client");
+    },
     notify(message) {
       this.$q.notify({
         message: message,

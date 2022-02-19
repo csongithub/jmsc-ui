@@ -78,6 +78,10 @@ export default {
 
   created() {},
   mounted() {
+    //if client has not logged in, then rout to login page, else open landing page
+    if (!this.getClient()) {
+      this.openLoginLayout();
+    }
   },
   data() {
     return {
@@ -91,6 +95,17 @@ export default {
     };
   },
   methods: {
+    getClient() {
+      //Check if client has already logged in, then get client form local storage
+      if (this.client === null && LocalStorage.getItem("auth")) {
+        let auth =  LocalStorage.getItem("auth")
+        this.client = auth.client
+        // console.log(JSON.stringify(this.client))
+        return true;
+      } else {
+        return false;
+      }
+    },
     rout(path) {
       this.$router.push({ path: path });
     }
