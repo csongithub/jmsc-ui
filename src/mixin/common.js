@@ -12,7 +12,21 @@ export const commonMixin = {
       this.$router.push({ name: "home" });
     },
     getClient() {
-      return LocalStorage.getItem("client");
+      let auth = LocalStorage.getItem("auth");
+      if(auth && auth.client) {
+        return auth.client
+      } else {
+        return null
+      }
+    },
+    getClientId(){
+      let client = this.getClient()
+      if(client !== null){
+        return client.id
+      } 
+    },
+    getErrorMessage(err){
+      return err.response.data.message
     },
     notify(message) {
       this.$q.notify({

@@ -3,7 +3,7 @@
     <div class="col">
       <q-card square bordered class="q-pa-lg shadow-1">
         <q-card-section>
-          <span>Login</span>
+          <span class="absolute-center text-primary text-h5"><b>Login</b></span>
         </q-card-section>
         <q-card-section v-if="!loginResponse.loginSuccess">
           <q-form @submit="login" @reset="onReset" class="q-gutter-md">

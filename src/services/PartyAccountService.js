@@ -35,8 +35,11 @@ export default {
         return Promise.reject(err);
       });
   },
-  getPartyAccounts() {
-      return api.get( '/v1/party/bankaccount/allAccounts/').then(response => {
+  getPartyAccounts(clientId) {
+    const params = new URLSearchParams({
+      clientId: clientId
+    }).toString();
+      return api.get( '/v1/party/bankaccount/allAccounts?' + params).then(response => {
       let records = response.data;
       return records;
     }).catch(err => {

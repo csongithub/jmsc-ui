@@ -172,6 +172,7 @@ export default {
   },
   data() {
     return {
+      clientId: this.getClientId(),
       loading: true,
       drafts: [],
       open: false,
@@ -183,7 +184,7 @@ export default {
   methods: {
     getAllDrafts() {
       this.loading = true;
-      PaymentService.getAllDrafts().then(response => {
+      PaymentService.getAllDrafts(this.clientId).then(response => {
         this.drafts.splice(0, this.drafts.length)
         let temp = response;
         for(let t of temp) {

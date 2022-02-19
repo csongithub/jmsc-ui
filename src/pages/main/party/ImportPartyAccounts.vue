@@ -129,6 +129,7 @@ export default {
   },
   data() {
     return {
+      clientId: this.getClientId(),
       uploaded: false,
       filePath: '',
       records:[
@@ -186,6 +187,7 @@ export default {
     importAccounts() {
        this.accounts.splice(0, this.accounts.length)
       for(let account of this.records) {
+        account.clientId = this.clientId
         PartyAccountService.addAccount(account)
         .then(response => {
           this.accounts.unshift(response)
