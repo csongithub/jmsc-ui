@@ -25,6 +25,12 @@ export const commonMixin = {
         return client.id
       } 
     },
+    getLogonId(){
+      let client = this.getClient()
+      if(client !== null){
+        return client.logonId
+      } 
+    },
     getErrorMessage(err){
       return err.response.data.message
     },

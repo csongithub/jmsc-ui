@@ -1,0 +1,156 @@
+<template>
+  <div class="q-pa-md">
+    <q-card class="my-card">
+      <q-card-section>
+        <div class="text-primary text-h6">Basic</div>
+        <div class="row q-mb-sm">
+            <div class="col">Login ID</div>
+            <div class="col">{{client.logonId}}</div><div class="col"></div><div class="col"></div>
+        </div>
+        <div class="row">
+            <div class="col">Client Name</div>
+            <div v-if="!update" class="col" >{{updateBasicReq.name}}</div>
+            <q-input v-if="update" dense v-model="updateBasicReq.name"/>
+            <div class="col"></div><div class="col"></div>
+        </div>
+        <div class="row">
+            <div class="col">Display Name</div>
+            <div  v-if="!update" class="col">{{updateBasicReq.displayName}}</div>
+            <q-input v-if="update" dense v-model="updateBasicReq.displayName"/>
+            <div class="col"></div><div class="col"></div>
+        </div>
+        <br>
+      </q-card-section>
+      <q-separator/>
+      <q-card-actions>
+        <q-btn dense color="primary" v-if="!update" @click="update=!update">update</q-btn>
+        <q-btn dense color="primary" v-if="update" @click="updateBasicInfo">save</q-btn>
+         
+      </q-card-actions>
+    </q-card>
+    <br>
+    <q-separator/>
+    <br>
+    <q-card class="my-card">
+      <q-card-section>
+        <div class="text-primary text-h6">Update Password</div>
+            <q-form @submit="updatePassword" @reset="reset" class="">
+            <div class="q-gutter-md" style="max-width: 300px">
+                <q-input
+                    dense
+                    filled
+                    type="password"
+                    v-model="updatePasswordRequest.currentPassword"
+                    label="Curent Password"
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Enter Current password']"/>
+                <q-input
+                    dense
+                    filled
+                    type="password"
+                    v-model="updatePasswordRequest.newPassword"
+                    label="New Password"
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Enter New password']"/>
+                <q-input
+                    dense
+                    filled
+                    type="password"
+                    v-model="updatePasswordRequest.reNewPassword"
+                    label="Re-enter New Password"
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Re-enter New password']"/>
+
+                <q-btn  dense label="Update" type="submit" color="primary" class="full-width"/>
+                <q-btn dense label="Reset" type="reset" color="primary" outline class="q-mt-sm full-width"/>
+                <span class="text-red">{{message}}</span>
+            </div>
+        </q-form>
+      </q-card-section>
+    </q-card>
+  </div>
+</template>
+
+<script>
+import ProfileService from "../../services/auth/ProfileService";
+import LoginServcie from "../../services/auth/LoginService";
+import { commonMixin } from "../../mixin/common"
+export default {
+  props: {},
+  name: "Profile",
+  mixins: [commonMixin],
+  data() {
+    return {
+      client: this.getClient(),
+      clientId: this.getClientId(),
+      update:false,
+      updatePasswordRequest: {
+          logonId: null,
+          currentPassword: null,
+          newPassword: null,
+          reNewPassword: null
+      },
+      updateBasicReq: {
+        logonId: this.getLogonId(),
+        name: this.getClient().name,
+        displayName: this.getClient().displayName
+      },
+      message:''
+    };
+  },
+
+  methods: {
+    updatePassword() {
+        this.updatePasswordRequest.logonId = this.client.logonId
+        if(this.updatePasswordRequest.newPassword !== this.updatePasswordRequest.reNewPassword) {
+            this.message='Password did not match'
+            return
+        } else {
+             this.message=''
+        }
+        LoginServcie.updatePassword(this.updatePasswordRequest)
+        .then(response => {
+            if(response.updateSuccess){
+                this.success(response.message)
+                this.reset()
+            } else {
+                this.message=response.message
+            }
+        })
+        .catch(err => {
+            this.fail(this.getErrorMessage(err))
+        });
+    },
+    reset() {
+        this.updatePasswordRequest.logonId = null
+        this.updatePasswordRequest.currentPassword = null
+        this.updatePasswordRequest.newPassword = null
+        this.updatePasswordRequest.reNewPassword = null
+        this.message=''
+    },
+    updateBasicInfo() {
+        this.update = !this.update
+
+        ProfileService.updatePassword(this.updateBasicReq)
+        .then(response => {
+            if(response){
+                this.success('Profile Updated')
+                this.reset()
+            }
+        })
+        .catch(err => {
+            this.fail(this.getErrorMessage(err))
+        });
+
+    }
+    
+  }
+};
+</script>
+
+<style lang="sass" scoped>
+.my-card
+  width: 100%
+</style>
+
+

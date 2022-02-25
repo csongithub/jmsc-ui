@@ -11,7 +11,8 @@ const routes = [
       { name: 'printedPayment', path: '/printed_payment', component: () => import('pages/main/payment/PrintedPayment.vue') },
       { name: 'creditors', path: '/party_accounts', component: () => import('src/pages/main/party/PartyAccounts.vue') },
       { name: 'managePartyAccounts', path: '/manage_party_accounts', component: () => import('src/pages/main/party/ManagePartyAccounts.vue') },
-      { name: 'importPartyAccounts', path: '/import_party_accounts', component: () => import('src/pages/main/party/ImportPartyAccounts.vue') }
+      { name: 'importPartyAccounts', path: '/import_party_accounts', component: () => import('src/pages/main/party/ImportPartyAccounts.vue') },
+      { name: 'profile', path: '/profile', component: () => import('src/pages/auth/Profile.vue') }
     ]
   },
   {

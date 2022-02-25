@@ -5,7 +5,7 @@
         <q-card-section>
           <span class="absolute-center text-primary text-h5"><b>Login</b></span>
         </q-card-section>
-        <q-card-section v-if="!loginResponse.loginSuccess">
+        <q-card-section>
           <q-form @submit="login" @reset="onReset" class="q-gutter-md">
             <q-input
               dense
@@ -43,6 +43,8 @@
                 class="q-mt-sm full-width"
               />
             </div>
+            <br>
+            <span class="text-red">{{loginResponse.message}}</span>
           </q-form>
         </q-card-section>
       </q-card>
@@ -65,8 +67,8 @@ export default {
       loginResponse: {
         loginSuccess: false,
         clientDTO: null,
-        message: false,
-        token: false
+        message: '',
+        token: ''
       },
     };
   },

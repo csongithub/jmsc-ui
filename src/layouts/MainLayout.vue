@@ -51,6 +51,18 @@
             <q-item-section>Payments</q-item-section>
           </q-item>
           <q-separator></q-separator>
+           <q-item exact clickable v-ripple to="/profile">
+            <q-item-section avatar>
+              <q-icon :name="icons.profile" />
+            </q-item-section>
+            <q-item-section>Profile</q-item-section>
+          </q-item>
+          <q-item exact clickable v-ripple @click="logout">
+            <q-item-section avatar>
+              <q-icon :name="icons.logout" />
+            </q-item-section>
+            <q-item-section>Logout</q-item-section>
+          </q-item>
         </q-list>
       </q-scroll-area>
     </q-drawer>
@@ -67,7 +79,10 @@ import { commonMixin } from "../mixin/common";
 
 import {
   fasCreditCard,
-  fasUserFriends  
+  fasUserFriends,
+  fasPowerOff,
+  fasPersonBooth,
+  fasIdCard
 } from "@quasar/extras/fontawesome-v5";
 export default {
   name: "MainLayout",
@@ -90,7 +105,9 @@ export default {
       tab: "home",
       icons: {
         plan: fasCreditCard,
-        creditors: fasUserFriends
+        creditors: fasUserFriends,
+        profile: fasIdCard,
+        logout: fasPowerOff
       }
     };
   },
@@ -101,13 +118,32 @@ export default {
         let auth =  LocalStorage.getItem("auth")
         this.client = auth.client
         // console.log(JSON.stringify(this.client))
-        return true;
+        return true
       } else {
-        return false;
+        return false
       }
     },
+    handleLogout() {
+      this.$q.dialog({
+        title: 'Are You Sure?',
+        message: '',
+        cancel: true,
+        persistent: true
+      }).onOk(() => {
+        this.logout()
+      }).onOk(() => {
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+    },
+    logout () {
+      LocalStorage.clear()
+      this.openLoginLayout()
+    },
     rout(path) {
-      this.$router.push({ path: path });
+      this.$router.push({ path: path })
     }
   }
 };
