@@ -91,7 +91,12 @@ export default {
     // NewPost
   },
 
-  created() {},
+  created() {
+    this.inactivityTime()
+  },
+  unmounted() {
+    // LocalStorage.clear()
+  },
   mounted() {
     //if client has not logged in, then rout to login page, else open landing page
     if (!this.getClient()) {
@@ -144,6 +149,32 @@ export default {
     },
     rout(path) {
       this.$router.push({ path: path })
+    },
+    inactivityTime() {
+      var time;
+      var self = this
+      window.onload = resetTimer;
+      // DOM Events
+      document.onmousemove = resetTimer;
+      document.onkeydown = resetTimer;
+      document.onload = resetTimer;
+      document.onmousemove = resetTimer;
+      document.onmousedown = resetTimer; // touchscreen presses
+      document.ontouchstart = resetTimer;
+      document.onclick = resetTimer;     // touchpad clicks
+      document.onkeydown = resetTimer;   // onkeypress is deprectaed
+      document.addEventListener('scroll', resetTimer, true); // improved; see comments
+
+      function handleLogout() {
+        LocalStorage.clear()
+        self.logout()
+      }
+
+      function resetTimer() {
+        clearTimeout(time);
+        time = setTimeout(handleLogout, 60000) //Timeout 1 mins
+        // 1000 milliseconds = 1 second
+      }
     }
   }
 };
