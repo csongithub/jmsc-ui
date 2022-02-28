@@ -44,7 +44,7 @@
               />
             </div>
             <br>
-            <span class="text-red">{{loginResponse.message}}</span>
+            <span class="text-red">{{loginResponse.loginSuccess ? '' : loginResponse.message}}</span>
           </q-form>
         </q-card-section>
       </q-card>
@@ -78,7 +78,6 @@ export default {
       //console.log(JSON.stringify(this.loginRequest));
       LoginServcie.login(this.loginRequest)
         .then(response => {
-          response.message = ''
           this.loginResponse = response;
           //window.prompt(JSON.stringify(this.loginResponse));
           if (this.loginResponse.loginSuccess ) {
