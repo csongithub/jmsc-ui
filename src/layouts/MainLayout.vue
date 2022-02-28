@@ -13,7 +13,7 @@
         />
 
         <q-toolbar-title>
-         JMSC Banking
+         {{client !== null ? client.displayName : ''}}
         </q-toolbar-title>
 
         <div></div>

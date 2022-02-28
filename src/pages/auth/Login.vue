@@ -78,6 +78,7 @@ export default {
       //console.log(JSON.stringify(this.loginRequest));
       LoginServcie.login(this.loginRequest)
         .then(response => {
+          response.message = ''
           this.loginResponse = response;
           //window.prompt(JSON.stringify(this.loginResponse));
           if (this.loginResponse.loginSuccess ) {

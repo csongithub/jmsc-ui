@@ -75,6 +75,7 @@
 import ProfileService from "../../services/auth/ProfileService";
 import LoginServcie from "../../services/auth/LoginService";
 import { commonMixin } from "../../mixin/common"
+import { LocalStorage } from "quasar";
 export default {
   props: {},
   name: "Profile",
@@ -111,7 +112,8 @@ export default {
         LoginServcie.updatePassword(this.updatePasswordRequest)
         .then(response => {
             if(response.updateSuccess){
-                this.success(response.message)
+                // this.success(response.message)
+                this.confirmRelogin('Password Updated Successfully !')
                 this.reset()
             } else {
                 this.message=response.message
@@ -134,14 +136,29 @@ export default {
         ProfileService.updatePassword(this.updateBasicReq)
         .then(response => {
             if(response){
-                this.success('Profile Updated')
+                // this.success('Profile Updated')
                 this.reset()
+                this.confirmRelogin('Update Successful !')
             }
         })
         .catch(err => {
             this.fail(this.getErrorMessage(err))
         });
-
+    },
+    confirmRelogin(alert) {
+      console.log('inside relogin')
+      this.$q.dialog({
+        title: alert,
+        message: 'Please re-login for better experience.',
+        cancel: true,
+        persistent: true
+      }).onOk(() => {
+        LocalStorage.clear()
+        this.openLoginLayout()
+      }).onOk(() => {
+      }).onCancel(() => {
+      }).onDismiss(() => {
+      })
     }
     
   }
