@@ -44,11 +44,18 @@
             </q-item-section>
             <q-item-section>Party</q-item-section>
           </q-item>
-           <q-item exact clickable v-ripple to="/payment">
+          <q-item exact clickable v-ripple to="/payment">
             <q-item-section avatar>
               <q-icon :name="icons.plan" />
             </q-item-section>
             <q-item-section>Payments</q-item-section>
+          </q-item>
+          <q-separator></q-separator>
+          <q-item exact clickable v-ripple to="/credit_facility">
+            <q-item-section avatar>
+              <q-icon :name="icons.cf" />
+            </q-item-section>
+            <q-item-section>Credit Facility</q-item-section>
           </q-item>
           <q-separator></q-separator>
            <q-item exact clickable v-ripple to="/profile">
@@ -82,7 +89,8 @@ import {
   fasUserFriends,
   fasPowerOff,
   fasPersonBooth,
-  fasIdCard
+  fasIdCard,
+  fasMoneyBillAlt
 } from "@quasar/extras/fontawesome-v5";
 export default {
   name: "MainLayout",
@@ -112,7 +120,8 @@ export default {
         plan: fasCreditCard,
         creditors: fasUserFriends,
         profile: fasIdCard,
-        logout: fasPowerOff
+        logout: fasPowerOff,
+        cf: fasMoneyBillAlt
       }
     };
   },
@@ -172,7 +181,7 @@ export default {
 
       function resetTimer() {
         clearTimeout(time);
-        time = setTimeout(handleLogout, 60000) //Timeout 1 mins
+        time = setTimeout(handleLogout, 100000) //Timeout 1 mins
         // 1000 milliseconds = 1 second
       }
     }
