@@ -83,6 +83,51 @@
                   val => (val && val.length > 0) || 'Facility Type i.e BG/FD or NSC'
                 ]"
               />
+              <q-select v-if="creditFacility.facilityType === 'BG' || creditFacility.facilityType === 'FD'"
+                dense
+                outlined
+                v-model="creditFacility.issuerName"
+                :options="banks"
+                label="Issuer Name"
+                lazy-rules
+                :rules="[
+                  val => (val && val.length > 0) || 'Enter Issuer Name'
+                ]"
+              />
+
+              <q-select v-if="creditFacility.facilityType === 'BG' || creditFacility.facilityType === 'FD'"
+                dense
+                outlined
+                v-model="creditFacility.issuerBranch"
+                :options="branches"
+                label="Branch Name"
+                lazy-rules
+                :rules="[
+                  val => (val && val.length > 0) || 'Enter Branch Name'
+                ]"
+              />
+
+              <q-input v-if="creditFacility.facilityType === 'NSC'"
+                dense
+                outlined
+                disable
+                 v-model="postOfficeLabel"
+                label="Issuer Name"
+                full-width
+              />
+
+              <q-select v-if="creditFacility.facilityType === 'NSC'"
+                dense
+                outlined
+                v-model="creditFacility.issuerBranch"
+                :options="postOffice"
+                label="Branch Name"
+                lazy-rules
+                :rules="[
+                  val => (val && val.length > 0) || 'Enter Branch Name'
+                ]"
+              />
+              
               <q-input
                 dense
                 outlined
@@ -137,36 +182,7 @@
                 </div>
               </div>
 
-              <q-select v-if="creditFacility.facilityType === 'BG' || creditFacility.facilityType === 'FD'"
-                dense
-                outlined
-                v-model="creditFacility.issuerName"
-                :options="issuerList"
-                label="Issuer Name"
-                lazy-rules
-                :rules="[
-                  val => (val && val.length > 0) || 'Enter Issuer Name'
-                ]"
-              />
-
-              <q-input v-if="creditFacility.facilityType === 'NSC'"
-                dense
-                outlined
-                disable
-                 v-model="postOffice"
-                label="Issuer Name"
-                full-width
-              />
-
-              <q-input
-                dense
-                outlined
-                v-model="creditFacility.issuerBranch"
-                label="Issuer Branch"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Enter Issuer Branch']"
-              />
+        
               <div>
                 <q-space />
                 <q-btn
@@ -241,25 +257,60 @@ export default {
   },
   created() {},
   mounted() {
+    this.init()
     this.getAllFacilities()
   },
   data() {
     return {
       clientId: this.getClientId(),
       myPagination: { rowsPerPage: 15 },
-      filter: "",
+      filter: '',
       loading: true,
       accounts: [],
       open: false,
-      mode: "add",
-      dialogLabel: "New Facility",
+      mode: 'add',
+      dialogLabel: 'New Facility',
       creditFacility: this.newFacility(),
       facilityList: ['BG', 'FD', 'NSC'],
-      issuerList: ['Indian Bank', 'SBI'],
-      postOffice: 'Post Office',
+      banks: [],
+      branches: [],
+      postOfficeLabel: 'Post Office',
+      postOffice: []
     };
   },
   methods: {
+    init() {
+      this.getBanks()
+      this.getBranches()
+      this.getPostOffice()
+    },
+    getBanks() {
+      CreditFacilityService.getBanks()
+        .then(response => {
+        this.banks.splice(0, this.banks.length)
+        this.banks = response;
+      }).catch(err => {
+        this.loading = false;
+      });
+    },
+    getBranches() {
+      CreditFacilityService.getBranches()
+        .then(response => {
+        this.branches.splice(0, this.branches.length)
+        this.branches = response;
+      }).catch(err => {
+        this.loading = false;
+      });
+    },
+    getPostOffice() {
+      CreditFacilityService.getPostOffice()
+        .then(response => {
+        this.postOffice.splice(0, this.postOffice.length)
+        this.postOffice = response;
+      }).catch(err => {
+        this.loading = false;
+      });
+    },
     newFacility(){
       return {
         accountNumber: null,
@@ -275,6 +326,7 @@ export default {
         pledgedType: null
       }
     },
+
     getAllFacilities() {
       this.loading = true;
       CreditFacilityService.getAllFacilities(this.clientId)
