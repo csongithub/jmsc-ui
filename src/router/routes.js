@@ -11,10 +11,21 @@ const routes = [
       { name: 'printedPayment', path: '/printed_payment', component: () => import('pages/main/payment/PrintedPayment.vue') },
       { name: 'creditors', path: '/party_accounts', component: () => import('src/pages/main/party/PartyAccounts.vue') },
       { name: 'managePartyAccounts', path: '/manage_party_accounts', component: () => import('src/pages/main/party/ManagePartyAccounts.vue') },
-      { name: 'importPartyAccounts', path: '/import_party_accounts', component: () => import('src/pages/main/party/ImportPartyAccounts.vue') }
+      { name: 'importPartyAccounts', path: '/import_party_accounts', component: () => import('src/pages/main/party/ImportPartyAccounts.vue') },
+      { name: 'creditFacility', path: '/credit_facility', component: () => import('src/pages/main/cf/CreditFacility.vue') },
+      { name: 'allCF', path: '/all_cf', component: () => import('src/pages/main/cf/AllCF.vue') },
+      { name: 'bankGuarantee', path: '/bank_guarantee', component: () => import('src/pages/main/cf/BankGuarantee.vue') },
+      { name: 'fixedDeposit', path: '/fixed_deposit', component: () => import('src/pages/main/cf/FixedDeposit.vue') },
+      { name: 'nsc', path: '/nsc', component: () => import('src/pages/main/cf/NSC.vue') },
+      { name: 'profile', path: '/profile', component: () => import('src/pages/auth/Profile.vue') }
     ]
   },
-
+  {
+    path: "/login",
+    name: "login",
+    component: () => import("layouts/LoginLayout.vue"),
+    children: []
+  },
   // Always leave this as last one,
   // but you can also remove it
   {

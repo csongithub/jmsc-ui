@@ -13,7 +13,7 @@
         />
 
         <q-toolbar-title>
-         JMSC Banking
+         {{client !== null ? client.displayName : ''}}
         </q-toolbar-title>
 
         <div></div>
@@ -44,13 +44,32 @@
             </q-item-section>
             <q-item-section>Party</q-item-section>
           </q-item>
-           <q-item exact clickable v-ripple to="/payment">
+          <q-item exact clickable v-ripple to="/payment">
             <q-item-section avatar>
               <q-icon :name="icons.plan" />
             </q-item-section>
             <q-item-section>Payments</q-item-section>
           </q-item>
           <q-separator></q-separator>
+          <q-item exact clickable v-ripple to="/credit_facility">
+            <q-item-section avatar>
+              <q-icon :name="icons.cf" />
+            </q-item-section>
+            <q-item-section>Credit Facility</q-item-section>
+          </q-item>
+          <q-separator></q-separator>
+           <q-item exact clickable v-ripple to="/profile">
+            <q-item-section avatar>
+              <q-icon :name="icons.profile" />
+            </q-item-section>
+            <q-item-section>Profile</q-item-section>
+          </q-item>
+          <q-item exact clickable v-ripple @click="logout">
+            <q-item-section avatar>
+              <q-icon :name="icons.logout" />
+            </q-item-section>
+            <q-item-section>Logout</q-item-section>
+          </q-item>
         </q-list>
       </q-scroll-area>
     </q-drawer>
@@ -67,7 +86,11 @@ import { commonMixin } from "../mixin/common";
 
 import {
   fasCreditCard,
-  fasUserFriends  
+  fasUserFriends,
+  fasPowerOff,
+  fasPersonBooth,
+  fasIdCard,
+  fasMoneyBillAlt
 } from "@quasar/extras/fontawesome-v5";
 export default {
   name: "MainLayout",
@@ -76,8 +99,17 @@ export default {
     // NewPost
   },
 
-  created() {},
+  created() {
+    this.inactivityTime()
+  },
+  unmounted() {
+    // LocalStorage.clear()
+  },
   mounted() {
+    //if client has not logged in, then rout to login page, else open landing page
+    if (!this.getClient()) {
+      this.openLoginLayout();
+    }
   },
   data() {
     return {
@@ -86,13 +118,72 @@ export default {
       tab: "home",
       icons: {
         plan: fasCreditCard,
-        creditors: fasUserFriends
+        creditors: fasUserFriends,
+        profile: fasIdCard,
+        logout: fasPowerOff,
+        cf: fasMoneyBillAlt
       }
     };
   },
   methods: {
+    getClient() {
+      //Check if client has already logged in, then get client form local storage
+      if (this.client === null && LocalStorage.getItem("auth")) {
+        let auth =  LocalStorage.getItem("auth")
+        this.client = auth.client
+        // console.log(JSON.stringify(this.client))
+        return true
+      } else {
+        return false
+      }
+    },
+    handleLogout() {
+      this.$q.dialog({
+        title: 'Are You Sure?',
+        message: '',
+        cancel: true,
+        persistent: true
+      }).onOk(() => {
+        this.logout()
+      }).onOk(() => {
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+    },
+    logout () {
+      LocalStorage.clear()
+      this.openLoginLayout()
+    },
     rout(path) {
-      this.$router.push({ path: path });
+      this.$router.push({ path: path })
+    },
+    inactivityTime() {
+      var time;
+      var self = this
+      window.onload = resetTimer;
+      // DOM Events
+      document.onmousemove = resetTimer;
+      document.onkeydown = resetTimer;
+      document.onload = resetTimer;
+      document.onmousemove = resetTimer;
+      document.onmousedown = resetTimer; // touchscreen presses
+      document.ontouchstart = resetTimer;
+      document.onclick = resetTimer;     // touchpad clicks
+      document.onkeydown = resetTimer;   // onkeypress is deprectaed
+      document.addEventListener('scroll', resetTimer, true); // improved; see comments
+
+      function handleLogout() {
+        LocalStorage.clear()
+        self.logout()
+      }
+
+      function resetTimer() {
+        clearTimeout(time);
+        time = setTimeout(handleLogout, 100000) //Timeout 1 mins
+        // 1000 milliseconds = 1 second
+      }
     }
   }
 };

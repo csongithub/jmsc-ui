@@ -227,6 +227,7 @@ export default {
   },
   data() {
     return {
+      clientId: this.getClientId(),
       myPagination: { rowsPerPage: 10 },
       filter: "",
       loading: true,
@@ -241,6 +242,7 @@ export default {
   methods: {
     newAccount() {
       return {
+        clientId: this.clientId,
         accountHolder:'',
         bankName: '',
         branchName: '',
@@ -255,7 +257,7 @@ export default {
     },
     getAccounts() {
       this.loading = true;
-      BankAccountService.getAccounts()
+      BankAccountService.getAccounts(this.clientId)
         .then(response => {
         this.accounts.splice(0, this.accounts.length)
         this.accounts = response;
@@ -265,6 +267,7 @@ export default {
       });
     },
     addAccount() {
+      this.account.clientId = this.clientId
       BankAccountService.addAccount(this.account)
         .then(response => {
           if(this.mode === 'add') {
@@ -276,6 +279,7 @@ export default {
           this.$refs.newAccountRef.hide();
       }).catch(err => {
         this.loading = false;
+        this.fail(this.getErrorMessage(err))
       });
     },
     beforeShow() {},

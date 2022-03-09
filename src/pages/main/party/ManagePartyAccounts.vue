@@ -201,6 +201,7 @@ export default {
   },
   data() {
     return {
+      clientId: this.getClientId(),
       myPagination: { rowsPerPage: 15 },
       filter: "",
       loading: true,
@@ -214,6 +215,7 @@ export default {
   methods: {
     newAccount() {
       return {
+        clientId: this.clientId,
         partyName: '',
         accountHolder:'',
         bankName: '',
@@ -227,7 +229,7 @@ export default {
     },
     getPartyAccounts() {
       this.loading = true;
-      PartyAccountService.getPartyAccounts()
+      PartyAccountService.getPartyAccounts(this.clientId)
         .then(response => {
         this.accounts.splice(0, this.accounts.length)
         this.accounts = response;
@@ -237,6 +239,7 @@ export default {
       });
     },
     addPartyAccount() {
+      this.account.clientId = this.clientId
       PartyAccountService.addPartyAccount(this.account)
         .then(response => {
           if(this.mode === 'add') {
@@ -248,6 +251,7 @@ export default {
           this.$refs.newAccountRef.hide();
       }).catch(err => {
         this.loading = false;
+        this.fail(this.getErrorMessage(err))
       });
     },
     beforeShow() {},
@@ -255,11 +259,9 @@ export default {
       this.mode = mode;
       if (this.mode === "add") {
         this.dialogLabel = "New Account";
-        this.account.update = false
         console.log(JSON.stringify(this.account))
       } else if (this.mode === "edit") {
         this.account = this.selected[0];
-        this.account.update = true
         console.log(JSON.stringify(this.account))
         this.dialogLabel = "Update Account";
       }

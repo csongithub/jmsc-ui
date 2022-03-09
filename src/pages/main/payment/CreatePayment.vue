@@ -190,6 +190,7 @@ export default {
   },
   data() {
     return {
+      clientId: this.getClientId(),
       myPagination: { rowsPerPage: 15 },
       filter: "",
       loading: true,
@@ -209,7 +210,7 @@ export default {
   },
   methods: {
     getActiveAccounts() {
-      PaymentService.getActiveAccounts()
+      PaymentService.getActiveAccounts(this.clientId)
         .then(response => {
         this.accounts.splice(0, this.accounts.length)
         this.accounts = response; 
@@ -219,7 +220,7 @@ export default {
     },
     getPartyAccounts() {
       this.loading = true;
-      PartyAccountService.getPartyAccounts()
+      PartyAccountService.getPartyAccounts(this.clientId)
         .then(response => {
         this.partyAccounts.splice(0, this.partyAccounts.length)
         this.partyAccounts = response;
@@ -251,6 +252,7 @@ export default {
         this.paymentDraft.fromAccount = this.fromAccount
         this.paymentDraft.toAccount = this.selected[0]
         let draft = {
+            clientId: this.clientId,
             id:null,
             status: 'CREATED',
             draftJson: JSON.stringify(this.paymentDraft)

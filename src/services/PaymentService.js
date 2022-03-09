@@ -1,8 +1,11 @@
 import { api } from "src/boot/axios";
 
 export default {
-    getActiveAccounts() {
-        return api.get( '/v1/bankaccount/getActiveAccounts/').then(response => {
+    getActiveAccounts(clientId) {
+        const params = new URLSearchParams({
+            clientId: clientId
+          }).toString();
+        return api.get( '/v1/bankaccount/getActiveAccounts?' + params).then(response => {
             let records = response.data;
             return records;
         }).catch(err => {
@@ -19,8 +22,11 @@ export default {
             return Promise.reject(err);
         });
     },
-    getAllDrafts() {
-        return api.get( '/v1/payment/getAllDrafts/').then(response => {
+    getAllDrafts(clientId) {
+        const params = new URLSearchParams({
+            clientId: clientId
+          }).toString();
+        return api.get( '/v1/payment/getAllDrafts?' + params).then(response => {
             let records = response.data;
             return records;
         }).catch(err => {
@@ -37,8 +43,8 @@ export default {
             return Promise.reject(err);
         });
     },
-    getAllPrinted() {
-        return api.get('/v1/payment/getAllPrinted/').then(response => {
+    getAllPrinted(clientId) {
+        return api.get('/v1/payment/getAllPrinted/' + clientId).then(response => {
             let records = response.data;
             return records;
         }).catch(err => {
@@ -46,8 +52,11 @@ export default {
             return Promise.reject(err);
         });
     },
-    getByRange(req) {
-        return api.put('/v1/payment/getAllPrintedByRange/', req).then(response => {
+    getByRange(clientId, req) {
+        const params = new URLSearchParams({
+            clientId: clientId
+          }).toString();
+        return api.put('/v1/payment/getAllPrintedByRange?' + params, req).then(response => {
             let records = response.data;
             return records;
         }).catch(err => {

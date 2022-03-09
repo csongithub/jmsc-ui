@@ -123,6 +123,7 @@ export default {
   },
   data() {
     return {
+      clientId: this.getClientId(),
       loading: true,
       drafts: [],
       open: false,
@@ -137,7 +138,7 @@ export default {
   methods: {
     getAllPrinted() {
       this.loading = true;
-      PaymentService.getAllPrinted().then(response => {
+      PaymentService.getAllPrinted(this.clientId).then(response => {
         this.appendTitle = 'Showing All Records'
         this.buildResponse(response)
       }).catch(err => {
@@ -191,7 +192,7 @@ export default {
         range: range
       }
       window.alert(JSON.stringify(req))
-      PaymentService.getByRange(req).then(response => {
+      PaymentService.getByRange(this.clientId, req).then(response => {
        this.buildResponse(response)
        
        this.appendTitle = 'Showing Records from ' + range.from + ' To ' + range.to;
