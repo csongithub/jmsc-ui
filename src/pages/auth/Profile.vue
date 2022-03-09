@@ -7,16 +7,22 @@
             <div class="col">Login ID</div>
             <div class="col">{{client.logonId}}</div><div class="col"></div><div class="col"></div>
         </div>
-        <div class="row">
+        <div class="row" style="width: 100%">
             <div class="col">Client Name</div>
             <div v-if="!update" class="col" >{{updateBasicReq.name}}</div>
-            <q-input v-if="update" dense v-model="updateBasicReq.name"/>
+            <q-input v-if="update" dense size="bg" v-model="updateBasicReq.name"/>
             <div class="col"></div><div class="col"></div>
         </div>
         <div class="row">
             <div class="col">Display Name</div>
             <div  v-if="!update" class="col">{{updateBasicReq.displayName}}</div>
             <q-input v-if="update" dense v-model="updateBasicReq.displayName"/>
+            <div class="col"></div><div class="col"></div>
+        </div>
+         <div class="row">
+            <div class="col">Emails</div>
+            <div  v-if="!update" class="col">{{updateBasicReq.recipients}}</div>
+            <q-input v-if="update" dense v-model="updateBasicReq.recipients"/>
             <div class="col"></div><div class="col"></div>
         </div>
         <br>
@@ -89,12 +95,13 @@ export default {
           logonId: null,
           currentPassword: null,
           newPassword: null,
-          reNewPassword: null
+          reNewPassword: null,
       },
       updateBasicReq: {
         logonId: this.getLogonId(),
         name: this.getClient().name,
-        displayName: this.getClient().displayName
+        displayName: this.getClient().displayName,
+        recipients: this.getClient().recipients
       },
       message:''
     };
