@@ -58,6 +58,13 @@
             <q-item-section>Credit Facility</q-item-section>
           </q-item>
           <q-separator></q-separator>
+          <q-item exact clickable v-ripple to="/bidding">
+            <q-item-section avatar>
+              <q-icon :name="icons.cf" />
+            </q-item-section>
+            <q-item-section>Bidding</q-item-section>
+          </q-item>
+          <q-separator></q-separator>
            <q-item exact clickable v-ripple to="/profile">
             <q-item-section avatar>
               <q-icon :name="icons.profile" />
@@ -181,7 +188,7 @@ export default {
 
       function resetTimer() {
         clearTimeout(time);
-        time = setTimeout(handleLogout, 100000) //Timeout 1 mins
+        time = setTimeout(handleLogout, 300000) //Timeout 5 mins
         // 1000 milliseconds = 1 second
       }
     }

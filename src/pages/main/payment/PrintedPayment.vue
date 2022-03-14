@@ -191,7 +191,7 @@ export default {
       let req = {
         range: range
       }
-      window.alert(JSON.stringify(req))
+      // window.alert(JSON.stringify(req))
       PaymentService.getByRange(this.clientId, req).then(response => {
        this.buildResponse(response)
        
