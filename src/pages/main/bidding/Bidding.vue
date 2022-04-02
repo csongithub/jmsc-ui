@@ -29,7 +29,6 @@
           <q-route-tab
             name="rejected_bids" label="Rejected"
             to="/rejected_bids"
-
             exact
           />
         </q-tabs>

@@ -60,7 +60,7 @@
           <q-separator></q-separator>
           <q-item exact clickable v-ripple to="/bidding">
             <q-item-section avatar>
-              <q-icon :name="icons.cf" />
+              <q-icon :name="icons.bidding" />
             </q-item-section>
             <q-item-section>Bidding</q-item-section>
           </q-item>
@@ -97,7 +97,8 @@ import {
   fasPowerOff,
   fasPersonBooth,
   fasIdCard,
-  fasMoneyBillAlt
+  fasMoneyBillAlt,
+  fasGavel
 } from "@quasar/extras/fontawesome-v5";
 export default {
   name: "MainLayout",
@@ -128,7 +129,8 @@ export default {
         creditors: fasUserFriends,
         profile: fasIdCard,
         logout: fasPowerOff,
-        cf: fasMoneyBillAlt
+        cf: fasMoneyBillAlt,
+        bidding: fasGavel
       }
     };
   },
