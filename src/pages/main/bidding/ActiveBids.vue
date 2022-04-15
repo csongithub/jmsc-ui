@@ -431,6 +431,34 @@
                     </template>
                   </q-table>
                 </div>
+                <div class="offline_emd_details" v-if="bidCost.emdDetails.emdMode === 'online'">
+                    <div class="row q-mb-md">
+                      <div class="col q-mr-md">
+                        {{'Payment Mode: ' + onlineEmdDetails.paymentMode}}
+                      </div>
+                      <div class="col q-mr-md">
+                        {{'Amount: INR ' + onlineEmdDetails.amount}}
+                      </div>
+                      <div class="col">
+                        {{'Transaction: ' + onlineEmdDetails.transactionNumber}}
+                      </div>
+                    </div>
+                    <div>
+                      <q-input 
+                        type="textarea" style="max-width: 300px"
+                        disable
+                        dense
+                        filled
+                        v-model="onlineEmdDetails.accountDetail"/>
+                    </div>
+                    <q-btn v-if="bid.id !== undefined"
+                      class="q-mt-sm"
+                      label="Clear & Reassign" 
+                      color="primary"
+                      size="sm"
+                      glossy
+                      @click="clearEMD()"/>
+                </div>
               </div>
               <div v-else>
                 <div class="row q-mt-sm">
@@ -492,9 +520,39 @@
                   </q-table>
                 </div>
                 <div class="online_emd q-mt-md" v-else-if="emdMode == 'online'">
-                this is online
-                </div>
+                  <q-form @submit="saveEMD" @reset="resetOnlineEmd" class="">
+                    <div class="q-gutter-md" style="max-width: 300px">
+				              <q-select 
+                        v-model="onlineEmdDetails.paymentMode" 
+					              :options="onlineEMDOptions" 
+					              label="Select Mode"
+					              lazy-rules
+                      :rules="[val => (val && val.length > 0) || 'Please Select Mode']"/>
+                    <q-input type="number"
+                      dense
+                      filled
+                      v-model="onlineEmdDetails.amount"
+                      label="Enter Amount"
+                      lazy-rules
+                      :rules="[val => (val && val.length > 0) || 'Please Enter Amount']"/>
+				            <q-input
+                      dense
+                      filled
+                      v-model="onlineEmdDetails.transactionNumber"
+                      label="Enter Transaction Detail"/>
+				            <q-input type="textarea"
+                      dense
+                      filled
+                      v-model="onlineEmdDetails.accountDetail"
+                      label="Enter Account Detail"
+                      lazy-rules
+                      :rules="[val => (val && val.length > 0) || 'Please Enter Account Detail']"/>
 
+                    <q-btn  dense label="Save" type="submit" color="primary" class="full-width"/>
+                    <q-btn dense label="Reset" type="reset" color="primary" outline class="q-mt-sm full-width"/>
+                  </div>
+                </q-form>
+                </div>
               </div>
             </div>
             <div v-else class="title">No Bid Found! Please follow below steps.<br><q-space/><br>
@@ -659,6 +717,13 @@ export default {
     }
   },
   watch: {
+    emdMode(val) {
+      this.emdSelected = ref([])
+      this.selectedEmdValue = 0
+    },
+    'onlineEmdDetails.amount'(value) {
+      this.selectedEmdValue = value
+    }
   },
   created() {
   },
@@ -688,7 +753,14 @@ export default {
       bidCost: null,
       emdMode: 'offline',
       emdComments: '',
-      emdData: []
+      emdData: [],
+      onlineEMDOptions: ['Net Banking', 'Challan Payment', 'UPI Payment', 'Card Payment'],
+      onlineEmdDetails: {
+        paymentMode: '',
+        amount: 0,
+        transactionNumber: '',
+        accountDetail: ''
+      }
     };
   },
   methods: {
@@ -740,6 +812,9 @@ export default {
              self.emdData.push(item.emd)
              self.selectedEmdValue = self.selectedEmdValue + item.emd.amount
           }
+        }else if(self.bidCost.emdDetails !== null && self.bidCost.emdDetails.emdMode === 'online') {
+           self.onlineEmdDetails = self.bidCost.emdDetails.onlineDetails
+           //self.selectedEmdValue = self.bidCost.onlineDetails.amount
         }
         console.log(JSON.stringify(self.bidCost))
         console.log(JSON.stringify(self.emdData))
@@ -779,6 +854,14 @@ export default {
         // console.log('I am triggered on both OK and Cancel')
       })
     },
+    resetOnlineEmd () {
+      this.onlineEmdDetails = {
+        paymentMode: '',
+        amount: 0,
+        transactionNumber: '',
+        accountDetail: ''
+      }
+    },
     saveEMD() {
       if(this.bid.emdAmount - this.selectedEmdValue > 0) {
         this.fail('Selected accounts does not fullfill the emd amount')
@@ -800,6 +883,7 @@ export default {
       }
 
       if(this.emdMode == 'offline') {
+        emdDetails.onlineDetails = null
         let emdList = []
         for (let emd of this.emdSelected) {
           let emdWrapper = {
@@ -810,8 +894,10 @@ export default {
         }
         emdDetails.emdList = emdList
         emdDetails.comments = this.emdComments
-      } else {
-
+      } else { 
+        emdDetails.emdList = null
+        emdDetails.onlineDetails = this.onlineEmdDetails
+        emdDetails.onlineDetails.status = 'SUBMITTED'
       }
 
       newBidCost.emdDetails = emdDetails
@@ -820,6 +906,7 @@ export default {
         .then(response => {
         // this.bidCost = response
         this.getBidCost(this.bid.id)
+        this.resetOnlineEmd()
         console.log(JSON.stringify(response))
       }).catch(err => {
       });
@@ -831,6 +918,7 @@ export default {
        this.getAvailableFacilities()
        this.getBidCost(this.bid.id)
        this.emdSelected = []
+       this.resetOnlineEmd()
       }).catch(err => {
       });
     },
