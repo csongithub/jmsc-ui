@@ -11,7 +11,7 @@
         <q-btn v-if="selected.length > 0" 
                class="q-mt-sm q-mr-sm "
                color="primary"
-               label="Edit"
+               label="Update"
                size="sm"
                glossy
                @click="openDialog('edit')"
@@ -356,6 +356,34 @@
                   </q-input>
                 </div>
               </div>
+              <div class="row">
+                <div class="col q-mr-md">
+                   <q-select outlined v-model="bid.status" :options="bidStatusOptions" label="Status"/>
+                </div>
+                <div class="col q-mr-md">
+                  <q-input filled v-model="bid.bidSubmittedDate" :rules="['YYYY-MM-DD']"  label="Bid Submitted Date">
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
+                        <q-date v-model="bid.bidSubmittedDate" mask="YYYY-MM-DD">
+                          <div class="row items-center justify-end">
+                            <q-btn v-close-popup label="Close" color="primary" flat />
+                          </div>
+                        </q-date>
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                  </q-input>
+                </div>
+                 <div class="col">
+                    <q-input outlined v-model="bid.bidId" label="Generated Bid Id" />
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                    <q-input outlined v-model="bid.reason" label="Reason" />
+                </div>
+              </div>
               <div>
                 <q-space />
                 <q-btn
@@ -564,6 +592,10 @@
           <q-tab-panel name="fee">
             <FeeDetail :bid="bid" :bidCost="bidCost"></FeeDetail>
           </q-tab-panel>
+
+          <q-tab-panel name="other">
+            <OtherCost :bid="bid" :bidCost="bidCost"></OtherCost>
+          </q-tab-panel>
           </q-tab-panels>
         </q-card>
       </q-dialog>
@@ -573,12 +605,14 @@
 <script>
 import { ref } from 'vue'
 import BidService from "../../../services/BidService"
+import EnumService from "../../../services/EnumerationService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import Bidding from "../bidding/Bidding.vue"
 import { fasPlus, fasEdit, fasTh, fasList, fasRemoveFormat } from "@quasar/extras/fontawesome-v5";
 import { commonMixin } from "../../../mixin/common"
 import { date } from 'quasar'
 import FeeDetail from '../bidding/FeeDetails.vue'
+import OtherCost from '../bidding/OtherCost.vue'
 export default {
   name: 'ActiveBids',
   mixins: [commonMixin],
@@ -734,10 +768,12 @@ export default {
   },
   mounted() {
     this.getActiveBids()
+    this.getBidStatusOptions()
   },
   components: {
     Bidding,
-    FeeDetail
+    FeeDetail,
+    OtherCost
   },
   data() {
     return {
@@ -766,7 +802,8 @@ export default {
         amount: 0,
         transactionNumber: '',
         accountDetail: ''
-      }
+      },
+      bidStatusOptions: []
     };
   },
   methods: {
@@ -801,6 +838,7 @@ export default {
         .then(response => {
         this.bids.splice(0, this.bids.length)
         this.bids = response
+        console.log(JSON.stringify(this.bids))
         this.loading = false;
       }).catch(err => {
         this.loading = false;
@@ -946,6 +984,7 @@ export default {
       } else if (this.mode === "edit") {
         this.bid = this.selected[0];
         this.tab = ref('bid')
+        console.log(JSON.stringify(this.bid))
         this.getAvailableFacilities()
         this.getBidCost(this.bid.id)
         this.dialogLabel = "Update Bid";
@@ -979,7 +1018,17 @@ export default {
       this.emdFilter = ""
       this.emdSelected = ref([])
       this.selectedEmdValue = 0
-    }
+    },
+    getBidStatusOptions() {
+      EnumService.getEumOptions('EBidStatus')
+        .then(response => {
+          this.bidStatusOptions = []
+          this.bidStatusOptions = response
+          // window.alert(JSON.stringify(this.bidStatusOptions))
+      }).catch(err => {
+        this.emdLoading = false
+      });
+    },
   }
 };
 </script>

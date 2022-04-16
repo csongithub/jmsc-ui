@@ -69,4 +69,14 @@ export default {
             return Promise.reject(err);
         });
     },
+    saveOtherCost(otherCost) {
+        return api.post('/v1/bid/save_other_cost', otherCost).then(response => {
+            let status = response.data;
+            return status;
+        })
+        .catch(err => {
+            console.log("Error in getting records: " + JSON.stringify(err.response.data));
+            return Promise.reject(err);
+        });
+    },
 };

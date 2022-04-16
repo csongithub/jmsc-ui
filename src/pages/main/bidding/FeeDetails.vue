@@ -157,7 +157,7 @@
   </div>
   <div v-if="feeExist">
         <div v-if="feeMode === 'offline'">
-            <q-btn v-if="bid.id !== undefined"
+            <q-btn v-if="bid.id !== undefined && bid.status === 'CREATED'"
                     class="q-mt-sm q-mr-sm"
                     label="Clear & Reassign" 
                     color="primary"
@@ -194,7 +194,7 @@
                     filled
                     v-model="onlineFeeDetails.accountDetail"/>
             </div>
-            <q-btn v-if="bid.id !== undefined" class="q-mt-sm" label="Clear & Reassign" color="primary" size="sm" glossy @click="clearFee()"/>
+            <q-btn v-if="bid.id !== undefined && bid.status === 'CREATED'" class="q-mt-sm" label="Clear & Reassign" color="primary" size="sm" glossy @click="clearFee()"/>
         </div>
   </div>
 </div>
