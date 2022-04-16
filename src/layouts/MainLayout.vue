@@ -190,7 +190,7 @@ export default {
 
       function resetTimer() {
         clearTimeout(time);
-        time = setTimeout(handleLogout, 300000) //Timeout 5 mins
+        time = setTimeout(handleLogout, 1800000) //Timeout 30 mins
         // 1000 milliseconds = 1 second
       }
     }

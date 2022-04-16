@@ -40,7 +40,27 @@ export default {
         });
     },
     clearEMD(bidId) {
-        return api.post( '/v1/bid/elear_emd/' + bidId).then(response => {
+        return api.post( '/v1/bid/clear_emd/' + bidId).then(response => {
+            let records = response.data;
+            return records;
+        })
+        .catch(err => {
+            console.log("Error in getting records: " + JSON.stringify(err.response.data));
+            return Promise.reject(err);
+        });
+    },
+    saveBidFee(feeDetails, clientId, bidId) {
+        return api.post( '/v1/bid/save_bid_fee/' + clientId + '/' + bidId, feeDetails).then(response => {
+            let feeDetails = response.data;
+            return feeDetails;
+        })
+        .catch(err => {
+            console.log("Error in getting records: " + JSON.stringify(err.response.data));
+            return Promise.reject(err);
+        });
+    },
+    clearFee(bidId) {
+        return api.post( '/v1/bid/clear_fee/' + bidId).then(response => {
             let records = response.data;
             return records;
         })

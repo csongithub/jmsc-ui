@@ -539,7 +539,7 @@
                       dense
                       filled
                       v-model="onlineEmdDetails.transactionNumber"
-                      label="Enter Transaction Detail"/>
+                      label="Enter Transaction Detail/UTR"/>
 				            <q-input type="textarea"
                       dense
                       filled
@@ -560,6 +560,10 @@
               2. Open the bit in edit mode to assign the EMD.
             </div>
           </q-tab-panel>
+          
+          <q-tab-panel name="fee">
+            <FeeDetail :bid="bid" :bidCost="bidCost"></FeeDetail>
+          </q-tab-panel>
           </q-tab-panels>
         </q-card>
       </q-dialog>
@@ -574,6 +578,7 @@ import Bidding from "../bidding/Bidding.vue"
 import { fasPlus, fasEdit, fasTh, fasList, fasRemoveFormat } from "@quasar/extras/fontawesome-v5";
 import { commonMixin } from "../../../mixin/common"
 import { date } from 'quasar'
+import FeeDetail from '../bidding/FeeDetails.vue'
 export default {
   name: 'ActiveBids',
   mixins: [commonMixin],
@@ -731,7 +736,8 @@ export default {
     this.getActiveBids()
   },
   components: {
-    Bidding
+    Bidding,
+    FeeDetail
   },
   data() {
     return {
@@ -820,7 +826,6 @@ export default {
         console.log(JSON.stringify(self.emdData))
       }).catch(err => {
       });
-      
     },
     createBid() {
       if (this.bid.clientId === undefined) {
