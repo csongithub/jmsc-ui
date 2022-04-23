@@ -22,7 +22,7 @@
                 icon="refresh" 
                 size="sm"
                 glossy
-                 @click="getSubmittedBids()"/>
+                 @click="getAwardedBids()"/>
         <q-table
           :grid="grid"
           :hide-header="grid"
@@ -448,13 +448,14 @@
 
               <div class="emd_details" v-if="bidCost.emdDetails !== null">
                 <div class="offline_emd_details" v-if="bidCost.emdDetails.emdMode === 'offline'">
-                  <!-- <q-btn v-if="bid.id !== undefined"
-                    class="q-mt-sm q-mr-sm"
-                    label="Clear & Reassign" 
-                    color="primary"
-                    size="sm"
-                    glossy
-                    @click="clearEMD()"/> -->
+                  <q-btn v-if="bid.id !== undefined && bidCost.emdDetails.status !== 'RETURNED'"
+                      class="q-mt-sm"
+                      label="Return" 
+                      color="primary"
+                      size="sm"
+                      glossy
+                      @click="markEMDReturn()"/>
+                  <span q-mt-md v-else style="color: green: text:bold">EMD has been returned</span>
                   <q-table
                     class="my-sticky-header-table"
                     title="EMD Details"
@@ -500,13 +501,14 @@
                         filled
                         v-model="onlineEmdDetails.accountDetail"/>
                     </div>
-                    <!-- <q-btn v-if="bid.id !== undefined"
+                    <q-btn v-if="bid.id !== undefined && bidCost.emdDetails.status !== 'RETURNED'"
                       class="q-mt-sm"
-                      label="Clear & Reassign" 
+                      label="Return" 
                       color="primary"
                       size="sm"
                       glossy
-                      @click="clearEMD()"/> -->
+                      @click="markEMDReturn()"/>
+                    <span q-mt-md v-else style="color: green: text:bold">**EMD has been returned</span>
                 </div>
               </div>
               <div v-else>
@@ -628,14 +630,14 @@ import { ref } from 'vue'
 import BidService from "../../../services/BidService"
 import EnumService from "../../../services/EnumerationService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
-import Bidding from "../bidding/Bidding.vue"
+import Bidding from "./Bidding.vue"
 import { fasPlus, fasEdit, fasTh, fasList, fasRemoveFormat } from "@quasar/extras/fontawesome-v5";
 import { commonMixin } from "../../../mixin/common"
 import { date } from 'quasar'
-import FeeDetail from '../bidding/FeeDetails.vue'
-import OtherCost from '../bidding/OtherCost.vue'
+import FeeDetail from './FeeDetails.vue'
+import OtherCost from './OtherCost.vue'
 export default {
-  name: 'SubmittedBids',
+  name: 'AwardedBids',
   mixins: [commonMixin],
   setup () {
     return {
@@ -806,7 +808,7 @@ export default {
   created() {
   },
   mounted() {
-    this.getSubmittedBids()
+    this.getAwardedBids()
     this.getBidStatusOptions()
     this.getBidSourceSiteOptions()
   },
@@ -843,8 +845,7 @@ export default {
         transactionNumber: '',
         accountDetail: ''
       },
-      bidStatusOptions: [],
-      bidSourceSiteOPtions: []
+      bidStatusOptions: []
     };
   },
   methods: {
@@ -875,9 +876,9 @@ export default {
         status: 'CREATED'
       }
     },
-    getSubmittedBids() {
+    getAwardedBids() {
       this.loading = true;
-      BidService.getBidsByStatus(this.clientId, 'SUBMITTED')
+      BidService.getBidsByStatus(this.clientId, 'AWARDED')
         .then(response => {
         this.bids.splice(0, this.bids.length)
         this.bids = response
@@ -920,7 +921,6 @@ export default {
           } else if(this.mode === 'edit'){
             this.success('Bid Updated Successfully')
           }
-          this.getSubmittedBids()
           this.closeDialog()
           }).catch(err => {
             this.fail(this.getErrorMessage(err))
@@ -1009,6 +1009,17 @@ export default {
       }).catch(err => {
       });
     },
+    markEMDReturn() {
+      BidService.markEMDReturn(this.bid.id)
+        .then(response => {
+        console.log(response)
+       this.getAvailableFacilities()
+       this.getBidCost(this.bid.id)
+       this.emdSelected = []
+       this.resetOnlineEmd()
+      }).catch(err => {
+      });
+    },
     getAvailableFacilities() {
       this.emdLoading = true
       CreditFacilityService.getAvailableFacilities(this.clientId)
@@ -1066,7 +1077,7 @@ export default {
     getBidStatusOptions() {
       let req= {
         enumName: 'EBidStatus',
-        skipList: ['SUBMITTED', 'FINANCIAL_ACCEPTED', 'FINANCIAL_REJECTED', 'AWARDED']
+        skipList: ['CREATED', 'SUBMITTED', 'TECHNICAL_ACCEPTED','TECHNICAL_REJECTED', 'FINANCIAL_ACCEPTED','FINANCIAL_REJECTED']
       }
       EnumService.getEumOptions(req)
         .then(response => {

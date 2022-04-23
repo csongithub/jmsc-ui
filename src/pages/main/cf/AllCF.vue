@@ -1,7 +1,7 @@
 <template>
     <div>
     <CreditFacility/>
-        <q-btn class="q-mt-sm q-mr-sm" 
+        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Add" 
                size="sm"
@@ -9,13 +9,20 @@
                @click="openDialog('add')"
                :icon="icons.plus"/>
         <q-btn v-if="selected.length > 0" 
-               class="q-mt-sm q-mr-sm "
+               class="q-mt-sm q-mr-sm text-capitalize"
                color="primary"
                label="Edit"
                size="sm"
                glossy
                @click="openDialog('edit')"
                :icon="icons.edit"/>
+        <q-btn v-if="selected.length > 0 && selected[0].isPledged" 
+               class="q-mt-sm q-mr-sm text-capitalize"
+               color="primary"
+               label="Pledge Detail"
+               size="sm"
+               glossy
+               @click="showPledgeDetail()"/>
          <q-btn round  
                 class="q-mt-sm q-mr-sm" 
                 color="primary" 
@@ -208,17 +215,59 @@
           </q-card-section>
         </q-card>
       </q-dialog>
-
+      <q-dialog
+			  v-model="openPledge"
+			  persistent
+        @hide="closePledgeDetails"
+			  ref="showPledgeRed">
+        <q-card class="my-card">
+          <q-bar class="bg-primary glossy">
+          {{ 'Pledge Details' }}
+            <q-space />
+            <q-btn dense flat icon="close" v-close-popup>
+              <q-tooltip>Close</q-tooltip>
+            </q-btn>
+          </q-bar>
+          <q-card-section>
+            <div class="row">
+              <div class="col bid">Display Name</div><div class="col bid">{{bid.displayName}}</div>
+            </div>
+            <div class="row">
+              <div class="col bid">Authority</div><div class="col bid">{{bid.bidAuthority}}</div>
+            </div>
+            <div class="row">
+              <div class="col bid">NIT</div><div class="col bid">{{bid.nit}}</div>
+            </div>
+            <div class="row">
+              <div class="col bid">Tender Ref No</div><div class="col bid">{{bid.tenderRefNumber}}</div>
+            </div>
+            <div class="row">
+              <div class="col bid">Tender ID</div><div class="col bid">{{bid.tenderId}}</div>
+            </div>
+            <div class="row">
+               <div class="col bid">Work Name</div><div class="col bid">{{bid.title}}</div>
+            </div>
+            <div class="row">
+               <div class="col bid">Work Value</div><div class="col bid">{{'INR ' + bid.workValue.toLocaleString('en-IN')}}</div>
+            </div>
+            <div class="row">
+               <div class="col bid">Status</div><div class="col bid">{{bid.status}}</div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
     </div>
 </template>
 
 <script>
 
 import CreditFacilityService from "../../../services/CreditFacilityService"
+import BidService from "../../../services/BidService"
 import CreditFacility from "../cf/CreditFacility.vue"
 import { commonMixin } from "../../../mixin/common"
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 import { ref } from 'vue'
+import { date } from 'quasar'
 export default {
   name: 'AllCF',
   mixins: [commonMixin],
@@ -237,12 +286,33 @@ export default {
           sortable: true
         },
         {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
-        {name: "openDate",  align: "left", label: "Open Date", field: "openDate", sortable: true},
-        {name: "maturityDate",  align: "left", label: "Maturity Date", field: "maturityDate", sortable: true},
+        {
+          name: "openDate",
+          align: "left",
+          label: "Open Date",
+          field: "openDate",
+          sortable: true,
+          format: val => date.formatDate(val, 'DD-MM-YYYY')
+        },
+        {
+          name: "maturityDate",
+          align: "left", label:
+          "Maturity Date",
+          field: "maturityDate",
+          sortable: true,
+          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          },
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
-        {name: "isPledged",  align: "left", label: "Pledged", field: "isPledged", sortable: true},
+        {
+          name: "isPledged",
+          align: "left",
+          label: "Pledged",
+          field: "isPledged",
+          sortable: true,
+          format: val => val ? 'Yes' : 'No'
+        },
         {name: "pledgedType",  align: "left", label: "Pledged As", field: "pledgedType", sortable: true},
         
       ],
@@ -275,7 +345,9 @@ export default {
       banks: [],
       branches: [],
       postOfficeLabel: 'Post Office',
-      postOffice: []
+      postOffice: [],
+      openPledge: false,
+      bid: {}
     };
   },
   methods: {
@@ -283,6 +355,19 @@ export default {
       this.getBanks()
       this.getBranches()
       this.getPostOffice()
+    },
+    showPledgeDetail() {
+      let self = this
+      let cf = this.selected[0]
+      BidService.getBidDetails(this.clientId, cf.pledgedId)
+        .then(response => {
+        self.openPledge = true
+        self.bid = response
+      }).catch(err => {
+      });
+    },
+    closePledgeDetails(){
+      this.openPledge = false
     },
     getBanks() {
       CreditFacilityService.getBanks()
@@ -399,3 +484,9 @@ export default {
   }
 };
 </script>
+<style>
+.bid {
+  padding: 5px 5px;
+  border: 1px solid rgba(86,61,124,.2)
+}
+</style>

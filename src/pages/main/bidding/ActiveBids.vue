@@ -16,6 +16,14 @@
                glossy
                @click="openDialog('edit')"
                :icon="icons.edit"/>
+        <q-btn v-if="selected.length > 0" 
+               class="q-mt-sm q-mr-sm "
+               color="primary"
+               label="Discard"
+               size="sm"
+               glossy
+               @click="confirmDiscard()"
+               :icon="icons.discard"/>
          <q-btn round  
                 class="q-mt-sm q-mr-sm" 
                 color="primary" 
@@ -117,15 +125,38 @@
           <q-tab-panel name="bid">
           <q-card-section>
             <q-form @submit="createBid" @reset="reset" class="q-gutter-md">
-              <q-input
-                dense
-                outlined
-                v-model="bid.bidAuthority"
-                label="Bid Issuer"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Issuer name']"
-              />
+              <div class="row">
+                <div class="col q-mr-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="bid.displayName"
+                    label="Display Name"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Please Enter Display Name']"
+                  />
+                </div>
+
+                <div class="col">
+                   <q-select dense outlined v-model="bid.sourceSite" :options="bidSourceSiteOPtions" label="Bid Source"/>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col q-mr-sm">
+                  <q-input
+                  dense
+                  outlined
+                  v-model="bid.bidAuthority"
+                  label="Bid Issuer"
+                  full-width
+                  lazy-rules
+                  :rules="[val => (val && val.length > 0) || 'Issuer name']"
+                />
+                </div>
+              </div>
+              
+              
               <div class="row">
                 <div class="col q-mr-md">
                   <q-input
@@ -608,7 +639,7 @@ import BidService from "../../../services/BidService"
 import EnumService from "../../../services/EnumerationService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import Bidding from "../bidding/Bidding.vue"
-import { fasPlus, fasEdit, fasTh, fasList, fasRemoveFormat } from "@quasar/extras/fontawesome-v5";
+import { fasPlus, fasEdit, fasTh, fasList, fasRemoveFormat, fasTrash } from "@quasar/extras/fontawesome-v5";
 import { commonMixin } from "../../../mixin/common"
 import { date } from 'quasar'
 import FeeDetail from '../bidding/FeeDetails.vue'
@@ -620,8 +651,26 @@ export default {
     return {
       selected: ref([]),
       tab: ref('bid'),
-      visibleColumns: ref([ 'tenderId', 'title', 'workValue', 'emdAmount', 'emdInFavourOf', 'emdPaybleAt', 'bidAuthority', 'nit' ]),
+      visibleColumns: ref(['displayName', 'tenderId', 'title', 'workValue', 'emdAmount', 'emdInFavourOf', 'emdPaybleAt', 'bidAuthority', 'nit' ]),
       columns: [
+        {
+          name: "displayName",
+          required: true,
+          label: "Display Name",
+          align: "left",
+          field: "displayName",
+          format: val => `${val}`,
+          sortable: true
+        },
+        {
+          name: "sourceSite",
+          required: true,
+          label: "Source",
+          align: "left",
+          field: "sourceSite",
+          format: val => `${val}`,
+          sortable: true
+        },
         {
           name: "tenderId",
           required: true,
@@ -751,7 +800,8 @@ export default {
         edit: fasEdit,
         grid: fasTh,
         list: fasList,
-        remove: fasRemoveFormat
+        remove: fasRemoveFormat,
+        discard: fasTrash
       }
     }
   },
@@ -769,6 +819,7 @@ export default {
   mounted() {
     this.getActiveBids()
     this.getBidStatusOptions()
+    this.getBidSourceSiteOptions()
   },
   components: {
     Bidding,
@@ -803,13 +854,16 @@ export default {
         transactionNumber: '',
         accountDetail: ''
       },
-      bidStatusOptions: []
+      bidStatusOptions: [],
+      bidSourceSiteOPtions: []
     };
   },
   methods: {
     newBid() {
       return {
         clientId: this.clientId,
+        displayName:'',
+        sourceSite: '',
         bidAuthority:'',
         nit: '',
         nitDate: ref(this.getTodaysDate()),
@@ -877,20 +931,30 @@ export default {
           } else if(this.mode === 'edit'){
             this.success('Bid Updated Successfully')
           }
+          this.getActiveBids()
           this.closeDialog()
           }).catch(err => {
             this.fail(this.getErrorMessage(err))
           });
     },
-    confirmClear() {
+    discardBid() {
+      BidService.discardBid(this.clientId, this.selected[0].id)
+        .then(response => {
+        this.getActiveBids()
+      }).catch(err => {
+        this.fail(this.getErrorMessage(err))
+      });
+    },
+    confirmDiscard() {
       this.$q.dialog({
         title: 'Are You Sure?',
-        message: 'It will delete all selected challan(s)',
+        message: 'This will delete the bid permanently',
         cancel: true,
         persistent: true
       }).onOk(() => {
-        
+        this.discardBid()
       }).onOk(() => {
+         this.discardBid()
       }).onCancel(() => {
         // console.log('>>>> Cancel')
       }).onDismiss(() => {
@@ -1020,10 +1084,24 @@ export default {
       this.selectedEmdValue = 0
     },
     getBidStatusOptions() {
-      EnumService.getEumOptions('EBidStatus')
+      let req= {
+        enumName: 'EBidStatus',
+        skipList: ['TECHNICAL_ACCEPTED', 'TECHNICAL_REJECTED', 'FINANCIAL_ACCEPTED', 'FINANCIAL_REJECTED', 'AWARDED']
+      }
+      EnumService.getEumOptions(req)
         .then(response => {
           this.bidStatusOptions = []
           this.bidStatusOptions = response
+          // window.alert(JSON.stringify(this.bidStatusOptions))
+      }).catch(err => {
+        this.emdLoading = false
+      });
+    },
+    getBidSourceSiteOptions() {
+      EnumService.getEumOptionsByName('EBidSourceSite')
+        .then(response => {
+          this.bidSourceSiteOPtions = []
+          this.bidSourceSiteOPtions = response
           // window.alert(JSON.stringify(this.bidStatusOptions))
       }).catch(err => {
         this.emdLoading = false

@@ -23,7 +23,8 @@ const routes = [
       { name: 'activeBids', path: '/active_bids', component: () => import('pages/main/bidding/ActiveBids.vue') },
       { name: 'submittedBids', path: '/submitted_bids', component: () => import('pages/main/bidding/SubmittedBids.vue') },
       { name: 'acceptedBids', path: '/accepted_bids', component: () => import('pages/main/bidding/AcceptedBids.vue') },
-      { name: 'rejectedBids', path: '/rejected_bids', component: () => import('pages/main/bidding/RejectedBids.vue') }
+      { name: 'rejectedBids', path: '/rejected_bids', component: () => import('pages/main/bidding/RejectedBids.vue') },
+      { name: 'awardedBids', path: '/awarded_bids', component: () => import('pages/main/bidding/AwardedBids.vue') }
     ]
   },
   {

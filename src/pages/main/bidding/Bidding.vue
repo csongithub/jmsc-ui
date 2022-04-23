@@ -31,6 +31,11 @@
             to="/rejected_bids"
             exact
           />
+          <q-route-tab
+            name="awarded_bids" label="Awarded"
+            to="/awarded_bids"
+            exact
+          />
         </q-tabs>
       </q-card>
     </div>  

@@ -96,7 +96,8 @@ export default {
     openMainLayout() {
       let auth = {
         client: this.loginResponse.clientDTO,
-        token: this.loginResponse.token
+        token: this.loginResponse.token,
+        newlogin: true
       }
       LocalStorage.set('auth', auth);
       //LocalStorage.set('client', this.loginResponse.clientDTO);
