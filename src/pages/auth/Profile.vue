@@ -4,26 +4,23 @@
       <q-card-section>
         <div class="text-primary text-h6">Basic</div>
         <div class="row q-mb-sm">
-            <div class="col">Login ID</div>
-            <div class="col">{{client.logonId}}</div><div class="col"></div><div class="col"></div>
+            <div class="col-2">Login ID</div>
+            <div class="col"><b>{{client.logonId}}</b></div><div class="col"></div><div class="col"></div>
         </div>
         <div class="row" style="width: 100%">
-            <div class="col">Client Name</div>
+            <div class="col-2">Client Name</div>
             <div v-if="!update" class="col" >{{updateBasicReq.name}}</div>
-            <q-input v-if="update" dense size="bg" v-model="updateBasicReq.name"/>
-            <div class="col"></div><div class="col"></div>
+            <div class="col"><q-input v-if="update" dense size="bg" v-model="updateBasicReq.name"/></div>
         </div>
         <div class="row">
-            <div class="col">Display Name</div>
+            <div class="col-2">Display Name</div>
             <div  v-if="!update" class="col">{{updateBasicReq.displayName}}</div>
-            <q-input v-if="update" dense v-model="updateBasicReq.displayName"/>
-            <div class="col"></div><div class="col"></div>
+            <div class="col"><q-input v-if="update" dense v-model="updateBasicReq.displayName"/></div>
         </div>
          <div class="row">
-            <div class="col">Emails</div>
+            <div class="col-2">Emails</div>
             <div  v-if="!update" class="col">{{updateBasicReq.recipients}}</div>
-            <q-input v-if="update" dense v-model="updateBasicReq.recipients"/>
-            <div class="col"></div><div class="col"></div>
+            <div class="col"><q-input v-if="update" dense v-model="updateBasicReq.recipients"/></div>
         </div>
         <br>
       </q-card-section>

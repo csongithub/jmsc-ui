@@ -65,5 +65,15 @@ export default {
         console.log("Error in getting records: " + JSON.stringify(err.response.data));
         return Promise.reject(err);
       });
-  }
+  },
+  getAvailableFacilities(clientId) {
+    return api.get( '/v1/credit_facility/free_facilities/' + clientId).then(response => {
+        let records = response.data;
+        return records;
+      })
+      .catch(err => {
+        console.log("Error in getting records: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
 };

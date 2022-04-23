@@ -51,11 +51,11 @@
 
               <div class="row">
                 <div class="col q-mr-md">
-                  <q-input filled v-model="creditFacility.openDate" :rules="['YYYY-DD-MM']"  label="Open Date">
+                  <q-input filled v-model="creditFacility.openDate" :rules="['YYYY-MM-DD']"  label="Open Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="creditFacility.openDate" mask="YYYY-DD-MM">
+                        <q-date v-model="creditFacility.openDate" mask="YYYY-MM-DD">
                           <div class="row items-center justify-end">
                             <q-btn v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -67,11 +67,11 @@
                 </div>
 
                 <div class="col">
-                  <q-input filled v-model="creditFacility.maturityDate" :rules="['YYYY-DD-MM']" label="Maturity Date">
+                  <q-input filled v-model="creditFacility.maturityDate" :rules="['YYYY-MM-DD']" label="Maturity Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="creditFacility.maturityDate" mask="YYYY-DD-MM">
+                        <q-date v-model="creditFacility.maturityDate" mask="YYYY-MM-DD">
                           <div class="row items-center justify-end">
                             <q-btn v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -216,21 +216,21 @@ export default {
     reset() {
      this.creditFacility = this.newFacility()
     },
-    getTodaysDate() {
-      var today = new Date()
-      let year = today.getFullYear()
-      let date = today.getDate()
-      let month = today.getMonth() + 1
+    // getTodaysDate() {
+    //   var today = new Date()
+    //   let year = today.getFullYear()
+    //   let date = today.getDate()
+    //   let month = today.getMonth() + 1
 
-      if(date/10 < 1) {
-        date = '0'+ date
-      }
+    //   if(date/10 < 1) {
+    //     date = '0'+ date
+    //   }
 
-      if(month/10 < 1) {
-        month = '0' + month
-      }
-      return (year + '-' + date + '-' + month)
-    }
+    //   if(month/10 < 1) {
+    //     month = '0' + month
+    //   }
+    //   return (year + '-' + date + '-' + month)
+    // }
   }
 };
 </script>

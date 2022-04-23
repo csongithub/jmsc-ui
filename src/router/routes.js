@@ -17,7 +17,14 @@ const routes = [
       { name: 'bankGuarantee', path: '/bank_guarantee', component: () => import('src/pages/main/cf/BankGuarantee.vue') },
       { name: 'fixedDeposit', path: '/fixed_deposit', component: () => import('src/pages/main/cf/FixedDeposit.vue') },
       { name: 'nsc', path: '/nsc', component: () => import('src/pages/main/cf/NSC.vue') },
-      { name: 'profile', path: '/profile', component: () => import('src/pages/auth/Profile.vue') }
+      { name: 'profile', path: '/profile', component: () => import('src/pages/auth/Profile.vue') },
+
+      { name: 'bidding', path: '/bidding', component: () => import('pages/main/bidding/Bidding.vue') },
+      { name: 'activeBids', path: '/active_bids', component: () => import('pages/main/bidding/ActiveBids.vue') },
+      { name: 'submittedBids', path: '/submitted_bids', component: () => import('pages/main/bidding/SubmittedBids.vue') },
+      { name: 'acceptedBids', path: '/accepted_bids', component: () => import('pages/main/bidding/AcceptedBids.vue') },
+      { name: 'rejectedBids', path: '/rejected_bids', component: () => import('pages/main/bidding/RejectedBids.vue') },
+      { name: 'awardedBids', path: '/awarded_bids', component: () => import('pages/main/bidding/AwardedBids.vue') }
     ]
   },
   {

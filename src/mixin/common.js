@@ -31,6 +31,21 @@ export const commonMixin = {
         return client.logonId
       } 
     },
+    getTodaysDate() {
+      var today = new Date()
+      let year = today.getFullYear()
+      let date = today.getDate()
+      let month = today.getMonth() + 1
+
+      if(date/10 < 1) {
+        date = '0'+ date
+      }
+
+      if(month/10 < 1) {
+        month = '0' + month
+      }
+      return (year + '-' + month + '-' + date)
+    },
     getErrorMessage(err){
       return err.response.data.message
     },

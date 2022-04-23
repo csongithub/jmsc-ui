@@ -58,6 +58,13 @@
             <q-item-section>Credit Facility</q-item-section>
           </q-item>
           <q-separator></q-separator>
+          <q-item exact clickable v-ripple to="/bidding">
+            <q-item-section avatar>
+              <q-icon :name="icons.bidding" />
+            </q-item-section>
+            <q-item-section>Bidding</q-item-section>
+          </q-item>
+          <q-separator></q-separator>
            <q-item exact clickable v-ripple to="/profile">
             <q-item-section avatar>
               <q-icon :name="icons.profile" />
@@ -77,6 +84,29 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+    <q-dialog
+			v-model="showWelcome"
+			persistent
+			@hide="reloadApp"
+			ref="nefCfRef">
+        <q-card class="my-card bg-primary text-white">
+        <q-bar class="bg-primary">
+            <q-space />
+            <q-btn dense flat icon="close" v-close-popup>
+              <q-tooltip>Close</q-tooltip>
+            </q-btn>
+          </q-bar>
+          <q-card-section>
+            <div class="text-h6">Welcome Back{{' ' + client.displayName}}</div>
+            <div class="text-weight-thin">Have a wonderful experience !</div>
+          </q-card-section>
+          <q-separator dark/>
+          <q-card-section class="q-pt-none">
+            <div class="text-italic text-weight-light q-mb-sm">{{'"' +selectedQuote.quote + '"'}}</div>
+            <div class="text-italic text-right text-weight-regular">{{'By ' + selectedQuote.person}}</div>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
   </q-layout>
 </template>
 
@@ -90,7 +120,8 @@ import {
   fasPowerOff,
   fasPersonBooth,
   fasIdCard,
-  fasMoneyBillAlt
+  fasMoneyBillAlt,
+  fasGavel
 } from "@quasar/extras/fontawesome-v5";
 export default {
   name: "MainLayout",
@@ -113,6 +144,7 @@ export default {
   },
   data() {
     return {
+      showWelcome: false,
       leftDrawerOpen: true,
       client: null,
       tab: "home",
@@ -121,16 +153,95 @@ export default {
         creditors: fasUserFriends,
         profile: fasIdCard,
         logout: fasPowerOff,
-        cf: fasMoneyBillAlt
+        cf: fasMoneyBillAlt,
+        bidding: fasGavel
+      },
+      quotes: [
+        {
+          person: 'Rashtrapita Mahatma Gandhi',
+          quote: 'Freedom is never dear at any price. It is the breath of life. What would a man not pay for living?'
+        },
+        {
+          person: 'BR Ambedkar',
+          quote: 'Freedom of mind is the real freedom. A person whose mind is not free though he may not be in chains, is a slave, not a free man. One whose mind is not free, though he may not be in prison, is a prisoner and not a free man. One whose mind is not free though alive, is no better than dead. Freedom of mind is the proof of one’s existence.'
+        },
+        {
+          person: 'Dr. APJ Abdul Kalam',
+          quote: 'Don’t take rest after your first victory because if you fail in second, more lips are waiting to say that your first victory was just luck.'
+        },
+        {
+          person: 'Dr. APJ Abdul Kalam',
+          quote: 'Dream, dream, dream. Dreams transform into thoughts and thoughts result in action.'
+        },
+        {
+          person: 'Dr. APJ Abdul Kalam',
+          quote: 'To succeed in your mission, you must have single-minded devotion to your goal.'
+        },
+        {
+          person: 'Dr. APJ Abdul Kalam',
+          quote: 'If you fail, never give up because FAIL means "First Attempt In Learning.'
+        },
+        {
+          person: 'Dr. APJ Abdul Kalam',
+          quote: 'Creativity is seeing the same thing but thinking differently.'
+        },
+        {
+          person: 'Dr. APJ Abdul Kalam',
+          quote: 'Failure will never overtake me if my determination to succeed is strong enough.'
+        },
+        {
+          person: 'Dr. APJ Abdul Kalam',
+          quote: 'All of us do not have equal talent. But , all of us have an equal opportunity to develop our talents.'
+        },
+        {
+          person: 'Netaji Subhas Chandra Bose',
+          quote: 'Life loses half its interest if there is no struggle — if there are no risks to be taken.'
+        },
+        {
+          person: 'Netaji Subhas Chandra Bose',
+          quote: 'One individual may die for an idea, but that idea will, after his death, incarnate itself in a thousand lives.'
+        },
+        {
+          person: 'Netaji Subhas Chandra Bose',
+          quote: 'Reality is, after all, too big for our frail understanding to fully comprehend. Nevertheless, we have to build our life on the theory which contains the maximum truth.'
+        },
+        {
+          person: 'Netaji Subhas Chandra Bose',
+          quote: 'Never lose your faith in the destiny of India. There is no power on Earth that can keep India in bondage. India will be free, that too, soon.'
+        },
+        {
+          person: 'Netaji Subhas Chandra Bose',
+          quote: 'It is blood alone that can pay the price of freedom. Give me blood and I will give you freedom.'
+        },
+      ],
+      selectedQuote: {
+        person: null,
+        quote: null
       }
     };
   },
   methods: {
+    openWelcome() {
+      this.showWelcome = true;
+    },
+    reloadApp() {
+      this.showWelcome = false
+      this.$router.go()
+    },
     getClient() {
       //Check if client has already logged in, then get client form local storage
       if (this.client === null && LocalStorage.getItem("auth")) {
         let auth =  LocalStorage.getItem("auth")
         this.client = auth.client
+        
+        // this if block is workaround of not loading app after login
+        if(auth.newlogin){
+          auth.newlogin = false
+          LocalStorage.set('auth', auth);
+          let x = Math.floor((Math.random() * (this.quotes.length-1)) + 0);
+          this.selectedQuote = this.quotes[x]
+          this.showWelcome = true
+        }
         // console.log(JSON.stringify(this.client))
         return true
       } else {
@@ -181,7 +292,7 @@ export default {
 
       function resetTimer() {
         clearTimeout(time);
-        time = setTimeout(handleLogout, 100000) //Timeout 1 mins
+        time = setTimeout(handleLogout, 1800000) //Timeout 30 mins
         // 1000 milliseconds = 1 second
       }
     }
