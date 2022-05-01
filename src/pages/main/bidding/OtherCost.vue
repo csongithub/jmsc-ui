@@ -95,6 +95,7 @@ export default {
     },
     getBidCost(){
       let self = this
+      self.totalExpense = 0
       BidService.getBidCost(this.bid.id)
         .then(response => {
         let bidCost = response

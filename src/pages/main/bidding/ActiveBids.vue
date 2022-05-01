@@ -954,7 +954,6 @@ export default {
       }).onOk(() => {
         this.discardBid()
       }).onOk(() => {
-         this.discardBid()
       }).onCancel(() => {
         // console.log('>>>> Cancel')
       }).onDismiss(() => {
