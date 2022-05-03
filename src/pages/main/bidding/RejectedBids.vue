@@ -448,13 +448,14 @@
 
               <div class="emd_details" v-if="bidCost.emdDetails !== null">
                 <div class="offline_emd_details" v-if="bidCost.emdDetails.emdMode === 'offline'">
-                  <!-- <q-btn v-if="bid.id !== undefined"
-                    class="q-mt-sm q-mr-sm"
-                    label="Clear & Reassign" 
-                    color="primary"
-                    size="sm"
-                    glossy
-                    @click="clearEMD()"/> -->
+                  <q-btn v-if="bid.id !== undefined && bidCost.emdDetails.status !== 'RETURNED'"
+                      class="q-mt-sm"
+                      label="Maek EMD Return" 
+                      color="primary"
+                      size="sm"
+                      glossy
+                      @click="markEMDReturn()"/>
+                  <span class="label bg-primary text-white q-mt-md" v-else>EMD has been returned</span>
                   <q-table
                     class="my-sticky-header-table"
                     title="EMD Details"
@@ -500,13 +501,14 @@
                         filled
                         v-model="onlineEmdDetails.accountDetail"/>
                     </div>
-                    <!-- <q-btn v-if="bid.id !== undefined"
+                    <q-btn v-if="bid.id !== undefined && bidCost.emdDetails.status !== 'RETURNED'"
                       class="q-mt-sm"
-                      label="Clear & Reassign" 
+                      label="Return" 
                       color="primary"
                       size="sm"
                       glossy
-                      @click="clearEMD()"/> -->
+                      @click="markEMDReturn()"/>
+                    <span class="label bg-primary text-white q-mt-md" v-else>EMD has been returned</span>
                 </div>
               </div>
               <div v-else>
@@ -911,6 +913,10 @@ export default {
       if (this.bid.clientId === undefined) {
         this.bid.clientId = this.clientId
       }
+      if (this.bidCost.emdDetails.status === 'RETURNED') {
+        this.notify('This bid can not be modified, EMD has been returned.\n Please contact system administration')
+        return
+      }
       BidService.createBid(this.bid)
         .then(response => {
         if(this.mode === 'add') {
@@ -999,6 +1005,17 @@ export default {
     },
     clearEMD() {
       BidService.clearEMD(this.bid.id)
+        .then(response => {
+        console.log(response)
+       this.getAvailableFacilities()
+       this.getBidCost(this.bid.id)
+       this.emdSelected = []
+       this.resetOnlineEmd()
+      }).catch(err => {
+      });
+    },
+    markEMDReturn() {
+      BidService.markEMDReturn(this.bid.id)
         .then(response => {
         console.log(response)
        this.getAvailableFacilities()

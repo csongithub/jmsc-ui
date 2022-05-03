@@ -52,7 +52,22 @@ export const commonMixin = {
     notify(message) {
       this.$q.notify({
         message: message,
+        multiLine: true,
         color: "primary"
+      });
+    },
+    info(message) {
+      this.$q.notify({
+        message: message,
+        multiLine: true,
+        color: "info"
+      });
+    },
+    warn(message) {
+      this.$q.notify({
+        message: message,
+        multiLine: true,
+        color: "warning"
       });
     },
     success(message) {

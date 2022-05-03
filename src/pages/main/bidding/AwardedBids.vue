@@ -450,12 +450,12 @@
                 <div class="offline_emd_details" v-if="bidCost.emdDetails.emdMode === 'offline'">
                   <q-btn v-if="bid.id !== undefined && bidCost.emdDetails.status !== 'RETURNED'"
                       class="q-mt-sm"
-                      label="Return" 
+                      label="Maek EMD Return" 
                       color="primary"
                       size="sm"
                       glossy
                       @click="markEMDReturn()"/>
-                  <span q-mt-md v-else style="color: green: text:bold">EMD has been returned</span>
+                  <span class="label bg-primary text-white q-mt-md" v-else>EMD has been returned</span>
                   <q-table
                     class="my-sticky-header-table"
                     title="EMD Details"
@@ -508,7 +508,7 @@
                       size="sm"
                       glossy
                       @click="markEMDReturn()"/>
-                    <span q-mt-md v-else style="color: green: text:bold">**EMD has been returned</span>
+                     <span class="label bg-primary text-white q-mt-md" v-else >EMD has been returned</span>
                 </div>
               </div>
               <div v-else>
@@ -912,6 +912,10 @@ export default {
     createBid() {
       if (this.bid.clientId === undefined) {
         this.bid.clientId = this.clientId
+      }
+      if (this.bidCost.emdDetails.status === 'RETURNED') {
+        this.notify('This bid can not be modified, EMD has been returned.\n Please contact system administration')
+        return
       }
       BidService.createBid(this.bid)
         .then(response => {
