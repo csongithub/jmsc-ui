@@ -32,31 +32,45 @@
         style="height: calc(100% - 150px);  border-right: 1px solid #ddd"
       >
         <q-list padding>
-          <q-item exact clickable v-ripple to="/">
-            <q-item-section avatar>
-              <q-icon name="home" />
-            </q-item-section>
-            <q-item-section>Accounts</q-item-section>
-          </q-item>
-          <q-item exact clickable v-ripple to="/party_accounts">
-            <q-item-section avatar>
-              <q-icon :name="icons.creditors" />
-            </q-item-section>
-            <q-item-section>Party</q-item-section>
-          </q-item>
-          <q-item exact clickable v-ripple to="/payment">
-            <q-item-section avatar>
-              <q-icon :name="icons.plan" />
-            </q-item-section>
-            <q-item-section>Payments</q-item-section>
-          </q-item>
-          <q-separator></q-separator>
-          <q-item exact clickable v-ripple to="/credit_facility">
-            <q-item-section avatar>
-              <q-icon :name="icons.cf" />
-            </q-item-section>
-            <q-item-section>Credit Facility</q-item-section>
-          </q-item>
+          <q-expansion-item
+            dense
+            dense-toggle
+            expand-separator
+            icon=""
+            label="Banking"
+          >
+            <q-item exact clickable v-ripple to="/" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon name="home" />
+              </q-item-section>
+              <q-item-section>Accounts</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/party_accounts" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.creditors" />
+              </q-item-section>
+              <q-item-section>Party</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/payment" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.plan" />
+              </q-item-section>
+              <q-item-section>Payments</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/credit_facility" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.cf" />
+              </q-item-section>
+              <q-item-section>Credit Facility</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/bg_group" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.bgGroup" />
+              </q-item-section>
+              <q-item-section>BG Group</q-item-section>
+            </q-item>
+          </q-expansion-item>
+          
           <q-separator></q-separator>
           <q-item exact clickable v-ripple to="/bidding">
             <q-item-section avatar>
@@ -121,7 +135,9 @@ import {
   fasPersonBooth,
   fasIdCard,
   fasMoneyBillAlt,
-  fasGavel
+  fasGavel,
+  fasPiggyBank,
+  fasBook
 } from "@quasar/extras/fontawesome-v5";
 export default {
   name: "MainLayout",
@@ -154,7 +170,9 @@ export default {
         profile: fasIdCard,
         logout: fasPowerOff,
         cf: fasMoneyBillAlt,
-        bidding: fasGavel
+        bidding: fasGavel,
+        bank:fasPiggyBank,
+        bgGroup: fasBook
       },
       quotes: [
         {

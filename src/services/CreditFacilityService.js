@@ -76,4 +76,24 @@ export default {
         return Promise.reject(err);
       });
   },
+  depositsForBgGroup(clientId) {
+    return api.get( '/v1/credit_facility/deposits_for_bg_group/' + clientId).then(response => {
+        let records = response.data;
+        return records;
+      })
+      .catch(err => {
+        console.log("Error in getting records: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
+  guaranteesForBgGroup(clientId) {
+    return api.get( '/v1/credit_facility/guarantees_for_bg_group/' + clientId).then(response => {
+        let records = response.data;
+        return records;
+      })
+      .catch(err => {
+        console.log("Error in getting records: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
 };

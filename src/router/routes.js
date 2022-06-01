@@ -17,6 +17,8 @@ const routes = [
       { name: 'bankGuarantee', path: '/bank_guarantee', component: () => import('src/pages/main/cf/BankGuarantee.vue') },
       { name: 'fixedDeposit', path: '/fixed_deposit', component: () => import('src/pages/main/cf/FixedDeposit.vue') },
       { name: 'nsc', path: '/nsc', component: () => import('src/pages/main/cf/NSC.vue') },
+      { name: 'bgGroup', path: '/bg_group', component: () => import('src/pages/main/cf/BGGroup.vue') },
+      { name: 'bgGroupDetails', path: '/bg_group_details', component: () => import('src/pages/main/cf/BGGroupDetails.vue') },
       { name: 'profile', path: '/profile', component: () => import('src/pages/auth/Profile.vue') },
 
       { name: 'bidding', path: '/bidding', component: () => import('pages/main/bidding/Bidding.vue') },

@@ -237,7 +237,7 @@
                     label="Work Value"
                     lazy-rules
                     type="number"
-                    :rules="[val => (val && val.length > 0) || 'Enter Work Value']"/>
+                    :rules="[val => (val > 0) || 'Enter Work Value']"/>
                 </div>
               </div>
               <div class="row">
@@ -249,7 +249,7 @@
                     label="BOQ Cost"
                     lazy-rules
                     type="number"
-                    :rules="[val => (val && val.length > 0) || 'Enter BOQ Cost']"/>
+                    :rules="[val => (val > 0) || 'Enter BOQ Cost']"/>
                 </div>
                 <div class="col q-mr-md">
                   <q-input
@@ -282,7 +282,7 @@
                     full-width
                     lazy-rules
                     type="number"
-                    :rules="[val => (val && val.length > 0) || 'Enter EMD Amount']"/>
+                    :rules="[val => (val > 0) || 'Enter EMD Amount']"/>
                 </div>
                 <div class="col q-mr-md">
                   <q-input
@@ -315,7 +315,7 @@
                     full-width
                     lazy-rules
                     type="number"
-                    :rules="[val => (val && val.length > 0) || 'Enter Bank Certificate Value']"/>
+                    :rules="[val => (val > 0) || 'Enter Bank Certificate Value']"/>
                 </div>
                 <div class="col q-mr-md">
                   <q-input
@@ -326,7 +326,7 @@
                     full-width
                     lazy-rules
                     type="number"
-                    :rules="[val => (val && val.length > 0) || 'Enter Work Period (In Days)']"/>
+                    :rules="[val => (val > 0) || 'Enter Work Period (In Days)']"/>
                 </div>
                 <div class="col">
                   <q-input
@@ -337,7 +337,7 @@
                     full-width
                     lazy-rules
                     type="number"
-                    :rules="[val => (val && val.length > 0) || 'Enter Bid Validity (In Days)']"/>
+                    :rules="[val => (val > 0) || 'Enter Bid Validity (In Days)']"/>
                 </div>
               </div>
               <div class="row">

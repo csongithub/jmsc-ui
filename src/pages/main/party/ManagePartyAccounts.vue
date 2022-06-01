@@ -1,30 +1,30 @@
 <template>
     <div>
         <PartyAccount/>
-        <q-btn class="q-mt-sm q-mr-sm" 
+        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Add" 
                size="sm"
                glossy  
                @click="openDialog('add')"
                :icon="icons.plus"/>
-        <q-btn v-if="selected.length > 0" 
+        <!-- <q-btn v-if="selected.length > 0" 
                class="q-mt-sm q-mr-sm "
                color="primary"
                label="Edit"
                size="sm"
                glossy
                @click="openDialog('edit')"
-               :icon="icons.edit"/>
-         <q-btn round  
-                class="q-mt-sm q-mr-sm" 
+               :icon="icons.edit"/> -->
+         <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+                outline
                 color="primary" 
-                icon="refresh" 
                 size="sm"
-                glossy
-                 @click="getPartyAccounts()"/>
+                label="Refresh"
+                icon="refresh" 
+                @click="getPartyAccounts()"/>
         <q-table
-        class="my-sticky-header-table"
+        class="my-sticky-header-table q-mt-sm"
         title="Party Accounts"
         dense
         bordered
@@ -35,9 +35,16 @@
         :loading="loading"
         :pagination="myPagination"
         :filter="filter"
-        selection="single"
         v-model:selected="selected"
       >
+        <template v-slot:body-cell-actions="props">
+          <q-td :props="props">
+            <div class="pointer">
+               <q-icon color="primary" :name="icons.edit" @click="editAccount(props.row)"/>
+               <!-- <q-icon class="q-ml-sm" :name="icons.delete" color="red"/> -->
+            </div>
+          </q-td>
+        </template>
         <template v-slot:top-right>
           <q-input
             borderless
@@ -162,7 +169,7 @@
 import PartyAccountService from "../../../services/PartyAccountService"
 import PartyAccount from "../party/PartyAccounts.vue"
 import { commonMixin } from "../../../mixin/common"
-import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
+import { fasPlus, fasEdit, fasTrash } from "@quasar/extras/fontawesome-v5";
 import { ref } from 'vue'
 export default {
   name: 'PartyAccounts',
@@ -185,10 +192,19 @@ export default {
         {name: "ifscCode",  align: "left", label: "IFSC Code", field: "ifscCode", sortable: true},
         {name: "bankName",  align: "left", label: "Bank", field: "bankName", sortable: true},
         {name: "branchName",  align: "left", label: "Branch", field: "branchName", sortable: true},
+        {
+          name: "actions",
+          required: false,
+          label: "Actions",
+          align: "left",
+          field: "actions",
+          format: val => `${val}`,
+        }
       ],
       icons: {
         plus: fasPlus,
-        edit: fasEdit
+        edit: fasEdit,
+        delete: fasTrash
       }
     }
   },
@@ -267,6 +283,13 @@ export default {
       }
       this.open = true;
     },
+    editAccount(row){
+      console.log(JSON.stringify(row))
+      this.account = row
+      console.log(JSON.stringify(this.account))
+      this.dialogLabel = "Update Account";
+      this.open = true;
+    },
     onHide() {
       this.reset();
       this.mode='add'
@@ -278,25 +301,8 @@ export default {
 };
 </script>
 
-// <style lang="sass">
-// .my-sticky-header-table
-//   /* height or max-height is important */
-//   height: 500px
-
-//   .q-table__top,
-//   .q-table__bottom,
-//   thead tr:first-child th
-//     /* bg color is important for th; just specify one */
-//     background-color:primary
-
-//   thead tr th
-//     position: sticky
-//     z-index: 1
-//   thead tr:first-child th
-//     top: 0
-
-//   /* this is when the loading indicator appears */
-//   &.q-table--loading thead tr:last-child th
-//     /* height of all previous header rows */
-//     top: 48px
-// </style>
+<style>
+.pointer {
+  cursor: pointer;
+}
+</style>
