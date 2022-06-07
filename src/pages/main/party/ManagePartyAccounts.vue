@@ -192,14 +192,7 @@ export default {
         {name: "ifscCode",  align: "left", label: "IFSC Code", field: "ifscCode", sortable: true},
         {name: "bankName",  align: "left", label: "Bank", field: "bankName", sortable: true},
         {name: "branchName",  align: "left", label: "Branch", field: "branchName", sortable: true},
-        {
-          name: "actions",
-          required: false,
-          label: "Actions",
-          align: "left",
-          field: "actions",
-          format: val => `${val}`,
-        }
+        {name: "actions", required: false, label: "Actions", field: "actions"}
       ],
       icons: {
         plus: fasPlus,

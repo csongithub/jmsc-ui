@@ -26,8 +26,8 @@
       </q-card-section>
       <q-separator/>
       <q-card-actions>
-        <q-btn dense color="primary" v-if="!update" @click="update=!update">update</q-btn>
-        <q-btn dense color="primary" v-if="update" @click="updateBasicInfo">save</q-btn>
+        <q-btn class="text-caitalize" dense color="primary" v-if="!update" @click="update=!update">update</q-btn>
+        <q-btn class="text-caitalize" dense color="primary" v-if="update" @click="updateBasicInfo">save</q-btn>
          
       </q-card-actions>
     </q-card>
@@ -64,8 +64,8 @@
                     lazy-rules
                     :rules="[val => (val && val.length > 0) || 'Re-enter New password']"/>
 
-                <q-btn  dense label="Update" type="submit" color="primary" class="full-width"/>
-                <q-btn dense label="Reset" type="reset" color="primary" outline class="q-mt-sm full-width"/>
+                <q-btn  dense label="Update" type="submit" color="primary" class="full-width text-capitalize"/>
+                <q-btn dense label="Reset" type="reset" color="primary" outline class="q-mt-sm full-width text-capitalize"/>
                 <span class="text-red">{{message}}</span>
             </div>
         </q-form>

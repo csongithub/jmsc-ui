@@ -11,9 +11,9 @@
               <q-checkbox size="xs" v-model="date" val="xs" label="Date" color="yellow"/>
             </div>
           </q-toolbar-title>
-            <q-btn class="q-mr-sm" color="primary" glossy size="sm"   label="Print" v-print="printObj"/>
-            <q-btn v-if="done" class="q-mr-sm" color="primary" glossy  size="sm"  label="Done" @click="printed" />
-            <q-btn color="primary" glossy size="sm"   label="Cancel" @click="cancelPrint"/>
+            <q-btn class="q-mr-sm text-capitalize" color="primary" glossy size="sm"   label="Print" v-print="printObj"/>
+            <q-btn class="q-mr-sm text-capitalize" color="primary" glossy  size="sm"  label="Done" @click="printed" />
+            <q-btn class="text-capitalize" color="primary" glossy size="sm"   label="Cancel" @click="cancelPrint"/>
         </q-toolbar>
       </q-header>
       <q-page-container>  

@@ -70,7 +70,7 @@
                                 <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
                                     <q-date v-model="offlineFeeDetails.issueDate" mask="YYYY-MM-DD">
                                         <div class="row items-center justify-end">
-                                            <q-btn v-close-popup label="Close" color="primary" flat />
+                                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                                         </div>
                                     </q-date>
                                 </q-popup-proxy>
@@ -85,7 +85,7 @@
                                 <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
                                     <q-date v-model="offlineFeeDetails.expiryDate" mask="YYYY-MM-DD">
                                         <div class="row items-center justify-end">
-                                            <q-btn v-close-popup label="Close" color="primary" flat />
+                                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                                         </div>
                                     </q-date>
                                 </q-popup-proxy>
@@ -97,8 +97,8 @@
 
             <div class="row">
                 <div class="col">  
-                    <q-btn size="sm" dense label="Add" type="submit" color="primary" class="q-mr-md q-pl-sm q-pr-sm" style="cursor: pointer"/>
-                    <q-btn size="sm" dense label="Reset" type="reset" color="primary" outline class="q-pl-sm q-pr-sm" style="cursor: pointer"/>
+                    <q-btn size="sm" dense label="Add" type="submit" color="primary" class="q-mr-md q-pl-sm q-pr-sm text-capitalize" style="cursor: pointer"/>
+                    <q-btn size="sm" dense label="Reset" type="reset" color="primary" outline class="q-pl-sm q-pr-sm text-capitalize" style="cursor: pointer"/>
                 </div>
             </div>
         </q-form>
@@ -115,10 +115,10 @@
                     selection="multiple"
                     v-model:selected="feeSelected">
                     <template v-slot:top-right v-if="feeSelected.length > 0">
-                      <q-btn color="primary" size="xs" label="Delete" @click="removeFee"/>
+                      <q-btn class="text-capitalize" color="primary" size="xs" label="Delete" @click="removeFee"/>
                   </template>
         </q-table>
-        <q-btn class="q-mt-sm" color="primary" label="Save" @click="saveFee" v-if="assignBidFee >= bid.biddingCost"/>
+        <q-btn class="q-mt-sm text-capitalize" color="primary" label="Save" @click="saveFee" v-if="assignBidFee >= bid.biddingCost"/>
     </div>
     <div v-else-if="feeMode == 'online'">
         <q-form @submit="saveFee" @reset="resetOnlineFee" class="">
@@ -149,8 +149,8 @@
                       lazy-rules
                       :rules="[val => (val && val.length > 0) || 'Please Enter Account Detail']"/>
 
-                    <q-btn  dense label="Save" type="submit" color="primary" class="full-width"/>
-                    <q-btn dense label="Reset" type="reset" color="primary" outline class="q-mt-sm full-width"/>
+                    <q-btn dense label="Save" type="submit" color="primary" class="full-width text-capitalize"/>
+                    <q-btn dense label="Reset" type="reset" color="primary" outline class="q-mt-sm full-width text-capitalize"/>
                   </div>
                 </q-form>
     </div>
@@ -194,7 +194,7 @@
                     filled
                     v-model="onlineFeeDetails.accountDetail"/>
             </div>
-            <q-btn v-if="bid.id !== undefined && bid.status === 'CREATED'" class="q-mt-sm" label="Clear & Reassign" color="primary" size="sm" glossy @click="clearFee()"/>
+            <q-btn v-if="bid.id !== undefined && bid.status === 'CREATED'" class="q-mt-sm text-capitalize" label="Clear & Reassign" color="primary" size="sm" glossy @click="clearFee()"/>
         </div>
   </div>
 </div>

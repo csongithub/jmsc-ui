@@ -16,21 +16,21 @@
         v-model:selected="selected"
       >
         <template v-slot:top-right>
-          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm" 
+          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Print" 
                size="sm"
                glossy
                @click="openPrinter"
               />
-          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm" 
+          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="View" 
                size="sm"
                glossy
                @click="openView"
               />
-          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm" 
+          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Discard" 
                size="sm"

@@ -45,7 +45,7 @@
         selection="multiple"
       >
         <template v-slot:top-right>
-        <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm" 
+        <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm text-capitalize"
                color="primary"
                label="Delete" 
                size="sm"
@@ -91,10 +91,10 @@
 
       <template v-slot:navigation>
         <q-stepper-navigation>
-          <q-btn v-if="uploaded && step !== 3" @click="$refs.stepper.next()" color="primary" :label="step === 3 ? 'Finish' : 'Continue'" />
-          <q-btn v-if="step === 3 && !importDone" @click="importAccounts" color="primary" :label="step === 3 ? 'Submit' : 'Continue'" />
-          <q-btn v-if="step > 1 && !importDone" flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm" />
-          <q-btn v-if="importDone" flat color="primary" @click="init" label="Done" class="q-ml-sm" />
+          <q-btn class="text-capitalize" v-if="uploaded && step !== 3" @click="$refs.stepper.next()" color="primary" :label="step === 3 ? 'Finish' : 'Continue'" />
+          <q-btn class="text-capitalize" v-if="step === 3 && !importDone" @click="importAccounts" color="primary" :label="step === 3 ? 'Submit' : 'Continue'" />
+          <q-btn class="q-ml-sm text-capitalize" v-if="step > 1 && !importDone" flat color="primary" @click="$refs.stepper.previous()" label="Back"/>
+          <q-btn class="q-ml-sm text-capitalize" v-if="importDone" flat color="primary" @click="init" label="Done"/>
         </q-stepper-navigation>
       </template>
     </q-stepper>

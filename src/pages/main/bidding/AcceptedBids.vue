@@ -1,7 +1,7 @@
 <template>
     <div>
         <Bidding/>
-        <q-btn class="q-mt-sm q-mr-sm" 
+        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Add" 
                size="sm"
@@ -9,20 +9,21 @@
                @click="openDialog('add')"
                :icon="icons.plus"/>
         <q-btn v-if="selected.length > 0" 
-               class="q-mt-sm q-mr-sm "
+               class="q-mt-sm q-mr-sm text-capitalize"
                color="primary"
                label="Update"
                size="sm"
                glossy
                @click="openDialog('edit')"
                :icon="icons.edit"/>
-         <q-btn round  
-                class="q-mt-sm q-mr-sm" 
+         <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+                outline
                 color="primary" 
                 icon="refresh" 
+                label="Reload"
                 size="sm"
                 glossy
-                 @click="getAllAcceptedBids()"/>
+                @click="getAllAcceptedBids()"/>
         <q-table
           :grid="grid"
           :hide-header="grid"
@@ -165,7 +166,7 @@
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
                         <q-date v-model="bid.nitDate" mask="YYYY-MM-DD">
                           <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat />
+                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
                         </q-date>
                       </q-popup-proxy>
@@ -353,7 +354,7 @@
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
                         <q-date v-model="bid.bidEndDate" mask="YYYY-MM-DD">
                           <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat />
+                            <q-btn v-close-popup class="text-capitalize" label="Close" color="primary" flat />
                           </div>
                         </q-date>
                       </q-popup-proxy>
@@ -368,7 +369,7 @@
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
                         <q-date v-model="bid.bidOpeningDate" mask="YYYY-MM-DD">
                           <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat />
+                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
                         </q-date>
                       </q-popup-proxy>
@@ -388,7 +389,7 @@
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
                         <q-date v-model="bid.bidSubmittedDate" mask="YYYY-MM-DD">
                           <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat />
+                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
                         </q-date>
                       </q-popup-proxy>
@@ -524,15 +525,16 @@
 
                 <div class="offline_emd q-mt-md" v-if="emdMode == 'offline'">
                   <q-btn v-if="bid.id !== undefined"
-                    class="q-mt-sm q-mr-sm"
-                    label="Reload" 
+                    class="q-mt-sm q-mr-sm text-capitalize"
+                    outline
                     color="primary" 
                     icon="refresh" 
+                    label="Reload"
                     size="sm"
                     glossy
                     @click="getAvailableFacilities()"/>
                   <q-btn v-if="bid.id !== undefined && emdSelected.length > 0"
-                    class="q-mt-sm q-mr-sm"
+                    class="q-mt-sm q-mr-sm text-capitalize"
                     label="Confirm" 
                     color="primary"
                     size="sm"
@@ -597,8 +599,8 @@
                       lazy-rules
                       :rules="[val => (val && val.length > 0) || 'Please Enter Account Detail']"/>
 
-                    <q-btn  dense label="Save" type="submit" color="primary" class="full-width"/>
-                    <q-btn dense label="Reset" type="reset" color="primary" outline class="q-mt-sm full-width"/>
+                    <q-btn dense label="Save" type="submit" color="primary" class="full-width text-capitalize"/>
+                    <q-btn dense label="Reset" type="reset" color="primary" outline class="q-mt-sm full-width text-capitalize"/>
                   </div>
                 </q-form>
                 </div>

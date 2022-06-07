@@ -2,7 +2,7 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar  class="glossy">
-        <q-btn
+        <q-btn class="text-caitalize"
           flat
           dense
           glossy

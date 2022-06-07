@@ -32,7 +32,7 @@
                 label="Login"
                 type="submit"
                 color="primary"
-                class="full-width"
+                class="full-width text-caitalize" 
               />
               <q-btn
                 dense
@@ -40,7 +40,7 @@
                 type="reset"
                 color="primary"
                 outline
-                class="q-mt-sm full-width"
+                class="q-mt-sm full-width text-caitalize"
               />
             </div>
             <br>

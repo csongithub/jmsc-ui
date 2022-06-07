@@ -1,28 +1,6 @@
 <template>
     <div>
     <CreditFacility/>
-        <!-- <q-btn class="q-mt-sm q-mr-sm" 
-               color="primary"
-               label="Add" 
-               size="sm"
-               glossy  
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-        <q-btn v-if="selected.length > 0" 
-               class="q-mt-sm q-mr-sm "
-               color="primary"
-               label="Edit"
-               size="sm"
-               glossy
-               @click="openDialog('edit')"
-               :icon="icons.edit"/>
-         <q-btn round  
-                class="q-mt-sm q-mr-sm" 
-                color="primary" 
-                icon="refresh" 
-                size="sm"
-                glossy
-                 @click="getPartyAccounts()"/> -->
         <q-table
         class="my-sticky-header-table"
         title="Bank Guarantee"

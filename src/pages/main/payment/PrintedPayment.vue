@@ -16,21 +16,22 @@
         v-model:selected="selected"
       >
         <template v-slot:top-right>
-          <q-btn round  
-                class="q-mt-sm q-mr-sm" 
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+                outline
                 color="primary" 
                 icon="refresh" 
+                label="Reload"
                 size="sm"
                 glossy
                 @click="getAllPrinted()"/>
-          <q-btn class="q-mt-sm q-mr-sm" 
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Select Date" 
                size="sm"
                glossy
                @click="selectRange = !selectRange"
               />
-          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm" 
+          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Re-Print"
                size="sm"
@@ -50,8 +51,8 @@
         <q-card flat bordered>
             <q-date v-model="range" range today-btn/>
             <q-card-actions align="right">
-              <q-btn color="primary" flat  @click="cancelRange">cancel</q-btn>
-              <q-btn color="primary" flat  @click="getForSelectedRange">ok</q-btn>
+              <q-btn class="text-capitalize" color="primary" flat  @click="cancelRange">cancel</q-btn>
+              <q-btn class="text-capitalize" color="primary" flat  @click="getForSelectedRange">ok</q-btn>
             </q-card-actions>
         </q-card>
         </q-dialog>

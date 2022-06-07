@@ -28,4 +28,22 @@ export default {
       return Promise.reject(err);
     });
   },
+  manageDeposit(linkDepositRequest) {
+      return api.post( '/v1/bg_group/manage_fix_deposits_in_bg',linkDepositRequest).then(response => {
+      let group = response.data;
+      return group;
+    }).catch(err => {
+      console.log("Error in creating group: " + JSON.stringify(err.response.data));
+      return Promise.reject(err);
+    });
+  },
+  manageGuarantee(linkGuaranteeRequest) {
+    return api.post( '/v1/bg_group/manage_bank_guarantees_in_bg',linkGuaranteeRequest).then(response => {
+    let group = response.data;
+    return group;
+  }).catch(err => {
+    console.log("Error in creating group: " + JSON.stringify(err.response.data));
+    return Promise.reject(err);
+  });
+},
 };

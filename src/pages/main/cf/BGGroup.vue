@@ -1,20 +1,9 @@
 <template>
 <div>
-  <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Create" 
-               size="sm"
-               glossy
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-  <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-                outline
-                color="primary" 
-                size="sm"
-                label="Refresh"
-                icon="refresh" 
-                @click="getAllGroups()"/>
-  <q-table class="my-sticky-header-table" title="BG Groups"
+  <div class="row bg-primary text-white">
+    <span class="text-subtitle2 q-ml-md"> BG Groups </span>
+  </div>
+  <q-table class="my-sticky-header-table"
           :grid="grid"
           :hide-header="grid"
           dense
@@ -29,11 +18,27 @@
           selection="single"
           v-model:selected="selected"
       >
+        <template v-slot:top-left>
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+               color="primary"
+               label="New Group" 
+               size="sm"
+               glossy
+               @click="openDialog('add')"
+               :icon="icons.plus"/>
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+                outline
+                color="primary" 
+                size="sm"
+                glossy
+                label="Refresh"
+                icon="refresh" 
+                @click="getAllGroups()"/>
+        </template>
         <template v-slot:body-selection="props">
-          <q-icon class="pointer" size="xs" 
-                  color="primary" 
-                  :name="icons.rightArrow" 
-                  @click="openGroupDetail(props.row)"/>
+          <q-btn class="pointer" color="primary" flat round :icon="icons.rightArrow" @click="openGroupDetail(props.row)">
+            <q-tooltip>Open BG Group Details</q-tooltip>
+          </q-btn>
         </template>
         <template v-slot:top-right>
           <q-btn class="q-mr-sm" 
@@ -54,6 +59,7 @@
             <template v-slot:append>
               <q-icon name="search" />
             </template>
+            <q-tooltip>Serch a BG Group</q-tooltip>
           </q-input>
         </template>
   </q-table>
@@ -61,7 +67,7 @@
                     persistent
                     @hide="onHide"
                     ref="newGroupRef">
-    <q-card style="width: 700px; max-width: 80vw;">
+    <q-card style="width: 1000px; max-width: 80vw;">
       <q-bar class="bg-primary glossy">
             {{ dialogLabel }}
         <q-space />
@@ -79,7 +85,7 @@
             <q-input type="number" v-model="group.groupLimit" dense outlined full-width lazy-rules label="Group Limit"  
                      :rules="[val => (val > 0) || 'Enter Group Limit']"/>
             <q-stepper-navigation>
-              <q-btn @click="step = 2" color="primary" label="Continue" />
+              <q-btn class="text-capitalize" @click="step = 2" color="primary" label="Continue" />
             </q-stepper-navigation>
           </q-step>
 
@@ -109,8 +115,8 @@
                     </template>
             </q-table>
             <q-stepper-navigation>
-              <q-btn @click="step = 3" color="primary" label="Continue" />
-              <q-btn flat @click="step = 1" color="primary" label="Back" class="q-ml-sm" />
+              <q-btn class="text-capitalize" @click="step = 3" color="primary" label="Continue" />
+              <q-btn class="q-ml-sm text-capitalize" flat @click="step = 1" color="primary" label="Back" />
             </q-stepper-navigation>
           </q-step>
           <q-step :name="3" title="Select Guarantee" caption="Optional" icon="assignment">
@@ -139,8 +145,8 @@
                     </template>
             </q-table>
             <q-stepper-navigation>
-              <q-btn color="primary" label="Finish" @click="createBGGroup"/>
-              <q-btn flat @click="step = 2" color="primary" label="Back" class="q-ml-sm" />
+              <q-btn class="text-capitalize" color="primary" label="Finish" @click="createBGGroup"/>
+              <q-btn class="q-ml-sm text-capitalize" flat @click="step = 2" color="primary" label="Back"/>
             </q-stepper-navigation>
           </q-step>
         </q-stepper>
@@ -151,7 +157,8 @@
 </template>
 
 <script>
-import { fasPlus, fasArrowCircleRight, fasArrowCircleLeft} from "@quasar/extras/fontawesome-v5";
+import { fasPlus, fasTh, fasList} from "@quasar/extras/fontawesome-v5";
+import {matAdd, matRefresh, matArrowForwardIos} from "@quasar/extras/material-icons";
 import BgGroupService from "../../../services/BgGroupService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import { commonMixin } from "../../../mixin/common"
@@ -167,8 +174,11 @@ export default {
       guaranteeSelected: ref([]),
       step: ref(1),
       icons: {
-        plus: fasPlus,
-        rightArrow: fasArrowCircleRight
+        plus: matAdd,
+        reload: matRefresh,
+        rightArrow: matArrowForwardIos,
+        grid: fasTh,
+        list: fasList,
       },
       columns: [
         {
