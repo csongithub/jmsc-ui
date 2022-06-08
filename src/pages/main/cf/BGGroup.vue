@@ -18,6 +18,14 @@
           selection="single"
           v-model:selected="selected"
       >
+        <template v-slot:body-cell-groupLimit="props">
+          <q-td :props="props">
+            <div>
+            <q-icon :name="icons.rupee"/>
+                {{props.row.groupLimit.toLocaleString('en-IN')}}
+            </div>
+          </q-td>
+        </template>
         <template v-slot:top-left>
           <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
@@ -157,8 +165,8 @@
 </template>
 
 <script>
-import { fasPlus, fasTh, fasList} from "@quasar/extras/fontawesome-v5";
-import {matAdd, matRefresh, matArrowForwardIos} from "@quasar/extras/material-icons";
+import { fasTh, fasList} from "@quasar/extras/fontawesome-v5";
+import {matAdd, matRefresh, matArrowForwardIos, matCurrencyRupee} from "@quasar/extras/material-icons";
 import BgGroupService from "../../../services/BgGroupService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import { commonMixin } from "../../../mixin/common"
@@ -179,6 +187,7 @@ export default {
         rightArrow: matArrowForwardIos,
         grid: fasTh,
         list: fasList,
+        rupee: matCurrencyRupee
       },
       columns: [
         {
@@ -242,7 +251,7 @@ export default {
       dialogLabel: "Create New Group",
       group: this.newGroup(),
       open: false,
-      grid: true,
+      grid: false,
       groupList: [],
       loading: false,
       deposits: [],
