@@ -19,17 +19,17 @@
       <div class="row">
         <div class="col">{{groupDetails.bgGroup.groupName}}</div>
         <div class="col">{{groupDetails.bgGroup.groupInfo}}</div>
-         <div class="col">{{groupDetails.bgGroup.groupLimit}}</div>
+        <div class="col"><q-icon  :name="icons.rupee" />{{groupDetails.bgGroup.groupLimit !== undefined ? groupDetails.bgGroup.groupLimit.toLocaleString('en-IN') : 0.00}}</div>
       </div>
     </div>
     <q-expansion-item
         group="facility"
         :icon="icons.deposit"
-        label="Manage Fix Deposits"
+        label="Manage Collaterals (Fix Deposits & NSC)"
         header-class="bg-primary text-white text-bold"
         expand-icon-class="text-white"
         class="q-mb-md"
-        caption="Deposits that are hold in this group"
+        caption="Fix Deposits & NSCs that are hold in this group"
       >
         <q-table class="my-sticky-header-table" dense bordered  flat
                     :rows="linkedDeposits"
@@ -190,7 +190,7 @@
 
 <script>
 // import {fasArrowLeft} from "@quasar/extras/fontawesome-v5";
-import {matAdd, matDelete, matBook, matCreditCard, matArrowBackIosNew} from "@quasar/extras/material-icons";
+import {matAdd, matDelete, matBook, matCreditCard, matArrowBackIosNew, matCurrencyRupee} from "@quasar/extras/material-icons";
 import BgGroupService from "../../../services/BgGroupService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import { commonMixin } from "../../../mixin/common"
@@ -210,7 +210,8 @@ export default {
         trash: matDelete,
         add: matAdd,
         deposit: matCreditCard,
-        guarantee: matBook
+        guarantee: matBook,
+        rupee: matCurrencyRupee
       },
       facilityColumns: [
         {
@@ -231,6 +232,7 @@ export default {
         {name: "actions", required: false, label: "Actions", field: "actions"}
       ],
       selectFacilityColumns: [
+        {name: "facilityType",  align: "left", label: "Category", field: "facilityType", sortable: true},
         {
           name: "accountNumber", required: true, label: "Account No", align: "left",  sortable: true,
           field: row => row.accountNumber, format: val => `${val}`
@@ -376,7 +378,7 @@ export default {
       BgGroupService.manageDeposit(manageDepositRequest)
         .then(response => {
         console.log('Deposit(s) Linked to BG Group: ' + JSON.stringify(response))
-        this.success('Deposit(s) Linked Successfully')
+        this.success('Collateral(s) Linked Successfully')
         this.getGroupDetails()
         this.depositList()
       }).catch(err => {
@@ -411,7 +413,7 @@ export default {
     confirmRemoveDeposit(deposit) {
       this.$q.dialog({
         title: 'Are you sure?',
-        message: 'This will make this Fix Deposit free from selected BG Group',
+        message: 'This will make this collateral free from selected BG Group',
         ok: {
           size: 'sm',
           color: 'primary',

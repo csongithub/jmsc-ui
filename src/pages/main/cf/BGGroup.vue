@@ -205,7 +205,7 @@ export default {
           label: "Group Limit",
           align: "left",
           field: "groupLimit",
-          format: val => `${val}`,
+          format: val => val ? val.toLocaleString('en-IN') : 0,
           sortable: true
         }
       ],
