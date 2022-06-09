@@ -310,7 +310,7 @@ export default {
     depositsList() {
       let self = this
       this.depositLoading = true
-      CreditFacilityService.depositsForBgGroup(this.clientId)
+      CreditFacilityService.getFreeCollateral(this.clientId)
         .then(response => {
         self.deposits.splice(0, this.deposits.length)
         self.deposits = response

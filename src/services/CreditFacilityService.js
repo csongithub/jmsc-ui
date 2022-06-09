@@ -76,8 +76,8 @@ export default {
         return Promise.reject(err);
       });
   },
-  depositsForBgGroup(clientId) {
-    return api.get( '/v1/credit_facility/deposits_for_bg_group/' + clientId).then(response => {
+  getFreeCollateral(clientId) {
+    return api.get( '/v1/credit_facility/free_collateral/' + clientId).then(response => {
         let records = response.data;
         return records;
       })

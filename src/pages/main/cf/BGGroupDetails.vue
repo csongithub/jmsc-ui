@@ -341,7 +341,7 @@ export default {
       let self = this
       this.depositLoading = true
       self.deposits.splice(0, this.deposits.length)
-      CreditFacilityService.depositsForBgGroup(this.clientId)
+      CreditFacilityService.getFreeCollateral(this.clientId)
         .then(response => {
         self.deposits = response
         this.depositLoading = false;
