@@ -8,6 +8,7 @@
         bordered
         flat
         :rows="drafts"
+        :visible-columns="visibleColumns"
         :columns="columns"
         :loading="loading"
         :pagination="myPagination"
@@ -30,13 +31,37 @@
                glossy
                @click="openView"
               />
-          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Discard" 
-               size="sm"
-               glossy
-               @click="confirmDiscard"
-              />
+
+        
+          <q-input class="q-mr-sm" borderless dense outlined debounce="300" v-model="filter" placeholder="Search Payments">
+            <template v-slot:append><q-icon name="search" /></template>
+          </q-input>
+          <q-space/>
+          <q-select
+            v-model="visibleColumns"
+            multiple
+            outlined
+            dense
+            options-dense
+            :display-value="$q.lang.table.columns"
+            emit-value
+            map-options
+            :options="columns"
+            option-value="name"
+            options-cover
+            style="min-width: 150px"
+          >
+          <q-tooltip>Select/Remove Columns</q-tooltip>
+          </q-select>
+        </template>
+        <template v-slot:body-cell-actions="props">
+          <q-td :props="props">
+              <div class="pointer">
+                <q-btn color="red" :icon="icons.trash" flat size="sm" @click="confirmDiscard(props.row)">
+                  <q-tooltip>Discard this payment</q-tooltip>
+                </q-btn>
+              </div>
+          </q-td>
         </template>
       </q-table>
 
@@ -48,7 +73,7 @@
           @hide="onHide"
           ref="createPaymentRef"
         >
-          <q-card flat bordered style="width: 100%px; max-width: 80vw;">
+          <q-card flat bordered style="width: 1000px; max-width: 80vw;">
             <IndianBankRTGS v-if="selected.length > 0"
                             :payments="payments"
                             @printed="markPrinted"
@@ -129,6 +154,7 @@
 
 <script>
 
+import {matDelete, matCurrencyRupee} from "@quasar/extras/material-icons";
 import PaymentService from "../../../services/PaymentService"
 import { commonMixin } from "../../../mixin/common"
 import Payment from "../payment/Payment.vue"
@@ -144,8 +170,12 @@ export default {
   setup () {
     return {
       selected: ref([]),
+      icons: {
+        trash: matDelete,
+        rupee: matCurrencyRupee
+      },
       myPagination: { rowsPerPage: 15 },
-      filter: "",
+      visibleColumns: ref(['toParty', 'toAccount', 'toAccountNumber', 'amount']),
       columns: [
         {
           name: "toParty",
@@ -159,10 +189,10 @@ export default {
         {name: "fromAccount",  align: "left", label: "From Account", field: "fromAccount", sortable: true},
         {name: "fromAccountNumber",  align: "left", label: "From A/C Number", field: "fromAccountNumber", sortable: true},
         {name: "toAccount",  align: "left", label: "To Account", field: "toAccount", sortable: true},
-         {name: "toAccountNumber",  align: "left", label: "To A/C Number", field: "toAccountNumber", sortable: true},
+        {name: "toAccountNumber",  align: "left", label: "To A/C Number", field: "toAccountNumber", sortable: true},
         {name: "toIFSC",  align: "left", label: "IFSC", field: "toIFSC", sortable: true},
         {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
-       
+        {name: "actions", align: "left", label: "", field: "actions", required: true},
       ],
     }
   },
@@ -174,6 +204,7 @@ export default {
     return {
       clientId: this.getClientId(),
       loading: true,
+      filter: "",
       drafts: [],
       open: false,
       view: false,
@@ -240,14 +271,14 @@ export default {
     onHide() {
       this.open = false
     },
-    confirmDiscard() {
+    confirmDiscard(row) {
       this.$q.dialog({
         title: 'Are You Sure?',
         message: 'It will delete all selected challan(s)',
         cancel: true,
         persistent: true
       }).onOk(() => {
-        this.deleteSelected()
+        this.deleteSelected(row)
       }).onOk(() => {
       }).onCancel(() => {
         // console.log('>>>> Cancel')
@@ -255,15 +286,12 @@ export default {
         // console.log('I am triggered on both OK and Cancel')
       })
     },
-    deleteSelected(){
-      for(let s of this.selected){
-        PaymentService.deletePayments(s.id).then(response => {
+    deleteSelected(row){
+      PaymentService.deletePayments(row.id).then(response => {
         this.getAllDrafts()
-        this.selected.splice(0, this.selected.length)
         this.success("Challan deleted successfully")
       }).catch(err => {
-      });
-      }
+    });
     },
     markPrinted(payments){
       let list = []
@@ -282,3 +310,8 @@ export default {
   }
 };
 </script>
+<style scoped>
+.pointer {
+  cursor: pointer;
+}
+</style>

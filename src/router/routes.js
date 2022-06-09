@@ -19,6 +19,7 @@ const routes = [
       { name: 'nsc', path: '/nsc', component: () => import('src/pages/main/cf/NSC.vue') },
       { name: 'bgGroup', path: '/bg_group', component: () => import('src/pages/main/cf/BGGroup.vue') },
       { name: 'bgGroupDetails', path: '/bg_group_details', component: () => import('src/pages/main/cf/BGGroupDetails.vue') },
+      { name: 'loans', path: '/loans', component: () => import('src/pages/main/cf/Loan.vue') },
       { name: 'profile', path: '/profile', component: () => import('src/pages/auth/Profile.vue') },
 
       { name: 'bidding', path: '/bidding', component: () => import('pages/main/bidding/Bidding.vue') },

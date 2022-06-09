@@ -9,13 +9,21 @@
         flat
         :rows="drafts"
         :columns="columns"
+        :visible-columns="visibleColumns"
         :loading="loading"
         :pagination="myPagination"
         :filter="filter"
         selection="multiple"
         v-model:selected="selected"
       >
-        <template v-slot:top-right>
+        <template v-slot:top-left>
+          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm text-capitalize" 
+               color="primary"
+               label="Re-Print"
+               size="sm"
+               glossy
+               @click="openPrinter"
+              />
           <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                 outline
                 color="primary" 
@@ -24,20 +32,31 @@
                 size="sm"
                 glossy
                 @click="getAllPrinted()"/>
-          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Select Date" 
-               size="sm"
-               glossy
-               @click="selectRange = !selectRange"
-              />
-          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Re-Print"
-               size="sm"
-               glossy
-               @click="openPrinter"
-              />
+        </template>
+        <template v-slot:top-right>
+          <q-btn class="" color="primary" flat :icon="icons.range" @click="selectRange = !selectRange">
+            <q-tooltip>Select Payments Date or Payments Between dates</q-tooltip>
+          </q-btn> 
+          <q-input class="q-mr-sm" borderless dense outlined debounce="300" v-model="filter" placeholder="Search Payments">
+            <template v-slot:append><q-icon name="search" /></template>
+          </q-input>
+          <q-space/>
+          <q-select
+            v-model="visibleColumns"
+            multiple
+            outlined
+            dense
+            options-dense
+            :display-value="$q.lang.table.columns"
+            emit-value
+            map-options
+            :options="columns"
+            option-value="name"
+            options-cover
+            style="min-width: 150px"
+          >
+          <q-tooltip>Select/Remove Columns</q-tooltip>
+          </q-select>
         </template>
       </q-table>
       <div>
@@ -84,6 +103,7 @@ import PaymentService from "../../../services/PaymentService"
 import { commonMixin } from "../../../mixin/common"
 import Payment from "../payment/Payment.vue"
 import IndianBankRTGS from "../payment/templates/IndianBankRTGS.vue"
+import {matDateRange} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
 
 export default {
@@ -96,8 +116,11 @@ export default {
   setup () {
     return {
       selected: ref([]),
+      icons: {
+        range: matDateRange
+      },
       myPagination: { rowsPerPage: 15 },
-      filter: "",
+      visibleColumns: ref(['toParty', 'fromAccountNumber', 'toAccountNumber', 'amount']),
       columns: [
         {
           name: "toParty",
@@ -113,8 +136,10 @@ export default {
         {name: "toAccount",  align: "left", label: "To Account", field: "toAccount", sortable: true},
          {name: "toAccountNumber",  align: "left", label: "To A/C Number", field: "toAccountNumber", sortable: true},
         {name: "toIFSC",  align: "left", label: "IFSC", field: "toIFSC", sortable: true},
-        {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
-       
+        {
+          name: "amount",  align: "left", label: "Amount", 
+          field: "amount", format: val => val.toLocaleString('en-IN'), sortable: true
+        }
       ],
     }
   },
@@ -126,6 +151,7 @@ export default {
     return {
       clientId: this.getClientId(),
       loading: true,
+      filter: "",
       drafts: [],
       open: false,
       payload: {},

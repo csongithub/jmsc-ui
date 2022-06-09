@@ -69,6 +69,12 @@
               </q-item-section>
               <q-item-section>BG Group</q-item-section>
             </q-item>
+            <q-item exact clickable v-ripple to="/loans" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.bgGroup" />
+              </q-item-section>
+              <q-item-section>Loans</q-item-section>
+            </q-item>
           </q-expansion-item>
           
           <q-separator></q-separator>
