@@ -24,7 +24,7 @@
                glossy
                @click="openPrinter"
               />
-          <q-btn v-if="selected.length > 0" class="q-mt-sm q-mr-sm text-capitalize" 
+          <q-btn v-if="selected.length > 1" class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="View" 
                size="sm"
@@ -57,8 +57,11 @@
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
               <div class="pointer">
-                <q-btn color="red" :icon="icons.trash" flat size="sm" @click="confirmDiscard(props.row)">
-                  <q-tooltip>Discard this payment</q-tooltip>
+                <q-btn color="red" :icon="icons.trash" flat size="xs" @click="confirmDiscard(props.row)">
+                  <q-tooltip>Delete this payment</q-tooltip>
+                </q-btn>
+                <q-btn color="primary" :icon="icons.view" flat size="xs" @click="openSingleView(props.row)">
+                  <q-tooltip>View this payment</q-tooltip>
                 </q-btn>
               </div>
           </q-td>
@@ -87,7 +90,7 @@
         v-model="view"
         persistent
         ref="paymentView">
-        <q-card flat bordered>
+        <q-card flat bordered style="width: 100%px; max-width: 80vw;">>
           <q-bar class="bg-primary glossy">
             {{ dialogLabel }}
             <q-space />
@@ -154,7 +157,7 @@
 
 <script>
 
-import {matDelete, matCurrencyRupee} from "@quasar/extras/material-icons";
+import {matDelete, matCurrencyRupee, matFileOpen} from "@quasar/extras/material-icons";
 import PaymentService from "../../../services/PaymentService"
 import { commonMixin } from "../../../mixin/common"
 import Payment from "../payment/Payment.vue"
@@ -172,7 +175,8 @@ export default {
       selected: ref([]),
       icons: {
         trash: matDelete,
-        rupee: matCurrencyRupee
+        rupee: matCurrencyRupee,
+        view: matFileOpen
       },
       myPagination: { rowsPerPage: 15 },
       visibleColumns: ref(['toParty', 'toAccount', 'toAccountNumber', 'amount']),
@@ -249,6 +253,11 @@ export default {
       });
     },
     openView() {
+      this.view = true
+    },
+    openSingleView(row) {
+      this.selected.splice(0, this.selected.length)
+      this.selected.push(row)
       this.view = true
     },
     openPrinter() {
