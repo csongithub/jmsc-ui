@@ -32,16 +32,22 @@
         style="height: calc(100% - 150px);  border-right: 1px solid #ddd"
       >
         <q-list padding>
+          <q-item exact clickable v-ripple to="/">
+              <q-item-section avatar>
+                <q-icon name="home" />
+              </q-item-section>
+              <q-item-section>Home</q-item-section>
+            </q-item>
           <q-expansion-item
             dense
             dense-toggle
             expand-separator
-            icon=""
+            :icon="icons.loan"
             label="Banking"
           >
-            <q-item exact clickable v-ripple to="/" class="q-ml-md">
+            <q-item exact clickable v-ripple to="/account" class="q-ml-md">
               <q-item-section avatar>
-                <q-icon name="home" />
+                <q-icon name="book" />
               </q-item-section>
               <q-item-section>Accounts</q-item-section>
             </q-item>
@@ -71,7 +77,7 @@
             </q-item>
             <q-item exact clickable v-ripple to="/loans" class="q-ml-md">
               <q-item-section avatar>
-                <q-icon :name="icons.bgGroup" />
+                <q-icon :name="icons.loan" />
               </q-item-section>
               <q-item-section>Loans</q-item-section>
             </q-item>
@@ -138,13 +144,15 @@ import {
   fasCreditCard,
   fasUserFriends,
   fasPowerOff,
-  fasPersonBooth,
   fasIdCard,
   fasMoneyBillAlt,
   fasGavel,
   fasPiggyBank,
   fasBook
 } from "@quasar/extras/fontawesome-v5";
+import {
+  matCurrencyRupee
+} from "@quasar/extras/material-icons";
 export default {
   name: "MainLayout",
   mixins: [commonMixin],
@@ -178,7 +186,8 @@ export default {
         cf: fasMoneyBillAlt,
         bidding: fasGavel,
         bank:fasPiggyBank,
-        bgGroup: fasBook
+        bgGroup: fasBook,
+        loan: matCurrencyRupee
       },
       quotes: [
         {

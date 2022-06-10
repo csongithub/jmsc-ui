@@ -18,5 +18,15 @@ export default {
       console.log("Error in getting records: " + JSON.stringify(err.response.data));
       return Promise.reject(err);
     });
-  }
+  },
+  loanCollateral(clientId, loanId) {
+    return api.get( '/v1/loan/collateral/' + clientId + '/' + loanId).then(response => {
+        let records = response.data;
+        return records;
+      })
+      .catch(err => {
+        console.log("Error in getting records: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
 };

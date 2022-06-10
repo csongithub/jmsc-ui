@@ -95,5 +95,5 @@ export default {
         console.log("Error in getting records: " + JSON.stringify(err.response.data));
         return Promise.reject(err);
       });
-  },
+  }
 };

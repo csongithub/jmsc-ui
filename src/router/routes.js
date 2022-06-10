@@ -4,7 +4,8 @@ const routes = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { name: 'home', path: '', component: () => import('pages/main/account/BankAccount.vue') },
+      { name: 'home', path: '', component: () => import('pages/main/home/Home.vue') },
+      { name: 'account', path: '/account', component: () => import('pages/main/account/BankAccount.vue') },
       { name: 'payment', path: '/payment', component: () => import('pages/main/payment/Payment.vue') },
       { name: 'createPayment', path: '/create_payment', component: () => import('pages/main/payment/CreatePayment.vue') },
       { name: 'printPayment', path: '/print_payment', component: () => import('pages/main/payment/PrintPayment.vue') },
