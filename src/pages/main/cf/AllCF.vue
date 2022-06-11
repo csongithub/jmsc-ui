@@ -22,7 +22,7 @@
                label="Pledge Detail"
                size="sm"
                glossy
-               @click="showPledgeDetail()"/>
+               @click="showView()"/>
          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                 outline
                 color="primary" 
@@ -46,6 +46,13 @@
         selection="single"
         v-model:selected="selected"
       >
+      <template v-slot:body-cell-view="props">
+          <q-td :props="props">
+            <q-btn class="text-capitalize" outline color="primary" label="View" size="xs" @click="showView(props.row)">
+              <q-tooltip>View linkage or hold details </q-tooltip>
+            </q-btn>
+          </q-td>
+        </template>
         <template v-slot:top-right>
           <q-input
             borderless
@@ -306,16 +313,7 @@ export default {
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
-        {
-          name: "isPledged",
-          align: "left",
-          label: "Pledged",
-          field: "isPledged",
-          sortable: true,
-          format: val => val ? 'Yes' : 'No'
-        },
-        {name: "pledgedType",  align: "left", label: "Pledged As", field: "pledgedType", sortable: true},
-        
+        {name: "view",  align: "left", label: "View", field: "view", sortable: true}
       ],
       icons: {
         plus: fasPlus,
@@ -357,9 +355,9 @@ export default {
       this.getBranches()
       this.getPostOffice()
     },
-    showPledgeDetail() {
+    showView(row) {
       let self = this
-      let cf = this.selected[0]
+      let cf = row
       BidService.getBidDetails(this.clientId, cf.pledgedId)
         .then(response => {
         self.openPledge = true
