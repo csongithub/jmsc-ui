@@ -36,7 +36,7 @@
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
               <span v-if="col.value !== 'undefined'"> <q-icon v-if="col.currency" :name="icons.rupee"/> {{ col.value }}</span>
               <div v-else class="pointer">
-                    <q-btn class="q-pa-xs" size="xs" color="primary" flat :icon="icons.link">
+                    <q-btn class="q-pa-xs" size="xs" color="primary" flat :icon="icons.link" @click="showFreeColateral(props.row)">
                         <q-tooltip>Link collaterals</q-tooltip>
                     </q-btn>
                     <q-btn class="q-pa-xs" size="xs" color="primary" flat :icon="icons.edit" @click="openDialog('edit',props.row)">
@@ -51,7 +51,21 @@
           </q-tr>
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%">
-              <div class="text-left">This is expand slot for row above: {{ props.row.displayName }}.</div>
+              <q-table class="my-sticky-header-table q-ma-lg" dense bordered  flat  title="Collateral"
+                    :rows="props.row.collateralLinkage"
+                    :columns="seeCollateralColumns"
+                    :pagination="facilityPagination"
+                    :filter="linkedColateralFilder">
+                    <template v-slot:body-cell-actions="payload">
+                      <q-td :payload="payload">
+                        <div class="pointer">
+                          <q-btn flat color="red" size="xs" :icon="icons.trash" @click="confirmRemoveCollateral(props.row, payload.row)">
+                              <q-tooltip>Remove Collateral</q-tooltip>
+                          </q-btn>
+                        </div>
+                      </q-td>
+                    </template>
+              </q-table>
             </q-td>
           </q-tr>
         </template>
@@ -241,6 +255,48 @@
     </q-card>
   </q-dialog>
 
+  <q-dialog v-model="openCollateral" persistent  @hide="onHideCollateral" ref="collateralRef">
+      <q-card style="width: 1000px; max-width: 80vw;">
+        <q-bar class="bg-primary glossy">
+            {{ 'Link Collateral' }}
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip>Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+        <q-card-section>
+          <q-table class="my-sticky-header-table" title="Select Collateral" dense bordered  flat
+                    :rows="collateral"
+                    :columns="facilityColumns"
+                    row-key="accountNumber"
+                    :loading="collateralLoading"
+                    :pagination="facilityPagination"
+                    :filter="collateralFilter"
+                    selection="multiple"
+                    v-model:selected="collateralSelected">
+                    <template v-slot:top-right>
+                      <q-input
+                        borderless
+                        dense
+                        outlined
+                        debounce="300"
+                        v-model="collateralFilter"
+                        placeholder="Search Collateral">
+                        <template v-slot:append>
+                          <q-icon name="search" />
+                        </template>
+                        <q-tooltip>Search collateral to link to this loan</q-tooltip>
+                      </q-input>
+                    </template>
+          </q-table>
+          <div class="row q-mt-sm">
+            <q-btn class="text-capitalize q-mr-sm" glossy color="primary" label="Link Selectd Collateral" size="sm"  @click="linkCollateral()"/>
+            <q-btn class="text-capitalize" outline glossy color="primary" label="Cancel" size="sm"  @click="cancelLinkCollateral()"/>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
 </div>
 </template>
 
@@ -248,6 +304,7 @@
 import { fasTh, fasList,} from "@quasar/extras/fontawesome-v5";
 import {matAdd, matRefresh, matCurrencyRupee, matLink, matEdit, matDelete, matExpandMore, matExpandLess} from "@quasar/extras/material-icons";
 import LoanService from "../../../services/LoanService"
+import CreditFacilityService from "../../../services/CreditFacilityService"
 import { commonMixin } from "../../../mixin/common"
 import { date } from 'quasar'
 import { ref } from 'vue'
@@ -257,6 +314,7 @@ export default {
   setup () {
     return {
       selected: ref([]),
+      collateralSelected: ref([]),
       icons: {
         plus: matAdd,
         reload: matRefresh,
@@ -267,9 +325,10 @@ export default {
         edit:matEdit,
         delete: matDelete,
         expendMore:matExpandMore,
-        expendLess:matExpandLess
+        expendLess:matExpandLess,
+        trash: matDelete
       },
-      visibleColumns: ref(['displayName', 'accountNo', 'borrower', 'sanctionedAmount', 'emiAmount', 'openingDate', 'collaterals']),
+      visibleColumns: ref(['displayName', 'accountNo', 'borrower', 'sanctionedAmount', 'emiAmount', 'openingDate', 'status', 'collaterals',]),
       columns: [
         { name: "displayName", required: true, label: "Name", align: "left", 
           field: "displayName", format: val => `${val}`, sortable: true,
@@ -308,6 +367,43 @@ export default {
           field: "actions",  format: val => `${val}`
         }
       ],
+      facilityColumns: [
+        {name: "facilityType",  align: "left", label: "Category", field: "facilityType", sortable: true},
+        {
+          name: "accountNumber", required: true, label: "Account No", align: "left",  sortable: true,
+          field: row => row.accountNumber, format: val => `${val}`
+        },
+        {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
+        {
+          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true,
+          format: val => date.formatDate(val, 'DD-MM-YYYY')
+        },
+        {
+          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true,
+          format: val => date.formatDate(val, 'DD-MM-YYYY')
+        },
+        {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
+        {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true}
+      ],
+      seeCollateralColumns: [
+        {name: "facilityType",  align: "left", label: "Category", field: "facilityType", sortable: true},
+        {
+          name: "accountNumber", required: true, label: "Account No", align: "left",  sortable: true,
+          field: row => row.accountNumber, format: val => `${val}`
+        },
+        {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true, format: val => val ? val.toLocaleString('en-IN') : 0},
+        {
+          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true,
+          format: val => date.formatDate(val, 'DD-MM-YYYY')
+        },
+        {
+          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true,
+          format: val => date.formatDate(val, 'DD-MM-YYYY')
+        },
+        {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
+        {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
+        {name: "actions", required: false, label: "Actions", field: "actions"}
+      ],
       loanStatusOptions: ['ACTIVE', 'CLOSE']
     }
   },
@@ -322,13 +418,22 @@ export default {
       clientId: this.getClientId(),
       pagination:  { rowsPerPage: 10 },
       filter: "",
+      linkedColateralFilder: "",
       grid: false,
       loans: [],
       loading: false,
       mode: "add",
       dialogLabel: "Create New Loan",
       loan: this.newLoan(),
-      open: false
+      open: false,
+      openCollateral: false,
+      collateral: [],
+      collateralLoading: false,
+      facilityPagination:  { rowsPerPage: 20 },
+      collateralFilter: "",
+      editLoanRow: null,
+      list: []
+
     };
   },
   methods: {
@@ -347,9 +452,6 @@ export default {
         borrower:'',
         status:''
       }
-    },
-    toggleExpand(props) {
-      props.expand = !props.expand
     },
     addLoan() {
       LoanService.create(this.loan)
@@ -384,6 +486,7 @@ export default {
       if (this.mode === "add") {
         this.dialogLabel = "Create New Loan";
       } else if (this.mode === "edit") {
+        delete row.collateralLinkage
         this.loan = row;
         this.dialogLabel = "Update Loan";
       }
@@ -396,6 +499,102 @@ export default {
     },
     reset() {
       this.loan = this.newLoan();
+    },
+    showFreeColateral(loanRow){
+      this.editLoanRow = loanRow
+      this.openCollateral = true;
+      let self = this
+      this.collateralLoading = true
+      self.collateral.splice(0, this.collateral.length)
+      CreditFacilityService.getFreeCollateral(this.clientId)
+        .then(response => {
+        self.collateral = response
+        this.collateralLoading = false;
+      }).catch(err => {
+        this.collateralLoading = false;
+      });
+    },
+    onHideCollateral(){
+       this.openCollateral = false;
+       this.collateralSelected.splice(0, this.collateralSelected.length)
+    },
+    cancelLinkCollateral(){
+      this.onHideCollateral()
+    },
+    linkCollateral(){
+      if(this.collateralSelected.length === 0) {
+        this.fail('Please select facilities')
+        return 
+      }
+      let manageCollateralRequest = {
+        "loan": this.editLoanRow,
+        "collateral": this.collateralSelected,
+        "link": true
+      }
+      let self = this
+      LoanService.manageCollateral(manageCollateralRequest)
+        .then(response => {
+        console.log(JSON.stringify(response))
+        self.cancelLinkCollateral()
+      }).catch(err => {
+        self.fail(self.getErrorMessage(err))
+      });
+    },
+    toggleExpand(props) {
+      props.expand = !props.expand
+      if(props.expand){
+        this.getLoanCollateral(props)
+      }
+    },
+    getLoanCollateral(props){
+      LoanService.loanCollateral(this.clientId, props.row.id)
+        .then(response => {
+        props.row.collateralLinkage = response
+        console.log(JSON.stringify(props.collateral))
+      }).catch(err => {
+        this.fail(this.getErrorMessage(err))
+      });
+    },
+    confirmRemoveCollateral(loan, collateral){
+      this.$q.dialog({
+        title: 'Are you sure?',
+        message: 'This will make this collateral free from yhis loan',
+        ok: {
+          size: 'sm',
+          color: 'primary',
+          push: true
+        },
+        cancel: {
+          capitalize: true,
+          size: 'sm',
+          outline: true,
+          push: true
+        },
+        persistent: true
+      }).onOk(() => {
+        this.removeCollateral(loan, collateral)
+      }).onOk(() => {
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+    },
+    removeCollateral(loan, collateral){
+       let collateralList = [collateral]
+      let manageCollateralRequest = {
+        "loan": loan,
+        "collateral": collateralList,
+        "link": false
+      }
+      let self = this
+      LoanService.manageCollateral(manageCollateralRequest)
+        .then(response => {
+        console.log(JSON.stringify(response))
+        self.cancelLinkCollateral()
+      }).catch(err => {
+        self.fail(self.getErrorMessage(err))
+      });
     }
   }
 };

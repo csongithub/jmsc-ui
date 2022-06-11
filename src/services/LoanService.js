@@ -29,4 +29,14 @@ export default {
         return Promise.reject(err);
       });
   },
+  manageCollateral(request) {
+    return api.put( '/v1/loan/manage_collateral', request).then(response => {
+        let loan = response.data;
+        return loan;
+      })
+      .catch(err => {
+        console.log("Error in getting records: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
 };
