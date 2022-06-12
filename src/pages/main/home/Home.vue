@@ -48,6 +48,25 @@
                 </q-card>
             </div>
         </div>
+        <div class="row">
+            <div class="col q-ma-lg">
+                <q-card class="my-card text-white bg-primary">
+                    <q-card-section>
+                        <div class="text-weight-medium">Manage Facilities</div>
+                        <div class="text-weight-thin text-italic">
+                            You might really have a good credit facility available.
+                            To manage them all, please ho here
+                        </div>
+                    </q-card-section>
+                    <q-separator />
+                    <q-card-actions align="right">
+                        <q-btn class="text-capitalize" flat to="/all_cf">Lets Go</q-btn>
+                    </q-card-actions>
+                </q-card>
+            </div>
+            <div class="col q-ma-lg"></div>
+            <div class="col q-ma-lg"></div>
+        </div> 
     
     </div>
 </template>

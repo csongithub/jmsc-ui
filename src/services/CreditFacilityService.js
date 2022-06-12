@@ -95,5 +95,14 @@ export default {
         console.log("Error in getting records: " + JSON.stringify(err.response.data));
         return Promise.reject(err);
       });
+  },
+  linkageDetails(clientId, facilityId) {
+    return api.get( '/v1/credit_facility/linkage_details/' + clientId + "/" + facilityId).then(response => {
+        let data = response.data;
+        return data;
+      }).catch(err => {
+        console.log("Error in getting data: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
   }
 };

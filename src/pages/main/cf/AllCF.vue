@@ -48,7 +48,7 @@
       >
       <template v-slot:body-cell-view="props">
           <q-td :props="props">
-            <q-btn class="text-capitalize" outline color="primary" label="View" size="xs" @click="showView(props.row)">
+            <q-btn v-if="props.row.isLien" class="text-capitalize" outline color="primary" label="View" size="xs" @click="openLinkageDetail(props.row)">
               <q-tooltip>View linkage or hold details </q-tooltip>
             </q-btn>
           </q-td>
@@ -479,6 +479,10 @@ export default {
         month = '0' + month
       }
       return (year + '-' + month + '-' + date)
+    },
+    openLinkageDetail(row) {
+      console.log(JSON.stringify(row.id))
+      this.$router.push({ name: "cfLinkageDetails", params: { facilityId: row.id, parent: 'ALL'}});
     }
   }
 };

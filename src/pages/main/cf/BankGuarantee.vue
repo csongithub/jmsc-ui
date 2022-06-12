@@ -16,6 +16,13 @@
         selection="single"
         v-model:selected="selected"
       >
+        <template v-slot:body-cell-view="props">
+          <q-td :props="props">
+            <q-btn v-if="props.row.isLien" class="text-capitalize" outline color="primary" label="View" size="xs" @click="openLinkageDetail(props.row)">
+              <q-tooltip>View linkage or hold details </q-tooltip>
+            </q-btn>
+          </q-td>
+        </template>
         <template v-slot:top-right>
           <q-input
             borderless
@@ -64,8 +71,7 @@ export default {
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
-        {name: "isPledged",  align: "left", label: "Pledged", field: "isPledged", sortable: true},
-        {name: "pledgedType",  align: "left", label: "Pledged As", field: "pledgedType", sortable: true},
+        {name: "view",  align: "left", label: "View", field: "view", sortable: true}
         
       ],
       icons: {
@@ -106,6 +112,10 @@ export default {
         this.loading = false;
       });
     },
+    openLinkageDetail(row) {
+      console.log(JSON.stringify(row.id))
+      this.$router.push({ name: "cfLinkageDetails", params: { facilityId: row.id, parent: 'BG'}});
+    }
   }
 };
 </script>
