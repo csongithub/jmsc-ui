@@ -42,16 +42,16 @@
                     <q-btn class="q-pa-xs" size="xs" color="primary" flat :icon="icons.edit" @click="openDialog('edit',props.row)">
                         <q-tooltip>Update Loan</q-tooltip>
                     </q-btn>
-                    <q-btn class="q-pa-xs" size="xs" color="red" flat :icon="icons.delete">
+                    <!-- <q-btn class="q-pa-xs" size="xs" color="red" flat :icon="icons.delete">
                         <q-tooltip>Delete Loan</q-tooltip>
-                    </q-btn> 
+                    </q-btn>  -->
                 </div>
               
             </q-td>
           </q-tr>
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%">
-              <q-table class="my-sticky-header-table q-ma-lg" dense bordered  flat  title="Collateral"
+              <q-table class="my-sticky-header-table q-ma-lg" table-header-class="text-primary" dense bordered  flat  title="Collateral"
                     :rows="props.row.collateralLinkage"
                     :columns="seeCollateralColumns"
                     :pagination="facilityPagination"
@@ -65,6 +65,16 @@
                         </div>
                       </q-td>
                     </template>
+                    <template v-slot:top-right>
+                      <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+                            outline
+                            color="primary" 
+                            icon="refresh" 
+                            label="Refresh"
+                            size="xs"
+                            glossy @click="getLoanCollateral(props)"
+                      />
+        </template>
               </q-table>
             </q-td>
           </q-tr>

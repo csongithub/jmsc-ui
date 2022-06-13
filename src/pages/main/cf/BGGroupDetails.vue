@@ -229,6 +229,7 @@ export default {
         },
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
+        {name: "status",  align: "left", label: "Status", field: "status", sortable: true},
         {name: "actions", required: false, label: "Actions", field: "actions"}
       ],
       selectFacilityColumns: [
@@ -247,7 +248,8 @@ export default {
           format: val => date.formatDate(val, 'DD-MM-YYYY')
         },
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
-        {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true}
+        {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
+        {name: "status",  align: "left", label: "Status", field: "status", sortable: true}
       ]
 
     }

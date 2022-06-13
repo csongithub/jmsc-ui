@@ -20,7 +20,7 @@
                 outline
                 color="primary" 
                 icon="refresh" 
-                label="Reload"
+                label="Refresh"
                 size="sm"
                 glossy
                 @click="getAwardedBids()"/>
@@ -531,7 +531,7 @@
                     outline
                     color="primary" 
                     icon="refresh" 
-                    label="Reload"
+                    label="Refresh"
                     size="sm"
                     glossy
                     @click="getAvailableFacilities()"/>

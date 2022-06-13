@@ -1,28 +1,6 @@
 <template>
     <div>
     <CreditFacility/>
-        <!-- <q-btn class="q-mt-sm q-mr-sm" 
-               color="primary"
-               label="Add" 
-               size="sm"
-               glossy  
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-        <q-btn v-if="selected.length > 0" 
-               class="q-mt-sm q-mr-sm "
-               color="primary"
-               label="Edit"
-               size="sm"
-               glossy
-               @click="openDialog('edit')"
-               :icon="icons.edit"/>
-         <q-btn round  
-                class="q-mt-sm q-mr-sm" 
-                color="primary" 
-                icon="refresh" 
-                size="sm"
-                glossy
-                 @click="getPartyAccounts()"/> -->
         <q-table
         class="my-sticky-header-table"
         title="Fixed Deposit"
@@ -35,17 +13,32 @@
         :loading="loading"
         :pagination="myPagination"
         :filter="filter"
-        selection="single"
         v-model:selected="selected"
       >
-        <template v-slot:body-cell-view="props">
+        <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <q-btn v-if="props.row.isLien" class="text-capitalize" outline color="primary" label="View" size="xs" @click="openLinkageDetail(props.row)">
+          <q-btn v-if="props.row.isLien" class="text-capitalize" outline color="primary" label="View" size="xs" @click="openLinkageDetail(props.row)">
               <q-tooltip>View linkage or hold details </q-tooltip>
+            </q-btn>
+            <q-btn v-else class="text-capitalize" color="red" outline  size="xs" :icon="icons.close" @click="confirmClose(props.row)">
+              <q-tooltip>Close this facility</q-tooltip>
             </q-btn>
           </q-td>
         </template>
+        <template v-slot:top-left>
+         <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+                outline
+                color="primary" 
+                icon="refresh" 
+                label="Refresh"
+                size="sm"
+                glossy
+                @click="!showClosed ? getAllActiveFixDeposits() : getAllClosedFixDeposits()"/>
+        </template>
         <template v-slot:top-right>
+          <q-checkbox class="q-mr-sm" v-model="showClosed" label="Show Closed" color="primary" @click="toggelShowAll()">
+            <q-tooltip>Show all facility including closed</q-tooltip>
+          </q-checkbox>
           <q-input
             borderless
             dense
@@ -69,6 +62,7 @@ import CreditFacilityService from "../../../services/CreditFacilityService"
 import CreditFacility from "../cf/CreditFacility.vue"
 import { commonMixin } from "../../../mixin/common"
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
+import {matClose} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
 export default {
   name: 'FixedDeposit',
@@ -76,8 +70,8 @@ export default {
   setup () {
     return {
       selected: ref([]),
+      showClosed: ref(false),
       columns: [
-        {name: "facilityType",  align: "left", label: "Type", field: "facilityType", sortable: true},
         {
           name: "accountNumber",
           required: true,
@@ -93,11 +87,12 @@ export default {
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
-        {name: "view",  align: "left", label: "View", field: "view", sortable: true}
+        {name: "actions",  align: "left", label: "Actions", field: "actions"}
       ],
       icons: {
         plus: fasPlus,
-        edit: fasEdit
+        edit: fasEdit,
+        close: matClose
       }
     }
   },
@@ -106,7 +101,7 @@ export default {
   },
   created() {},
   mounted() {
-    this.getAllBankGuarantee()
+    this.getAllActiveFixDeposits()
   },
   data() {
     return {
@@ -122,9 +117,27 @@ export default {
     };
   },
   methods: {
-      getAllBankGuarantee() {
+    toggelShowAll(){
+      if(!this.showClosed){
+         this.getAllActiveFixDeposits()
+      } else{
+        this.getAllClosedFixDeposits()
+      }
+    },
+    getAllActiveFixDeposits() {
       this.loading = true;
-      CreditFacilityService.getAllFacilitiesByType(this.clientId, 'FD')
+      CreditFacilityService.getAllActiveFacilitiesByType(this.clientId, 'FD')
+        .then(response => {
+        this.accounts.splice(0, this.accounts.length)
+        this.accounts = response;
+        this.loading = false;
+      }).catch(err => {
+        this.loading = false;
+      });
+    },
+    getAllClosedFixDeposits() {
+      this.loading = true;
+      CreditFacilityService.getAllClosedFacilitiesByType(this.clientId, 'FD')
         .then(response => {
         this.accounts.splice(0, this.accounts.length)
         this.accounts = response;
@@ -136,6 +149,42 @@ export default {
     openLinkageDetail(row) {
       console.log(JSON.stringify(row.id))
       this.$router.push({ name: "cfLinkageDetails", params: { facilityId: row.id, parent: 'FD'}});
+    },
+    confirmClose(cf) {
+      this.$q.dialog({
+        title: 'Are you sure?',
+        message: 'You wont be able to use this facility anymore.',
+        ok: {
+          size: 'sm',
+          color: 'primary',
+          push: true
+        },
+        cancel: {
+          capitalize: true,
+          size: 'sm',
+          outline: true,
+          push: true
+        },
+        persistent: true
+      }).onOk(() => {
+        this.closeFacility(cf)
+      }).onOk(() => {
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+    },
+     closeFacility(cf) {
+      CreditFacilityService.closeFacility(this.clientId, cf.id)
+        .then(response => {
+        if(response) {
+          this.success('The credit facility has been closed')
+        }
+        this.getAllActiveFixDeposits()
+      }).catch(err => {
+        this.fail(this.getErrorMessage(err))
+      });
     }
   }
 };
