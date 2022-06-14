@@ -14,7 +14,7 @@
                 </q-select>
               </div>
               <div class="col param">
-                <q-btn v-if="selected.length > 0" class="q-ml-sm" 
+                <q-btn v-if="selected.length > 0" class="q-ml-sm text-capitalize" 
                   color="primary"
                   label="Create" 
                   size="md"

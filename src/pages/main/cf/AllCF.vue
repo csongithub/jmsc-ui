@@ -1,36 +1,7 @@
 <template>
     <div>
     <CreditFacility/>
-        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Add" 
-               size="sm"
-               glossy  
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-        <q-btn v-if="selected.length > 0" 
-               class="q-mt-sm q-mr-sm text-capitalize"
-               color="primary"
-               label="Edit"
-               size="sm"
-               glossy
-               @click="openDialog('edit')"
-               :icon="icons.edit"/>
-        <q-btn v-if="selected.length > 0 && selected[0].isPledged" 
-               class="q-mt-sm q-mr-sm text-capitalize"
-               color="primary"
-               label="Pledge Detail"
-               size="sm"
-               glossy
-               @click="showPledgeDetail()"/>
-         <q-btn round  
-                class="q-mt-sm q-mr-sm" 
-                color="primary" 
-                icon="refresh" 
-                size="sm"
-                glossy
-                 @click="getAllFacilities()"/>
-        <q-table
+      <q-table
         class="my-sticky-header-table"
         title="All CF"
         dense
@@ -45,7 +16,45 @@
         selection="single"
         v-model:selected="selected"
       >
+      <template v-slot:body-cell-actions="props">
+          <q-td :props="props">
+            <q-btn v-if="props.row.isLien" class="text-capitalize" outline color="primary" label="View" size="xs" @click="openLinkageDetail(props.row)">
+              <q-tooltip>View linkage or hold details </q-tooltip>
+            </q-btn>
+            <q-btn v-else class="text-capitalize" color="red" outline  size="xs" :icon="icons.close" @click="confirmClose(props.row)">
+              <q-tooltip>Close this facility</q-tooltip>
+            </q-btn>
+          </q-td>
+        </template>
+        <template v-slot:top-left>
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+               color="primary"
+               label="Add New" 
+               size="sm"
+               glossy  
+               @click="openDialog('add')"
+               :icon="icons.plus"/>
+        <q-btn v-if="selected.length > 0" 
+               class="q-mt-sm q-mr-sm text-capitalize"
+               color="primary"
+               label="Edit"
+               size="sm"
+               glossy
+               @click="openDialog('edit')"
+               :icon="icons.edit"/>
+         <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+                outline
+                color="primary" 
+                icon="refresh" 
+                label="Refresh"
+                size="sm"
+                glossy
+                @click="!showClosed ? getAllActiveFacilities() : getAllClosedFacilities()"/>
+        </template>
         <template v-slot:top-right>
+         <q-checkbox class="q-mr-sm" v-model="showClosed" label="Show Closed" color="primary" @click="toggelShowAll()">
+          <q-tooltip>Show all facility including closed</q-tooltip>
+         </q-checkbox>
           <q-input
             borderless
             dense
@@ -163,7 +172,7 @@
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
                         <q-date v-model="creditFacility.openDate" mask="YYYY-MM-DD">
                           <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat />
+                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
                         </q-date>
                       </q-popup-proxy>
@@ -179,7 +188,7 @@
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
                         <q-date v-model="creditFacility.maturityDate" mask="YYYY-MM-DD">
                           <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat />
+                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
                         </q-date>
                       </q-popup-proxy>
@@ -215,47 +224,6 @@
           </q-card-section>
         </q-card>
       </q-dialog>
-      <q-dialog
-			  v-model="openPledge"
-			  persistent
-        @hide="closePledgeDetails"
-			  ref="showPledgeRed">
-        <q-card class="my-card">
-          <q-bar class="bg-primary glossy">
-          {{ 'Pledge Details' }}
-            <q-space />
-            <q-btn dense flat icon="close" v-close-popup>
-              <q-tooltip>Close</q-tooltip>
-            </q-btn>
-          </q-bar>
-          <q-card-section>
-            <div class="row">
-              <div class="col bid">Display Name</div><div class="col bid">{{bid.displayName}}</div>
-            </div>
-            <div class="row">
-              <div class="col bid">Authority</div><div class="col bid">{{bid.bidAuthority}}</div>
-            </div>
-            <div class="row">
-              <div class="col bid">NIT</div><div class="col bid">{{bid.nit}}</div>
-            </div>
-            <div class="row">
-              <div class="col bid">Tender Ref No</div><div class="col bid">{{bid.tenderRefNumber}}</div>
-            </div>
-            <div class="row">
-              <div class="col bid">Tender ID</div><div class="col bid">{{bid.tenderId}}</div>
-            </div>
-            <div class="row">
-               <div class="col bid">Work Name</div><div class="col bid">{{bid.title}}</div>
-            </div>
-            <div class="row">
-               <div class="col bid">Work Value</div><div class="col bid">{{'INR ' + bid.workValue.toLocaleString('en-IN')}}</div>
-            </div>
-            <div class="row">
-               <div class="col bid">Status</div><div class="col bid">{{bid.status}}</div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </q-dialog>
     </div>
 </template>
 
@@ -265,7 +233,8 @@ import CreditFacilityService from "../../../services/CreditFacilityService"
 import BidService from "../../../services/BidService"
 import CreditFacility from "../cf/CreditFacility.vue"
 import { commonMixin } from "../../../mixin/common"
-import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
+import {fasEdit} from "@quasar/extras/fontawesome-v5";
+import {matAdd, matClose} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
 import { date } from 'quasar'
 export default {
@@ -274,6 +243,7 @@ export default {
   setup () {
     return {
       selected: ref([]),
+      showClosed: ref(false),
       columns: [
         {name: "facilityType",  align: "left", label: "Type", field: "facilityType", sortable: true},
         {
@@ -305,20 +275,13 @@ export default {
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
-        {
-          name: "isPledged",
-          align: "left",
-          label: "Pledged",
-          field: "isPledged",
-          sortable: true,
-          format: val => val ? 'Yes' : 'No'
-        },
-        {name: "pledgedType",  align: "left", label: "Pledged As", field: "pledgedType", sortable: true},
-        
+        {name: "status",  align: "left", label: "Status", field: "status", sortable: true},
+        {name: "actions",  align: "left", label: "Actions", field: "actions", sortable: true}
       ],
       icons: {
-        plus: fasPlus,
-        edit: fasEdit
+        plus: matAdd,
+        edit: fasEdit,
+        close: matClose
       }
     }
   },
@@ -328,7 +291,7 @@ export default {
   created() {},
   mounted() {
     this.init()
-    this.getAllFacilities()
+    this.getAllActiveFacilities()
   },
   data() {
     return {
@@ -351,14 +314,21 @@ export default {
     };
   },
   methods: {
+    toggelShowAll(){
+      if(!this.showClosed){
+         this.getAllActiveFacilities()
+      } else{
+        this.getAllClosedFacilities()
+      }
+    },
     init() {
       this.getBanks()
       this.getBranches()
       this.getPostOffice()
     },
-    showPledgeDetail() {
+    showView(row) {
       let self = this
-      let cf = this.selected[0]
+      let cf = row
       BidService.getBidDetails(this.clientId, cf.pledgedId)
         .then(response => {
         self.openPledge = true
@@ -411,10 +381,23 @@ export default {
         pledgedType: null
       }
     },
-
-    getAllFacilities() {
+    getAllFacilities(){
+      this.accounts.splice(0, this.accounts.length)
+    },
+    getAllActiveFacilities() {
       this.loading = true;
-      CreditFacilityService.getAllFacilities(this.clientId)
+      CreditFacilityService.getAllActiveFacilities(this.clientId)
+        .then(response => {
+        this.accounts.splice(0, this.accounts.length)
+        this.accounts = response;
+        this.loading = false;
+      }).catch(err => {
+        this.loading = false;
+      });
+    },
+    getAllClosedFacilities() {
+      this.loading = true;
+      CreditFacilityService.getAllClosedFacilities(this.clientId)
         .then(response => {
         this.accounts.splice(0, this.accounts.length)
         this.accounts = response;
@@ -480,6 +463,46 @@ export default {
         month = '0' + month
       }
       return (year + '-' + month + '-' + date)
+    },
+    openLinkageDetail(row) {
+      console.log(JSON.stringify(row.id))
+      this.$router.push({ name: "cfLinkageDetails", params: { facilityId: row.id, parent: 'ALL'}});
+    },
+    confirmClose(cf) {
+      this.$q.dialog({
+        title: 'Are you sure?',
+        message: 'You wont be able to use this facility anymore.',
+        ok: {
+          size: 'sm',
+          color: 'primary',
+          push: true
+        },
+        cancel: {
+          capitalize: true,
+          size: 'sm',
+          outline: true,
+          push: true
+        },
+        persistent: true
+      }).onOk(() => {
+        this.closeFacility(cf)
+      }).onOk(() => {
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+    },
+     closeFacility(cf) {
+      CreditFacilityService.closeFacility(this.clientId, cf.id)
+        .then(response => {
+        if(response) {
+          this.success('The credit facility has been closed')
+        }
+        this.getAllActiveFacilities()
+      }).catch(err => {
+        this.fail(this.getErrorMessage(err))
+      });
     }
   }
 };

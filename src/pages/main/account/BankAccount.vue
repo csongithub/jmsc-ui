@@ -2,7 +2,7 @@
 <template>
     <div>
         <PartyAccount/>
-        <q-btn class="q-mt-sm q-mr-sm" 
+        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Add" 
                size="sm"
@@ -10,20 +10,21 @@
                @click="openDialog('add')"
                :icon="icons.plus"/>
         <q-btn v-if="selected.length > 0" 
-               class="q-mt-sm q-mr-sm "
+               class="q-mt-sm q-mr-sm text-capitalize"
                color="primary"
                label="Edit"
                size="sm"
                glossy
                @click="openDialog('edit')"
                :icon="icons.edit"/>
-         <q-btn round  
-                class="q-mt-sm q-mr-sm" 
+         <q-btn class="q-mt-sm q-mr-sm text-capitalize"
+                outline
                 color="primary" 
                 icon="refresh" 
+                label="Refresh"
                 size="sm"
                 glossy
-                 @click="getAccounts()"/>
+                @click="getAccounts()"/>
         <q-table
         class="my-sticky-header-table"
         title="Bank Accounts"

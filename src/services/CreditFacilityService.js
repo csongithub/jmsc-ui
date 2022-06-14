@@ -31,8 +31,8 @@ export default {
         return Promise.reject(err);
       });
   },
-  getAllFacilities(clientId) {
-    return api.get( '/v1/credit_facility/get_all/' + clientId).then(response => {
+  getAllActiveFacilities(clientId) {
+    return api.get( '/v1/credit_facility/get_all_active/' + clientId).then(response => {
         let records = response.data;
         return records;
       })
@@ -41,13 +41,36 @@ export default {
         return Promise.reject(err);
       });
   },
-
-  getAllFacilitiesByType(clientId, facilityType) {
+  getAllClosedFacilities(clientId) {
+    return api.get( '/v1/credit_facility/get_all_closed/' + clientId).then(response => {
+        let records = response.data;
+        return records;
+      })
+      .catch(err => {
+        console.log("Error in getting records: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
+  getAllActiveFacilitiesByType(clientId, facilityType) {
     const params = new URLSearchParams({
       clientId: clientId,
       facilityType: facilityType
     }).toString();
-    return api.get( '/v1/credit_facility/all_by_facility_type?' + params).then(response => {
+    return api.get( '/v1/credit_facility/all_active_by_facility_type?' + params).then(response => {
+        let records = response.data;
+        return records;
+      })
+      .catch(err => {
+        console.log("Error in getting records: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
+  getAllClosedFacilitiesByType(clientId, facilityType) {
+    const params = new URLSearchParams({
+      clientId: clientId,
+      facilityType: facilityType
+    }).toString();
+    return api.get( '/v1/credit_facility/all_closed_by_facility_type?' + params).then(response => {
         let records = response.data;
         return records;
       })
@@ -73,6 +96,45 @@ export default {
       })
       .catch(err => {
         console.log("Error in getting records: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
+  getFreeCollateral(clientId) {
+    return api.get( '/v1/credit_facility/free_collateral/' + clientId).then(response => {
+        let records = response.data;
+        return records;
+      })
+      .catch(err => {
+        console.log("Error in getting records: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
+  guaranteesForBgGroup(clientId) {
+    return api.get( '/v1/credit_facility/guarantees_for_bg_group/' + clientId).then(response => {
+        let records = response.data;
+        return records;
+      })
+      .catch(err => {
+        console.log("Error in getting records: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
+  linkageDetails(clientId, facilityId) {
+    return api.get( '/v1/credit_facility/linkage_details/' + clientId + "/" + facilityId).then(response => {
+        let data = response.data;
+        return data;
+      }).catch(err => {
+        console.log("Error in getting data: " + JSON.stringify(err.response.data));
+        return Promise.reject(err);
+      });
+  },
+  closeFacility(client_id, facility_id) {
+    return api.put('/v1/credit_facility/close/' + client_id + '/' + facility_id).then(response => {
+        let status = response.data;
+        return status;
+      })
+      .catch(err => {
+        console.log("Error in getting data: " + JSON.stringify(err.response.data));
         return Promise.reject(err);
       });
   },

@@ -2,7 +2,7 @@
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar  class="glossy">
-        <q-btn
+        <q-btn class="text-caitalize"
           flat
           dense
           glossy
@@ -33,30 +33,56 @@
       >
         <q-list padding>
           <q-item exact clickable v-ripple to="/">
-            <q-item-section avatar>
-              <q-icon name="home" />
-            </q-item-section>
-            <q-item-section>Accounts</q-item-section>
-          </q-item>
-          <q-item exact clickable v-ripple to="/party_accounts">
-            <q-item-section avatar>
-              <q-icon :name="icons.creditors" />
-            </q-item-section>
-            <q-item-section>Party</q-item-section>
-          </q-item>
-          <q-item exact clickable v-ripple to="/payment">
-            <q-item-section avatar>
-              <q-icon :name="icons.plan" />
-            </q-item-section>
-            <q-item-section>Payments</q-item-section>
-          </q-item>
-          <q-separator></q-separator>
-          <q-item exact clickable v-ripple to="/credit_facility">
-            <q-item-section avatar>
-              <q-icon :name="icons.cf" />
-            </q-item-section>
-            <q-item-section>Credit Facility</q-item-section>
-          </q-item>
+              <q-item-section avatar>
+                <q-icon name="home" />
+              </q-item-section>
+              <q-item-section>Home</q-item-section>
+            </q-item>
+          <q-expansion-item
+            dense
+            dense-toggle
+            expand-separator
+            :icon="icons.loan"
+            label="Banking"
+          >
+            <q-item exact clickable v-ripple to="/account" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon name="book" />
+              </q-item-section>
+              <q-item-section>Accounts</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/party_accounts" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.creditors" />
+              </q-item-section>
+              <q-item-section>Party</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/payment" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.plan" />
+              </q-item-section>
+              <q-item-section>Payments</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/credit_facility" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.cf" />
+              </q-item-section>
+              <q-item-section>Credit Facility</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/bg_group" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.bgGroup" />
+              </q-item-section>
+              <q-item-section>BG Group</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/loans" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.loan" />
+              </q-item-section>
+              <q-item-section>Loans</q-item-section>
+            </q-item>
+          </q-expansion-item>
+          
           <q-separator></q-separator>
           <q-item exact clickable v-ripple to="/bidding">
             <q-item-section avatar>
@@ -118,11 +144,15 @@ import {
   fasCreditCard,
   fasUserFriends,
   fasPowerOff,
-  fasPersonBooth,
   fasIdCard,
   fasMoneyBillAlt,
-  fasGavel
+  fasGavel,
+  fasPiggyBank,
+  fasBook
 } from "@quasar/extras/fontawesome-v5";
+import {
+  matCurrencyRupee
+} from "@quasar/extras/material-icons";
 export default {
   name: "MainLayout",
   mixins: [commonMixin],
@@ -154,7 +184,10 @@ export default {
         profile: fasIdCard,
         logout: fasPowerOff,
         cf: fasMoneyBillAlt,
-        bidding: fasGavel
+        bidding: fasGavel,
+        bank:fasPiggyBank,
+        bgGroup: fasBook,
+        loan: matCurrencyRupee
       },
       quotes: [
         {
