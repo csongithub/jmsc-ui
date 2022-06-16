@@ -16,8 +16,21 @@
         selection="single"
         v-model:selected="selected"
       >
-      <template v-slot:body-cell-actions="props">
+      <template v-slot:body-cell-status="props">
           <q-td :props="props">
+            <div v-if="props.row.status === 'ALIVE'" class="text-green text-overline">
+              {{props.row.status}}
+            </div>
+            <div v-else-if="props.row.status === 'EXPIRED'" class="text-warning text-overline">
+              {{props.row.status}}
+            </div>
+            <div v-else-if="props.row.status === 'CLOSED'" class="text-red text-overline">
+              {{props.row.status}}
+            </div>
+          </q-td>
+        </template>
+      <template v-slot:body-cell-actions="props">
+          <q-td :props="props" v-if="props.row.status !== 'CLOSED'">
             <q-btn v-if="props.row.isLien" class="text-capitalize" outline color="primary" label="View" size="xs" @click="openLinkageDetail(props.row)">
               <q-tooltip>View linkage or hold details </q-tooltip>
             </q-btn>
@@ -161,7 +174,7 @@
                 type="number"
                 full-width
                 lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Enter Amount']"
+                :rules="[val => (val && val > 0) || 'Enter Amount']"
               />
 
               <div class="row">
@@ -438,11 +451,11 @@ export default {
       CreditFacilityService.addCreditFacility(this.creditFacility)
         .then(response => {
         if(this.mode === 'add') {
-            this.accounts.unshift(response)
             this.success('CF Added Successfully')
           } else if(this.mode === 'edit'){
              this.success('CF Updated Successfully')
           }
+          this.getAllActiveFacilities()
           this.closeDialog()
           this.reset()
       }).catch(err => {
