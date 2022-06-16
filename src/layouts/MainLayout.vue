@@ -16,6 +16,13 @@
          {{client !== null ? client.displayName : ''}}
         </q-toolbar-title>
 
+        <q-space/>
+        
+        <q-btn class="" flat @click="$q.fullscreen.toggle()"
+          :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'">
+          <q-tooltip v-if="$q.fullscreen.isActive">Exit Full Screen</q-tooltip>
+          <q-tooltip v-else>Full Screen</q-tooltip>
+        </q-btn>
         <div></div>
       </q-toolbar>
     </q-header>
@@ -137,6 +144,7 @@
 </template>
 
 <script>
+import { useQuasar } from 'quasar'
 import { LocalStorage } from "quasar";
 import { commonMixin } from "../mixin/common";
 
@@ -170,6 +178,24 @@ export default {
     //if client has not logged in, then rout to login page, else open landing page
     if (!this.getClient()) {
       this.openLoginLayout();
+    }
+  },
+  setup () {
+    const $q = useQuasar()
+    return {
+      toggle (e) {
+        const target = e.target.parentNode.parentNode.parentNode
+
+        $q.fullscreen.toggle(target)
+          .then(() => {
+            // success!
+          })
+          .catch((err) => {
+            alert(err)
+            // uh, oh, error!!
+            // console.error(err)
+          })
+      }
     }
   },
   data() {
