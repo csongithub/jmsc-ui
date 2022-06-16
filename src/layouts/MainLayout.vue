@@ -181,22 +181,6 @@ export default {
     }
   },
   setup () {
-    const $q = useQuasar()
-    return {
-      toggle (e) {
-        const target = e.target.parentNode.parentNode.parentNode
-
-        $q.fullscreen.toggle(target)
-          .then(() => {
-            // success!
-          })
-          .catch((err) => {
-            alert(err)
-            // uh, oh, error!!
-            // console.error(err)
-          })
-      }
-    }
   },
   data() {
     return {
