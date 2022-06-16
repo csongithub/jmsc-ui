@@ -1,7 +1,7 @@
 <template>
     <div class="q-ma-lg">
         <div class="text-h6 text-center text-italic text-bold text-primary q-mb-lg">
-           Welcome Back {{client.displayName}}, What you want to do today?
+           Welcome Back {{client !== null ?  client.displayName : ''}}, What you want to do today?
         </div>
          <div class="row" v-for="(cardList, index) of listOfCardList" :key="index">
             <div class="col q-ma-lg" v-for="(card, index) of cardList" :key="index">

@@ -1,28 +1,6 @@
 <template>
     <div>
     <CreditFacility/>
-        <!-- <q-btn class="q-mt-sm q-mr-sm" 
-               color="primary"
-               label="Add" 
-               size="sm"
-               glossy  
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-        <q-btn v-if="selected.length > 0" 
-               class="q-mt-sm q-mr-sm "
-               color="primary"
-               label="Edit"
-               size="sm"
-               glossy
-               @click="openDialog('edit')"
-               :icon="icons.edit"/>
-         <q-btn round  
-                class="q-mt-sm q-mr-sm" 
-                color="primary" 
-                icon="refresh" 
-                size="sm"
-                glossy
-                 @click="getPartyAccounts()"/> -->
         <q-table
         class="my-sticky-header-table"
         title="NSC"
@@ -37,8 +15,21 @@
         :filter="filter"
         v-model:selected="selected"
       >
-        <template v-slot:body-cell-actions="props">
+        <template v-slot:body-cell-status="props">
           <q-td :props="props">
+            <div v-if="props.row.status === 'ALIVE'" class="text-green text-overline">
+              {{props.row.status}}
+            </div>
+            <div v-else-if="props.row.status === 'EXPIRED'" class="text-warning text-overline">
+              {{props.row.status}}
+            </div>
+            <div v-else-if="props.row.status === 'CLOSED'" class="text-red text-overline">
+              {{props.row.status}}
+            </div>
+          </q-td>
+        </template>
+        <template v-slot:body-cell-actions="props">
+          <q-td :props="props" v-if="props.row.status !== 'CLOSED'">
             <q-btn v-if="props.row.isLien" class="text-capitalize" outline color="primary" label="View" size="xs" @click="openLinkageDetail(props.row)">
               <q-tooltip>View linkage or hold details </q-tooltip>
             </q-btn>
@@ -109,7 +100,8 @@ export default {
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
-        {name: "actions",  align: "left", label: "Actions", field: "actions"}
+        {name: "status",  align: "left", label: "Status", field: "status", sortable: true},
+        {name: "actions",  align: "left", label: "Actions", field: "actions", sortable: true}
       ],
       icons: {
         plus: fasPlus,
