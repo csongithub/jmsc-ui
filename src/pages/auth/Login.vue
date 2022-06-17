@@ -1,55 +1,95 @@
 <template>
-  <div class="row">
-    <div class="col">
-      <q-card square bordered class="q-pa-lg shadow-1">
-        <q-card-section>
-          <span class="absolute-center text-primary text-h5"><b>Login</b></span>
+<q-layout>
+  <q-header>
+    <q-toolbar>
+      <div class="text-weight-bolder text-white text-h6 text-uppercase">
+        {{'constructo'}}
+      </div>
+  
+    </q-toolbar>
+  </q-header>
+  
+  <q-page-container>
+    
+    <q-page class="flex flex-center">
+      <!-- <q-parallax src="https://cdn.quasar.dev/img/parallax2.jpg"> -->
+      <q-card 
+        :style="$q.platform.is.desktop ? 'width:50%' : ''"
+        class="row my-card items-center q-pa-none q-ma-none shadow-24">
+      
+        <q-card-section
+            v-if="$q.platform.is.desktop"
+            class="col-md-4 items-center float-left bg-primary"
+            :style="{height : $q.screen.height - 200 + 'px', width : ''}"
+            horizontal
+        >
+          <div class="text-center full-width">
+            <div class="text-weight-bolder text-white text-h6 text-uppercase">constructo</div>
+            <div class="text-caption text-black">A complete data solution platform</div>
+          </div>
         </q-card-section>
-        <q-card-section>
-          <q-form @submit="login" @reset="onReset" class="q-gutter-md">
-            <q-input
-              dense
-              filled
-              v-model="loginRequest.logonId"
-              label="Client ID"
-              lazy-rules
-              :rules="[val => (val && val.length > 0) || 'Enter Client ID']"
-            />
-
-            <q-input
-              dense
-              filled
-              type="password"
-              v-model="loginRequest.password"
-              label="Password"
-              lazy-rules
-              :rules="[val => (val && val.length > 0) || 'Enter password']"
-            />
-
+        <q-card-actions class="col-md-8 col-lg-8 col-sm-12 sol-xs-12 float-left">
+          <q-card-section class="item-center">
             <div>
-              <q-btn
-                dense
-                label="Login"
-                type="submit"
-                color="primary"
-                class="full-width text-caitalize" 
-              />
-              <q-btn
-                dense
-                label="Reset"
-                type="reset"
-                color="primary"
-                outline
-                class="q-mt-sm full-width text-caitalize"
-              />
+              <q-form 
+                @submit="login"
+                @reset="onReset" 
+                class="q-gutter-md"
+                :style="'min-width: 300px; margin: auto;'"
+                :greedy="true"
+                :autofocus="true" 
+              >
+                <span class="text-subtitle1 text-weight-bold text-grey nowrap"
+                >Welcome Back, Please Sign in</span>
+                
+                <q-input
+                  dense
+                  v-model="loginRequest.logonId"
+                  label="Login ID"
+                  lazy-rules
+                  autofocus
+                  no-error-icon
+                  :rules="[val => (val && val.length > 0) || 'Enter client login id']"
+                />
+
+                <q-input
+                  dense
+                  type="password"
+                  v-model="loginRequest.password"
+                  label="Password"
+                  lazy-rules
+                  :rules="[val => (val && val.length > 0) || 'Enter password']"
+                />
+                <div>
+                  <q-btn
+                    dense
+                    label="Login"
+                    type="submit"
+                    color="primary"
+                    class="full-width text-caitalize" 
+                  />
+                  <q-btn
+                    dense
+                    label="Reset"
+                    type="reset"
+                    color="primary"
+                    outline
+                    class="q-mt-sm full-width text-caitalize"
+                  />
+                </div>
+              <br>
+              <span class="text-red">{{loginResponse.loginSuccess ? '' : loginResponse.message}}</span>
+              </q-form>
             </div>
-            <br>
-            <span class="text-red">{{loginResponse.loginSuccess ? '' : loginResponse.message}}</span>
-          </q-form>
-        </q-card-section>
+          </q-card-section>
+        </q-card-actions>
       </q-card>
-    </div>
-  </div>
+      <!-- </q-parallax> -->
+    </q-page>
+    
+  </q-page-container>
+   
+</q-layout>
 </template>
 
 <script>
@@ -109,7 +149,11 @@ export default {
 </script>
 
 <style>
-.q-card {
-  width: 360px;
+.my-card {
+  height: 30%px;
+}
+
+.login-form {
+  position: absolute;
 }
 </style>
