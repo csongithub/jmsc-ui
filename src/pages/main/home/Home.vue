@@ -38,7 +38,9 @@ export default {
   },
   created() {},
   mounted() {
-    this.getAccessCards()
+    if(this.client !== null){
+      this.getAccessCards()
+    }
   },
   data() {
     return {

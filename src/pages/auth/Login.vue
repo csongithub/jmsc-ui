@@ -14,7 +14,7 @@
     <q-page class="flex flex-center">
       <!-- <q-parallax src="https://cdn.quasar.dev/img/parallax2.jpg"> -->
       <q-card 
-        :style="$q.platform.is.desktop ? 'width:50%' : ''"
+        
         class="row my-card items-center q-pa-none q-ma-none shadow-24">
       
         <q-card-section
