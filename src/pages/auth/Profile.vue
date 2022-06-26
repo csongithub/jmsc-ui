@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <q-card class="my-card">
       <q-card-section>
-        <div class="text-primary text-h6">Basic</div>
+        <div class="text-primary text-h5 q-mb-lg">Basic Info</div>
         <div class="row q-mb-sm">
             <div class="col-2">Login ID</div>
             <div class="col"><b>{{client.logonId}}</b></div><div class="col"></div><div class="col"></div>
@@ -26,22 +26,24 @@
       </q-card-section>
       <q-separator/>
       <q-card-actions>
-        <q-btn class="text-caitalize" dense color="primary" v-if="!update" @click="update=!update">update</q-btn>
-        <q-btn class="text-caitalize" dense color="primary" v-if="update" @click="updateBasicInfo">save</q-btn>
+        <q-btn class="text-capitalize text-weight-light" dense color="primary" v-if="!update" @click="update=!update">update</q-btn>
+        <q-btn class="text-capitalize text-weight-light" dense color="primary" v-if="update" @click="updateBasicInfo">save</q-btn>
          
       </q-card-actions>
     </q-card>
     <br>
     <q-separator/>
     <br>
-    <q-card class="my-card">
-      <q-card-section>
-        <div class="text-primary text-h6">Update Password</div>
-            <q-form @submit="updatePassword" @reset="reset" class="">
-            <div class="q-gutter-md" style="max-width: 300px">
+    <div class="row">
+      <div class="col-4 password">
+        <q-card class="my-card">
+          <q-form @submit="updatePassword" @reset="reset" class="">
+            <q-card-section>
+              <div class="text-primary text-center text-subtitle1 q-mb-lg">Update Password</div>
+                
                 <q-input
                     dense
-                    filled
+                    
                     type="password"
                     v-model="updatePasswordRequest.currentPassword"
                     label="Curent Password"
@@ -49,7 +51,7 @@
                     :rules="[val => (val && val.length > 0) || 'Enter Current password']"/>
                 <q-input
                     dense
-                    filled
+                    
                     type="password"
                     v-model="updatePasswordRequest.newPassword"
                     label="New Password"
@@ -57,26 +59,73 @@
                     :rules="[val => (val && val.length > 0) || 'Enter New password']"/>
                 <q-input
                     dense
-                    filled
+                    
                     type="password"
                     v-model="updatePasswordRequest.reNewPassword"
                     label="Re-enter New Password"
                     lazy-rules
                     :rules="[val => (val && val.length > 0) || 'Re-enter New password']"/>
+              </q-card-section>
+              <q-card-actions>
+                  <span class="text-red">{{message}}</span>
+                  <q-space/>
+                  <q-btn  dense label="Update" type="submit" color="primary" class="text-capitalize text-weight-light"/>
+                  <q-btn dense label="Reset" type="reset" color="primary" outline class="text-capitalize text-weight-light"/>
+                  
+            </q-card-actions>
+            </q-form>
+          </q-card>
+      </div>
+      <div class="col-4 q-ml-md admin-password">
+        <q-card class="my-card">
+          <q-form @submit="updateAdminPassword" @reset="resetAdminPassword" class="">
+            <q-card-section>
+              <div class="text-primary text-center text-subtitle1 q-mb-lg">Update Admin Password</div>
+                
+                <q-input
+                    dense
+                    
+                    type="password"
+                    v-model="admin.currentAdminPassword"
+                    label="Curent Password"
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Enter Current Password']"/>
+                <q-input
+                    dense
+                    
+                    type="password"
+                    v-model="admin.newAdminPassword"
+                    label="New Password"
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Enter New Password']"/>
+                <q-input
+                    dense
+                    
+                    type="password"
+                    v-model="admin.reNewAdminPassword"
+                    label="Re-enter New Password"
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Re-enter New Password']"/>
+                <span class="text-red">{{adminMessage}}</span>
+              </q-card-section>
+              <q-card-actions>
+                  <q-space/>
+                  <q-btn  dense label="Update" type="submit" color="primary" class="text-capitalize text-weight-light"/>
+                  <q-btn dense label="Reset" type="reset" color="primary" outline class="text-capitalize text-weight-light"/>
+            </q-card-actions>
+            </q-form>
+          </q-card>
+      </div>
+    </div>
 
-                <q-btn  dense label="Update" type="submit" color="primary" class="full-width text-capitalize"/>
-                <q-btn dense label="Reset" type="reset" color="primary" outline class="q-mt-sm full-width text-capitalize"/>
-                <span class="text-red">{{message}}</span>
-            </div>
-        </q-form>
-      </q-card-section>
-    </q-card>
+    
   </div>
 </template>
 
 <script>
 import ProfileService from "../../services/auth/ProfileService";
 import LoginServcie from "../../services/auth/LoginService";
+import AdminAuthService from "../../services/auth/AdminAuthService";
 import { commonMixin } from "../../mixin/common"
 import { LocalStorage } from "quasar";
 export default {
@@ -100,7 +149,14 @@ export default {
         displayName: this.getClient().displayName,
         recipients: this.getClient().recipients
       },
-      message:''
+      message:'',
+      adminMessage: '',
+      admin: {
+          clientId: null,
+          currentAdminPassword: null,
+          newAdminPassword: null,
+          reNewAdminPassword: null,
+      }
     };
   },
 
@@ -133,6 +189,36 @@ export default {
         this.updatePasswordRequest.newPassword = null
         this.updatePasswordRequest.reNewPassword = null
         this.message=''
+    },
+    updateAdminPassword() {
+        this.admin.clientId = this.clientId
+        if(this.admin.newAdminPassword !== this.admin.reNewAdminPassword) {
+            this.adminMessage='Password did not match'
+            return
+        } else {
+             this.adminMessage=''
+        }
+        // window.alert(JSON.stringify(this.admin))
+        AdminAuthService.updatePassword(this.admin)
+        .then(response => {
+            if(response.updateSuccess){
+                // this.success(response.message)
+                this.success('Password Updated Successfully !')
+                this.resetAdminPassword()
+            } else {
+                this.adminMessage=response.message
+            }
+        })
+        .catch(err => {
+            this.fail(this.getErrorMessage(err))
+        });
+    },
+    resetAdminPassword() {
+        this.admin.clientId = null
+        this.admin.currentAdminPassword = ''
+        this.admin.newAdminPassword = ''
+        this.admin.reNewAdminPassword = ''
+        this.adminMessage=''
     },
     updateBasicInfo() {
         this.update = !this.update

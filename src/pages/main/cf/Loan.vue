@@ -267,7 +267,7 @@
 
   <q-dialog v-model="openCollateral" persistent  @hide="onHideCollateral" ref="collateralRef">
       <q-card style="width: 1000px; max-width: 80vw;">
-        <q-bar class="bg-primary glossy">
+        <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ 'Link Collateral' }}
           <q-space />
           <q-btn dense flat icon="close" v-close-popup>
@@ -308,11 +308,20 @@
     </q-dialog>
 
 </div>
+
+<AdminAuth :options="openAuthorization" 
+               :title="authTitle"
+               :message="authMessage"
+               :data="authData"
+               @cancel="cancelAuth"
+               @success="onSuccessfulApproval"></AdminAuth>
 </template>
 
 <script>
+
 import { fasTh, fasList,} from "@quasar/extras/fontawesome-v5";
 import {matAdd, matRefresh, matCurrencyRupee, matLink, matEdit, matDelete, matExpandMore, matExpandLess} from "@quasar/extras/material-icons";
+import AdminAuth from "../../auth/AdminAuth.vue"
 import LoanService from "../../../services/LoanService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import { commonMixin } from "../../../mixin/common"
@@ -419,6 +428,9 @@ export default {
   },
   watch: {
   },
+  components: {
+    AdminAuth
+  },
   created() {},
   mounted() {
     this.allLoans()
@@ -426,6 +438,10 @@ export default {
   data() {
     return {
       clientId: this.getClientId(),
+      openAuthorization: false,
+      authTitle: '',
+      authMessage: '',
+      authData: null,
       pagination:  { rowsPerPage: 10 },
       filter: "",
       linkedColateralFilder: "",
@@ -442,8 +458,8 @@ export default {
       facilityPagination:  { rowsPerPage: 20 },
       collateralFilter: "",
       editLoanRow: null,
-      list: []
-
+      list: [],
+      approvalType: ''
     };
   },
   methods: {
@@ -510,7 +526,14 @@ export default {
     reset() {
       this.loan = this.newLoan();
     },
-    showFreeColateral(loanRow){
+    showFreeColateral(loanRow) {
+      this.approvalType = 'link_collateral'
+      this.openAuth('Are you sure?', 
+                    'Only admin can link collaterals to a loan.',
+                    true,
+                    loanRow)
+    },
+    showFreeColateralPostApproval(loanRow){
       this.editLoanRow = loanRow
       this.openCollateral = true;
       let self = this
@@ -542,10 +565,12 @@ export default {
         "link": true
       }
       let self = this
+
       LoanService.manageCollateral(manageCollateralRequest)
         .then(response => {
         console.log(JSON.stringify(response))
         self.cancelLinkCollateral()
+        this.success('Operation successful, please refresh')
       }).catch(err => {
         self.fail(self.getErrorMessage(err))
       });
@@ -566,32 +591,18 @@ export default {
       });
     },
     confirmRemoveCollateral(loan, collateral){
-      this.$q.dialog({
-        title: 'Are you sure?',
-        message: 'This will make this collateral free from yhis loan',
-        ok: {
-          size: 'sm',
-          color: 'primary',
-          push: true
-        },
-        cancel: {
-          capitalize: true,
-          size: 'sm',
-          outline: true,
-          push: true
-        },
-        persistent: true
-      }).onOk(() => {
-        this.removeCollateral(loan, collateral)
-      }).onOk(() => {
-      }).onCancel(() => {
-        // console.log('>>>> Cancel')
-      }).onDismiss(() => {
-        // console.log('I am triggered on both OK and Cancel')
-      })
+      this.approvalType = 'remove_collateral'
+      let data= {
+        'loan': loan,
+        'collateral': collateral
+      }
+      this.openAuth('Are you sure?', 
+                    'This will make this collateral free from this loan.',
+                    true,
+                    data)
     },
     removeCollateral(loan, collateral){
-       let collateralList = [collateral]
+      let collateralList = [collateral]
       let manageCollateralRequest = {
         "loan": loan,
         "collateral": collateralList,
@@ -602,10 +613,29 @@ export default {
         .then(response => {
         console.log(JSON.stringify(response))
         self.cancelLinkCollateral()
+        this.success('Remove successful, please refresh')
       }).catch(err => {
         self.fail(self.getErrorMessage(err))
       });
-    }
+    },
+    onSuccessfulApproval(data) {
+      if(this.approvalType === 'link_collateral') {
+        // window.alert('link_collateral' + JSON.stringify(data))
+        this.showFreeColateralPostApproval(data)
+      } else if (this.approvalType === 'remove_collateral') {
+        // window.alert('remove_collateral' + JSON.stringify(data))
+        this.removeCollateral(data.loan, data.collateral)
+      }
+    },
+    openAuth(title, message, options, data){
+      this.authTitle = title,
+      this.authMessage = message
+      this.openAuthorization = options
+      this.authData = data
+    },
+    cancelAuth(val) {
+      this.openAuthorization = val
+    },
   }
 };
 </script>

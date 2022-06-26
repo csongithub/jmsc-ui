@@ -54,12 +54,20 @@
 
                 <q-input
                   dense
-                  type="password"
+                 :type="isPwd ? 'password' : 'text'"
                   v-model="loginRequest.password"
                   label="Password"
                   lazy-rules
                   :rules="[val => (val && val.length > 0) || 'Enter password']"
-                />
+                >
+                  <template v-slot:append>
+                        <q-icon
+                            :name="isPwd ? 'visibility_off' : 'visibility'"
+                            class="cursor-pointer"
+                            @click="isPwd = !isPwd"
+                        />
+                    </template>
+                </q-input>
                 <div>
                   <q-btn
                     dense
@@ -110,6 +118,7 @@ export default {
         message: '',
         token: ''
       },
+      isPwd: true
     };
   },
 

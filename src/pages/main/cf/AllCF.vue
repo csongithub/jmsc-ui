@@ -238,10 +238,17 @@
         </q-card>
       </q-dialog>
     </div>
+    <AdminAuth :options="openAuthorization" 
+               :title="authTitle"
+               :message="authMessage"
+               :data="authData"
+               @cancel="cancelAuth"
+               @success="closeFacility"></AdminAuth>
 </template>
 
 <script>
 
+import AdminAuth from "../../auth/AdminAuth.vue"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import BidService from "../../../services/BidService"
 import CreditFacility from "../cf/CreditFacility.vue"
@@ -300,6 +307,7 @@ export default {
   },
   components: {
     CreditFacility,
+    AdminAuth
   },
   created() {},
   mounted() {
@@ -309,6 +317,10 @@ export default {
   data() {
     return {
       clientId: this.getClientId(),
+      openAuthorization: false,
+      authTitle: '',
+      authMessage: '',
+      authData: null,
       myPagination: { rowsPerPage: 15 },
       filter: '',
       loading: true,
@@ -482,32 +494,24 @@ export default {
       this.$router.push({ name: "cfLinkageDetails", params: { facilityId: row.id, parent: 'ALL'}});
     },
     confirmClose(cf) {
-      this.$q.dialog({
-        title: 'Are you sure?',
-        message: 'You wont be able to use this facility anymore.',
-        ok: {
-          size: 'sm',
-          color: 'primary',
-          push: true
-        },
-        cancel: {
-          capitalize: true,
-          size: 'sm',
-          outline: true,
-          push: true
-        },
-        persistent: true
-      }).onOk(() => {
-        this.closeFacility(cf)
-      }).onOk(() => {
-      }).onCancel(() => {
-        // console.log('>>>> Cancel')
-      }).onDismiss(() => {
-        // console.log('I am triggered on both OK and Cancel')
-      })
+      
+      this.openAuth('Are you sure?', 
+                    'This facility will be closed permanently & you will not be able to open it again.',
+                    true,
+                    cf)
     },
-     closeFacility(cf) {
-      CreditFacilityService.closeFacility(this.clientId, cf.id)
+    openAuth(title, message, options, cf){
+      this.authTitle = title,
+      this.authMessage = message
+      this.openAuthorization = options
+      this.authData = cf
+    },
+    cancelAuth(val) {
+      this.openAuthorization = val
+    },
+    closeFacility(data) {
+      // window.alert(JSON.stringify(data))
+      CreditFacilityService.closeFacility(this.clientId, data.id)
         .then(response => {
         if(response) {
           this.success('The credit facility has been closed')
