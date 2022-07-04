@@ -266,7 +266,7 @@
   </q-dialog>
 
   <q-dialog v-model="openCollateral" persistent  @hide="onHideCollateral" ref="collateralRef">
-      <q-card style="width: 1000px; max-width: 80vw;">
+      <q-card v-if="approvalRequired">
         <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ 'Link Collateral' }}
           <q-space />
@@ -274,6 +274,21 @@
             <q-tooltip>Close</q-tooltip>
           </q-btn>
         </q-bar>
+        <q-card-section>
+          <AdminAuth :embedded="'true'"
+               :options="openAuthorization" 
+               @success="approvalRequired = !approvalRequired"></AdminAuth>
+        </q-card-section>
+      </q-card>
+      <q-card v-else style="width: 1000px; max-width: 80vw;">
+        <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
+            {{ 'Link Collateral' }}
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip>Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+        
         <q-card-section>
           <q-table class="my-sticky-header-table" title="Select Collateral" dense bordered  flat
                     :rows="collateral"
@@ -314,7 +329,7 @@
                :message="authMessage"
                :data="authData"
                @cancel="cancelAuth"
-               @success="onSuccessfulApproval"></AdminAuth>
+               @success="removeCollateral"></AdminAuth>
 </template>
 
 <script>
@@ -442,7 +457,7 @@ export default {
       authTitle: '',
       authMessage: '',
       authData: null,
-      approvalType: '',
+      approvalRequired: true,
       pagination:  { rowsPerPage: 10 },
       filter: "",
       linkedColateralFilder: "",
@@ -527,13 +542,7 @@ export default {
       this.loan = this.newLoan();
     },
     showFreeColateral(loanRow) {
-      this.approvalType = 'link_collateral'
-      this.openAuth('Are you sure?', 
-                    'Only admin can link collaterals to a loan.',
-                    true,
-                    loanRow)
-    },
-    showFreeColateralPostApproval(loanRow){
+      this.approvalRequired = true
       this.editLoanRow = loanRow
       this.openCollateral = true;
       let self = this
@@ -591,7 +600,6 @@ export default {
       });
     },
     confirmRemoveCollateral(loan, collateral){
-      this.approvalType = 'remove_collateral'
       let data= {
         'loan': loan,
         'collateral': collateral
@@ -601,7 +609,7 @@ export default {
                     true,
                     data)
     },
-    removeCollateral(loan, collateral){
+    removeCollateralInternal(loan, collateral){
       let collateralList = [collateral]
       let manageCollateralRequest = {
         "loan": loan,
@@ -618,14 +626,10 @@ export default {
         self.fail(self.getErrorMessage(err))
       });
     },
-    onSuccessfulApproval(data) {
-      if(this.approvalType === 'link_collateral') {
-        // window.alert('link_collateral' + JSON.stringify(data))
-        this.showFreeColateralPostApproval(data)
-      } else if (this.approvalType === 'remove_collateral') {
-        // window.alert('remove_collateral' + JSON.stringify(data))
-        this.removeCollateral(data.loan, data.collateral)
-      }
+    removeCollateral(data) {
+      // window.alert('remove_collateral' + JSON.stringify(data))
+      this.removeCollateralInternal(data.loan, data.collateral)
+
     },
     openAuth(title, message, options, data){
       this.authTitle = title,

@@ -1,5 +1,39 @@
 <template>
   <div>
+    <div v-if="embedded">
+      <q-card flat bordered style="width: 400px; max-width: 80vw;">
+          <q-bar class="bg-primary glossy text-white text-caption">
+            {{ 'Admin Approval Required' }}
+          </q-bar>
+          <q-form @submit="authorize" >
+            <q-card-section>
+                <div class="text-weight-medium q-mb-sm text-subtitle2">{{title}}</div>
+                <div class="text-italic">{{message}}</div>
+            </q-card-section>
+            <q-card-section>
+                <q-input class="my-input" v-model="adminPassword" dense outlined :type="isPwd ? 'password' : 'text'" 
+                    label="Enter Admin Password"
+                >
+                    <template v-slot:append>
+                        <q-icon size="xs"
+                            :name="isPwd ? 'visibility_off' : 'visibility'"
+                            class="cursor-pointer"
+                            @click="isPwd = !isPwd"
+                        />
+                    </template>
+                </q-input>
+            </q-card-section>
+
+            <q-separator />
+            <q-card-actions>
+                <q-space/>
+                <q-btn type="submit" dense label="Authorise" color="primary" class="text-capitalize text-weight-light"/>
+                <!-- <q-btn dense label="Cancel"  color="primary" @click="cancel" outline class="text-capitalize text-weight-light"/> -->
+            </q-card-actions>
+           </q-form>
+        </q-card>
+    </div>
+    <div>
     <q-dialog
         v-model="open"
         persistent
@@ -38,6 +72,7 @@
         </q-card>
        
     </q-dialog>
+    </div>
   </div>
 </template>
 
@@ -48,8 +83,9 @@ import { ref } from 'vue'
 export default {
   props: {
         options: { type: Boolean, default: false },
-        title: {type: Text, default: ''},
-        message: {type: Text, default: ''},
+        embedded:{type: Boolean, dafault: false},
+        title: {type: Text, default: 'Are you sure?'},
+        message: {type: Text, default: 'Please Authorise Yourself.'},
         data: {type: Object, default: null}
   },
   computed: {
