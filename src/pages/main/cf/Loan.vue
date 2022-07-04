@@ -442,6 +442,7 @@ export default {
       authTitle: '',
       authMessage: '',
       authData: null,
+      approvalType: '',
       pagination:  { rowsPerPage: 10 },
       filter: "",
       linkedColateralFilder: "",
@@ -458,8 +459,7 @@ export default {
       facilityPagination:  { rowsPerPage: 20 },
       collateralFilter: "",
       editLoanRow: null,
-      list: [],
-      approvalType: ''
+      list: []
     };
   },
   methods: {

@@ -99,7 +99,7 @@ export default {
           this.close()
         } else{
           this.$emit('fail')
-          this.fail('Authorization failed, please try again')
+          this.fail('Approval failed, please try again')
         }
         // window.alert(authorization.message)
       }).catch(err => {

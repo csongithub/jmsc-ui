@@ -1,22 +1,14 @@
 <template>
     <div>
         <PartyAccount/>
-        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+        <q-btn class="q-mt-sm q-mr-sm text-capitalize text-white text-weight-light text-subtitle2" 
                color="primary"
                label="Add" 
                size="sm"
                glossy  
                @click="openDialog('add')"
                :icon="icons.plus"/>
-        <!-- <q-btn v-if="selected.length > 0" 
-               class="q-mt-sm q-mr-sm "
-               color="primary"
-               label="Edit"
-               size="sm"
-               glossy
-               @click="openDialog('edit')"
-               :icon="icons.edit"/> -->
-         <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+         <q-btn class="q-mt-sm q-mr-sm text-capitalize text-weight-light text-subtitle2" 
                 outline
                 color="primary" 
                 size="sm"
@@ -40,8 +32,8 @@
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
             <div class="pointer">
-               <q-icon color="primary" :name="icons.edit" @click="editAccount(props.row)"/>
-               <!-- <q-icon class="q-ml-sm" :name="icons.delete" color="red"/> -->
+               <q-icon color="primary" :name="icons.view" @click="openView(props.row)"/>
+               <q-icon class="q-ml-sm" color="primary" :name="icons.edit" @click="editAccount(props.row)"/>
             </div>
           </q-td>
         </template>
@@ -69,7 +61,7 @@
         ref="newAccountRef"
       >
         <q-card style="width: 700px; max-width: 80vw;">
-          <q-bar class="bg-primary glossy">
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ dialogLabel }}
             <q-space />
             <q-btn dense flat icon="close" v-close-popup>
@@ -97,45 +89,59 @@
                 lazy-rules
                 :rules="[val => (val && val.length > 0) || 'Account holder name']"
               />
-              <q-input
-                dense
-                outlined
-                v-model="account.accountNumber"
-                label="Account Number"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Account number']"
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.ifscCode"
-                label="IFSC Code"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'IFSC Code']"
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.bankName"
-                label="Bank"
-                full-width
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.branchName"
-                label="Branch"
-                full-width
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.branchCode"
-                label="Branch Code"
-                full-width
-              />
+              <div class="row">
+                <div class="col">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.accountNumber"
+                    label="Account Number"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Account number']"
+                  />
+                </div>
+                <div class="col q-ml-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.ifscCode"
+                    label="IFSC Code"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'IFSC Code']"
+                  />
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.bankName"
+                    label="Bank"
+                    full-width
+                  />
+                </div>
+                <div class="col q-ml-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.branchName"
+                    label="Branch"
+                    full-width
+                  />
+                </div>
+                <div class="col q-ml-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.branchCode"
+                    label="Branch Code"
+                    full-width
+                  />
+                </div>
+              </div>
               <div>
                 <q-space />
                 <q-btn
@@ -145,7 +151,7 @@
                   :label="mode === 'add' ? 'Add' : 'Update'"
                   type="submit"
                   color="primary"
-                  class="text-capitalize q-px-md"
+                  class="text-capitalize q-px-md text-weight-light text-subtitle2"
                 />
 
                 <q-btn
@@ -155,10 +161,90 @@
                   size="sm"
                   label="Reset"
                   type="reset"
-                  class="text-capitalize q-px-md q-mx-sm"
+                  class="text-capitalize q-px-md q-mx-sm text-weight-light text-subtitle2"
                 />
               </div>
             </q-form>
+          </q-card-section>
+        </q-card>
+      </q-dialog>
+      <q-dialog
+        v-model="openViewDialog"
+        persistent
+        ref="viewRef"
+      >
+        <q-card style="width: 700px; max-width: 80vw;" class="q-ma-lg">
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
+            {{ 'Account Details' }}
+            <q-space />
+            <q-btn dense flat icon="close" v-close-popup>
+              <q-tooltip>Close</q-tooltip>
+            </q-btn>
+          </q-bar>
+
+          <q-card-section>
+              <span class="text-subtitle1 text-primary"><u>{{account.partyName}}</u></span>
+              <q-input class="q-mt-lg"
+                dense readonly
+                v-model="account.accountHolder"
+                label="Account Holder"
+                full-width
+                lazy-rules
+                :rules="[val => (val && val.length > 0) || 'Account holder name']"
+              />
+              <div class="row">
+                <div class="col">
+                  <q-input
+                    dense readonly
+                    
+                    v-model="account.accountNumber"
+                    label="Account Number"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Account number']"
+                  />
+                </div>
+                <div class="col q-ml-sm">
+                  <q-input
+                    dense readonly 
+                    
+                    v-model="account.ifscCode"
+                    label="IFSC Code"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'IFSC Code']"
+                  />
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <q-input
+                    dense readonly
+                    
+                    v-model="account.bankName"
+                    label="Bank"
+                    full-width
+                  />
+                </div>
+                <div class="col q-ml-sm">
+                  <q-input
+                    dense readonly
+                    
+                    v-model="account.branchName"
+                    label="Branch"
+                    full-width
+                  />
+                </div>
+                <div class="col q-ml-sm">
+                  <q-input
+                    dense readonly
+                     
+                    v-model="account.branchCode"
+                    label="Branch Code"
+                    full-width
+                  />
+                </div>
+              </div>
           </q-card-section>
         </q-card>
       </q-dialog>
@@ -169,7 +255,7 @@
 import PartyAccountService from "../../../services/PartyAccountService"
 import PartyAccount from "../party/PartyAccounts.vue"
 import { commonMixin } from "../../../mixin/common"
-import { fasPlus, fasEdit, fasTrash } from "@quasar/extras/fontawesome-v5";
+import { fasPlus, fasEdit, fasTrash, fasEye} from "@quasar/extras/fontawesome-v5";
 import { ref } from 'vue'
 export default {
   name: 'PartyAccounts',
@@ -197,7 +283,8 @@ export default {
       icons: {
         plus: fasPlus,
         edit: fasEdit,
-        delete: fasTrash
+        delete: fasTrash,
+        view: fasEye
       }
     }
   },
@@ -218,7 +305,8 @@ export default {
       account: this.newAccount(),
       open: false,
       mode: "add",
-      dialogLabel: "New Account"
+      dialogLabel: "New Account",
+      openViewDialog: false
     };
   },
   methods: {
@@ -235,6 +323,10 @@ export default {
         address:'',
         update: false
       }
+    },
+    openView(account) {
+      this.account = account
+      this.openViewDialog = true
     },
     getPartyAccounts() {
       this.loading = true;

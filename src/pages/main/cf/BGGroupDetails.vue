@@ -45,7 +45,7 @@
                     </template>
                     <template v-slot:top-right>
                         <q-btn class="q-mr-md pointer text-capitalize" color="primary" flat round :icon="icons.add" @click="openDepositWindow()">
-                          <q-tooltip>Link otrher deposit(s)</q-tooltip>
+                          <q-tooltip>Link deposit(s)</q-tooltip>
                         </q-btn> 
                       <q-input
                         borderless
@@ -186,10 +186,17 @@
     </q-dialog>
   </div>
 </div>
+<AdminAuth :options="openAuthorization" 
+               :title="authTitle"
+               :message="authMessage"
+               :data="authData"
+               @cancel="cancelAuth"
+               @success="postApproval"></AdminAuth>
 </template>
 
 <script>
 // import {fasArrowLeft} from "@quasar/extras/fontawesome-v5";
+import AdminAuth from "../../auth/AdminAuth.vue"
 import {matAdd, matDelete, matBook, matCreditCard, matArrowBackIosNew, matCurrencyRupee} from "@quasar/extras/material-icons";
 import BgGroupService from "../../../services/BgGroupService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
@@ -256,6 +263,9 @@ export default {
   },
   watch: {
   },
+  components: {
+    AdminAuth
+  },
   created() {},
   mounted() {
     this.groupId = this.$route.params.groupId
@@ -264,6 +274,11 @@ export default {
   data() {
     return {
       clientId: this.getClientId(),
+      openAuthorization: false,
+      authTitle: '',
+      authMessage: '',
+      authData: null,
+      approvalType: '',
       groupId: this.$route.params.groupId,
       groupDetails: {
         "bgGroup": {},
@@ -289,9 +304,11 @@ export default {
   },
   methods: {
     openGuaranteeWindow() {
-      this.guarantees.splice(0, this.guarantees.length)
-      this.guaranteeList()
-      this.openGuarantee = true
+     this.approvalType = 'link_guarantee'
+     this.openAuth('Are you an admin?', 
+                    'Only an admin can crate link Bank Guarantee(s) to a Group.',
+                    true,
+                    null)
     },
     onHideGuarantee () {
       this.guarantees.splice(0, this.guarantees.length)
@@ -301,9 +318,11 @@ export default {
       this.onHideGuarantee()
     },
     openDepositWindow() {
-      this.deposits.splice(0, this.deposits.length)
-      this.depositList()
-      this.openDeposit = true
+     this.approvalType = 'link_deposit'
+     this.openAuth('Are you an admin?', 
+                    'Only an admin can crate link deposits to a BG group.',
+                    true,
+                    null)
     },
     onHideDeposit () {
       this.deposits.splice(0, this.deposits.length)
@@ -365,6 +384,7 @@ export default {
         this.success('Guarantee(s) Linked Successfully')
         this.getGroupDetails()
         this.guaranteeList()
+        this.guaranteeSelected = ref([])
       }).catch(err => {
         this.fail(this.getErrorMessage(err))
       });
@@ -388,54 +408,18 @@ export default {
       });
     },
     confirmRemoveGuarantee(guarantee) {
-      this.$q.dialog({
-        title: 'Are you sure?',
-        message: 'This will make this Gank Guarantee free from selected BG Group',
-        ok: {
-          size: 'sm',
-          color: 'primary',
-          push: true
-        },
-        cancel: {
-          capitalize: true,
-          size: 'sm',
-          outline: true,
-          push: true
-        },
-        persistent: true
-      }).onOk(() => {
-        this.removeGuarantee(guarantee)
-      }).onOk(() => {
-      }).onCancel(() => {
-        // console.log('>>>> Cancel')
-      }).onDismiss(() => {
-        // console.log('I am triggered on both OK and Cancel')
-      })
+      this.approvalType = 'remove_guarantee'
+      this.openAuth('Are you an admin?', 
+                    'Only Admin can do this operation.',
+                    true,
+                    guarantee)
     },
     confirmRemoveDeposit(deposit) {
-      this.$q.dialog({
-        title: 'Are you sure?',
-        message: 'This will make this collateral free from selected BG Group',
-        ok: {
-          size: 'sm',
-          color: 'primary',
-          push: true
-        },
-        cancel: {
-          capitalize: true,
-          size: 'sm',
-          outline: true,
-          push: true
-        },
-        persistent: true
-      }).onOk(() => {
-        this.removeDeposit(deposit)
-      }).onOk(() => {
-      }).onCancel(() => {
-        // console.log('>>>> Cancel')
-      }).onDismiss(() => {
-        // console.log('I am triggered on both OK and Cancel')
-      })
+      this.approvalType = 'remove_deposit'
+      this.openAuth('Are you an admin?', 
+                    'Only Admin can do this operation.',
+                    true,
+                    deposit)
     },
     removeGuarantee(guarantee) {
       // window.alert(JSON.stringify(guarantee))
@@ -474,6 +458,30 @@ export default {
       }).catch(err => {
         this.fail(this.getErrorMessage(err))
       });
+    },
+    postApproval(data){
+      if(this.approvalType === 'link_deposit') {
+        this.deposits.splice(0, this.deposits.length)
+        this.depositList()
+        this.openDeposit = true
+      } else if(this.approvalType === 'remove_deposit') {
+        this.removeDeposit(data)
+      } else if(this.approvalType === 'link_guarantee') {
+        this.guarantees.splice(0, this.guarantees.length)
+        this.guaranteeList()
+        this.openGuarantee = true
+      } else if(this.approvalType === 'remove_guarantee') {
+        this.removeGuarantee(data)
+      }
+    },
+    openAuth(title, message, options, data){
+      this.authTitle = title,
+      this.authMessage = message
+      this.openAuthorization = options
+      this.authData = data
+    },
+    cancelAuth(val) {
+      this.openAuthorization = val
     }
   }
 };
