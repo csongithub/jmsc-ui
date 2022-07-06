@@ -97,6 +97,12 @@
             </q-item-section>
             <q-item-section>Bidding</q-item-section>
           </q-item>
+          <q-item exact clickable v-ripple to="/site">
+            <q-item-section avatar>
+              <q-icon :name="icons.site" />
+            </q-item-section>
+            <q-item-section>Site</q-item-section>
+          </q-item>
           <q-separator></q-separator>
            <q-item exact clickable v-ripple to="/profile">
             <q-item-section avatar>
@@ -144,7 +150,6 @@
 </template>
 
 <script>
-import { useQuasar } from 'quasar'
 import { LocalStorage } from "quasar";
 import { commonMixin } from "../mixin/common";
 
@@ -156,7 +161,8 @@ import {
   fasMoneyBillAlt,
   fasGavel,
   fasPiggyBank,
-  fasBook
+  fasBook,
+  fasProjectDiagram
 } from "@quasar/extras/fontawesome-v5";
 import {
   matCurrencyRupee
@@ -197,7 +203,8 @@ export default {
         bidding: fasGavel,
         bank:fasPiggyBank,
         bgGroup: fasBook,
-        loan: matCurrencyRupee
+        loan: matCurrencyRupee,
+        site: fasProjectDiagram
       },
       quotes: [
         {

@@ -160,11 +160,11 @@
                     :rules="[val => (val && val.length > 0) || 'Notice Inviting Tender Number']"/>
                 </div>
                 <div>
-                  <q-input filled v-model="bid.nitDate" :rules="['YYYY-MM-DD']"  label="NIT Date">
+                  <q-input filled v-model="bid.nitDate" :rules="['DD-MM-YYYY']"  label="NIT Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="bid.nitDate" mask="YYYY-MM-DD">
+                        <q-date v-model="bid.nitDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -333,11 +333,11 @@
               </div>
               <div class="row">
                 <div class="col q-mr-md">
-                  <q-input filled v-model="bid.bidStartDate" :rules="['YYYY-MM-DD']"  label="Bid Submission Start Date">
+                  <q-input filled v-model="bid.bidStartDate" :rules="['DD-MM-YYYY']"  label="Bid Submission Start Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="bid.bidStartDate" mask="YYYY-MM-DD">
+                        <q-date v-model="bid.bidStartDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -348,11 +348,11 @@
                   </q-input>
                 </div>
                 <div class="col q-mr-md">
-                  <q-input filled v-model="bid.bidEndDate" :rules="['YYYY-MM-DD']"  label="Bid Submission End Date">
+                  <q-input filled v-model="bid.bidEndDate" :rules="['DD-MM-YYYY']"  label="Bid Submission End Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="bid.bidEndDate" mask="YYYY-MM-DD">
+                        <q-date v-model="bid.bidEndDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn v-close-popup class="text-capitalize" label="Close" color="primary" flat />
                           </div>
@@ -363,11 +363,11 @@
                   </q-input>
                 </div>
                 <div class="col">
-                  <q-input filled v-model="bid.bidOpeningDate" :rules="['YYYY-MM-DD']"  label="Bid Opening Date">
+                  <q-input filled v-model="bid.bidOpeningDate" :rules="['DD-MM-YYYY']"  label="Bid Opening Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="bid.bidOpeningDate" mask="YYYY-MM-DD">
+                        <q-date v-model="bid.bidOpeningDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -383,11 +383,11 @@
                    <q-select outlined v-model="bid.status" :options="bidStatusOptions" label="Status"/>
                 </div>
                 <div class="col q-mr-md">
-                  <q-input filled v-model="bid.bidSubmittedDate" :rules="['YYYY-MM-DD']"  label="Bid Submitted Date">
+                  <q-input filled v-model="bid.bidSubmittedDate" :rules="['DD-MM-YYYY']"  label="Bid Submitted Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="bid.bidSubmittedDate" mask="YYYY-MM-DD">
+                        <q-date v-model="bid.bidSubmittedDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>

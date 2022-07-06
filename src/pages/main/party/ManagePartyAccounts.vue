@@ -13,7 +13,8 @@
                 color="primary" 
                 size="sm"
                 label="Refresh"
-                icon="refresh" 
+                icon="refresh"
+                glossy
                 @click="getPartyAccounts()"/>
         <q-table
         class="my-sticky-header-table q-mt-sm"

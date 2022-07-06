@@ -16,6 +16,14 @@
         selection="single"
         v-model:selected="selected"
       >
+      <template v-slot:body-cell-amount="props">
+          <q-td :props="props">
+            <div>
+            <q-icon :name="icons.rupee"/>
+                {{props.row.amount.toLocaleString('en-IN')}}
+            </div>
+          </q-td>
+      </template>
       <template v-slot:body-cell-status="props">
           <q-td :props="props">
             <div v-if="props.row.status === 'ALIVE'" class="text-green text-overline">
@@ -91,7 +99,7 @@
         ref="nefCfRef"
       >
         <q-card style="width: 700px; max-width: 80vw;">
-          <q-bar class="bg-primary glossy">
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ dialogLabel }}
             <q-space />
             <q-btn dense flat icon="close" v-close-popup>
@@ -176,7 +184,6 @@
                 lazy-rules
                 :rules="[val => (val && val > 0) || 'Enter Amount']"
               />
-
               <div class="row">
                 <div class="col q-mr-md">
                   <q-input filled v-model="creditFacility.openDate" :rules="['YYYY-MM-DD']"  label="Open Date">
@@ -195,11 +202,11 @@
                 </div>
 
                 <div class="col">
-                  <q-input filled v-model="creditFacility.maturityDate" :rules="['YYYY-MM-DD']" label="Maturity Date">
+                  <q-input filled v-model="creditFacility.maturityDate" :rules="['DD-MM-YYYY']" label="Maturity Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="creditFacility.maturityDate" mask="YYYY-MM-DD">
+                        <q-date v-model="creditFacility.maturityDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -254,7 +261,7 @@ import BidService from "../../../services/BidService"
 import CreditFacility from "../cf/CreditFacility.vue"
 import { commonMixin } from "../../../mixin/common"
 import {fasEdit} from "@quasar/extras/fontawesome-v5";
-import {matAdd, matClose} from "@quasar/extras/material-icons";
+import {matAdd, matClose, matCurrencyRupee} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
 import { date } from 'quasar'
 export default {
@@ -291,7 +298,7 @@ export default {
           field: "maturityDate",
           sortable: true,
           format: val => date.formatDate(val, 'DD-MM-YYYY')
-          },
+        },
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
@@ -301,7 +308,8 @@ export default {
       icons: {
         plus: matAdd,
         edit: fasEdit,
-        close: matClose
+        close: matClose,
+        rupee: matCurrencyRupee
       }
     }
   },
@@ -395,8 +403,8 @@ export default {
       return {
         accountNumber: null,
         amount: null,
-        openDate: ref(this.getTodaysDate()),
-        maturityDate: ref(this.getTodaysDate()),
+        openDate: null,
+        maturityDate:null,
         issuerType: null,
         issuerName: null,
         issuerBranch: null,
@@ -474,21 +482,21 @@ export default {
        this.fail(this.getErrorMessage(err))
       });
     },
-    getTodaysDate() {
-      var today = new Date()
-      let year = today.getFullYear()
-      let date = today.getDate()
-      let month = today.getMonth() + 1
+    // getTodaysDate() {
+    //   var today = new Date()
+    //   let year = today.getFullYear()
+    //   let date = today.getDate()
+    //   let month = today.getMonth() + 1
 
-      if(date/10 < 1) {
-        date = '0'+ date
-      }
+    //   if(date/10 < 1) {
+    //     date = '0'+ date
+    //   }
 
-      if(month/10 < 1) {
-        month = '0' + month
-      }
-      return (year + '-' + month + '-' + date)
-    },
+    //   if(month/10 < 1) {
+    //     month = '0' + month
+    //   }
+    //   return (year + '-' + month + '-' + date)
+    // },
     openLinkageDetail(row) {
       console.log(JSON.stringify(row.id))
       this.$router.push({ name: "cfLinkageDetails", params: { facilityId: row.id, parent: 'ALL'}});

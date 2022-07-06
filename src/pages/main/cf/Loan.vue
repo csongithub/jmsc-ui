@@ -187,11 +187,11 @@
                 :rules="[val => (val && val > 0) || 'Enter Interest Rate']"
               />
               <div class="col q-mr-md">
-                <q-input filled v-model="loan.openingDate" :rules="['YYYY-MM-DD']"  label="Open Date">
+                <q-input filled v-model="loan.openingDate" :rules="['DD-MM-YYYY']"  label="Open Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="loan.openingDate" mask="YYYY-MM-DD">
+                        <q-date v-model="loan.openingDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>

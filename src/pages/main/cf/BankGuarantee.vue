@@ -15,6 +15,14 @@
         :filter="filter"
         v-model:selected="selected"
       >
+        <template v-slot:body-cell-amount="props">
+          <q-td :props="props">
+            <div>
+            <q-icon :name="icons.rupee"/>
+                {{props.row.amount.toLocaleString('en-IN')}}
+            </div>
+          </q-td>
+        </template>
         <template v-slot:body-cell-status="props">
           <q-td :props="props">
             <div v-if="props.row.status === 'ALIVE'" class="text-green text-overline">
@@ -82,8 +90,9 @@ import CreditFacilityService from "../../../services/CreditFacilityService"
 import CreditFacility from "../cf/CreditFacility.vue"
 import { commonMixin } from "../../../mixin/common"
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
-import {matClose} from "@quasar/extras/material-icons";
+import {matClose, matCurrencyRupee} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
+import { date } from 'quasar'
 export default {
   name: 'BankGuarantee',
   mixins: [commonMixin],
@@ -102,8 +111,22 @@ export default {
           sortable: true
         },
         {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
-        {name: "openDate",  align: "left", label: "Open Date", field: "openDate", sortable: true},
-        {name: "maturityDate",  align: "left", label: "Maturity Date", field: "maturityDate", sortable: true},
+        {
+          name: "openDate",
+          align: "left",
+          label: "Open Date",
+          field: "openDate",
+          sortable: true,
+          format: val => date.formatDate(val, 'DD-MM-YYYY')
+        },
+        {
+          name: "maturityDate",
+          align: "left", label:
+          "Maturity Date",
+          field: "maturityDate",
+          sortable: true,
+          format: val => date.formatDate(val, 'DD-MM-YYYY')
+        },
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
@@ -114,7 +137,8 @@ export default {
       icons: {
         plus: fasPlus,
         edit: fasEdit,
-        close: matClose
+        close: matClose,
+        rupee: matCurrencyRupee
       }
     }
   },
