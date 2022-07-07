@@ -116,16 +116,14 @@ export default {
           align: "left",
           label: "Open Date",
           field: "openDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {
           name: "maturityDate",
           align: "left", label:
           "Maturity Date",
           field: "maturityDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},

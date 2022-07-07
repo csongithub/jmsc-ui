@@ -227,12 +227,10 @@ export default {
         },
         {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
         {
-          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true
         },
         {
-          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true
         },
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
@@ -247,12 +245,10 @@ export default {
         },
         {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
         {
-          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true
         },
         {
-          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true
         },
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},

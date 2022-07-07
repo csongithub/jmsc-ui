@@ -186,11 +186,11 @@
               />
               <div class="row">
                 <div class="col q-mr-md">
-                  <q-input filled v-model="creditFacility.openDate" :rules="['YYYY-MM-DD']"  label="Open Date">
+                  <q-input dense outlined v-model="creditFacility.openDate" :rules="['DD-MM-YYYY']"  label="Open Date" placeholder="dd-mm-yyyy">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="creditFacility.openDate" mask="YYYY-MM-DD">
+                        <q-date v-model="creditFacility.openDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -202,7 +202,7 @@
                 </div>
 
                 <div class="col">
-                  <q-input filled v-model="creditFacility.maturityDate" :rules="['DD-MM-YYYY']" label="Maturity Date">
+                  <q-input dense outlined v-model="creditFacility.maturityDate" :rules="['DD-MM-YYYY']" label="Maturity Date" placeholder="dd-mm-yyyy">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
@@ -263,7 +263,6 @@ import { commonMixin } from "../../../mixin/common"
 import {fasEdit} from "@quasar/extras/fontawesome-v5";
 import {matAdd, matClose, matCurrencyRupee} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
-import { date } from 'quasar'
 export default {
   name: 'AllCF',
   mixins: [commonMixin],
@@ -271,6 +270,7 @@ export default {
     return {
       selected: ref([]),
       showClosed: ref(false),
+      date: ref(1657045800000),
       columns: [
         {name: "facilityType",  align: "left", label: "Type", field: "facilityType", sortable: true},
         {
@@ -288,16 +288,16 @@ export default {
           align: "left",
           label: "Open Date",
           field: "openDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
+          
         },
         {
           name: "maturityDate",
           align: "left", label:
           "Maturity Date",
           field: "maturityDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
+         
         },
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
@@ -404,7 +404,7 @@ export default {
         accountNumber: null,
         amount: null,
         openDate: null,
-        maturityDate:null,
+        maturityDate: null,
         issuerType: null,
         issuerName: null,
         issuerBranch: null,
@@ -482,21 +482,6 @@ export default {
        this.fail(this.getErrorMessage(err))
       });
     },
-    // getTodaysDate() {
-    //   var today = new Date()
-    //   let year = today.getFullYear()
-    //   let date = today.getDate()
-    //   let month = today.getMonth() + 1
-
-    //   if(date/10 < 1) {
-    //     date = '0'+ date
-    //   }
-
-    //   if(month/10 < 1) {
-    //     month = '0' + month
-    //   }
-    //   return (year + '-' + month + '-' + date)
-    // },
     openLinkageDetail(row) {
       console.log(JSON.stringify(row.id))
       this.$router.push({ name: "cfLinkageDetails", params: { facilityId: row.id, parent: 'ALL'}});

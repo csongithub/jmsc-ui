@@ -29,7 +29,6 @@
         :loading="loading"
         :pagination="site_pagination"
         :filter="filter"
-        selection="single"
         v-model:selected="selected"
       >
         <template v-slot:body-cell-agreement_value="props">
@@ -37,6 +36,14 @@
             <div>
             <q-icon :name="icons.rupee"/>
                 {{props.row.agreement_value.toLocaleString('en-IN')}}
+            </div>
+          </q-td>
+        </template>
+        <template v-slot:body-cell-actions="props">
+          <q-td :props="props">
+            <div class="pointer">
+               <!-- <q-icon color="primary" :name="icons.view" @click="openView(props.row)"/> -->
+               <q-icon class="q-ma-none q-pa-none" color="primary" :name="icons.edit" @click="editSite(props.row)"/>
             </div>
           </q-td>
         </template>
@@ -93,11 +100,11 @@
                 :rules="[val => (val && val.length > 0) || 'Enter Display Name']"
               />
               <q-select dense outlined v-model="bid" :options="bidList" label="Selet Bid" />
-              <div class="row q-mb-md" v-if="bid !== null">
-                <div class="col-1">{{'NIT:'}}</div>
-                <div class="col-3">{{bid.nit}}</div>
-                <div class="col-2">{{'Display Name:'}}</div>
-                <div class="col-3">{{bid.display_name}}</div>
+              <div class="row q-mb-lg" v-if="bid !== null">
+                <!-- <div class="col-1">{{'NIT:'}}</div>
+                <div class="col-3">{{bid.nit}}</div> -->
+                <div class="col-3">{{'Bid Display Name:'}}</div>
+                <div class="col">{{bid.display_name}}</div>
               </div>
               <div class="row">
                 <div class="col q-mr-md">
@@ -110,7 +117,7 @@
                   />
                 </div>
                 <div class="col q-mr-md">
-                  <q-input dense outlined v-model="site.agreement_date" :rules="['YYYY-MM-DD']"  label="Agreement Date">
+                  <q-input dense outlined v-model="site.agreement_date" :rules="['DD-MM-YYYY']"  label="Agreement Date" :placeholder="'dd-mm-yyyy'">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
@@ -197,10 +204,10 @@ export default {
           align: "left",
           label: "Agreement Date",
           field: "agreement_date",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
-        {name: "agreement_value",  align: "left", label: "Agreement Value", field: "agreement_value", sortable: true}
+        {name: "agreement_value",  align: "left", label: "Agreement Value", field: "agreement_value", sortable: true},
+         {name: "actions", required: false, label: "Actions", field: "actions"}
       ],
       icons: {
         plus: fasPlus,
@@ -272,14 +279,19 @@ export default {
         this.fail(this.getErrorMessage(err))
       });
     },
+    editSite(row){
+      console.log(JSON.stringify(row))
+      this.site = row
+      console.log(JSON.stringify(this.site))
+      this.dialog_label = "Update Site";
+      this.getBids()
+      this.open = true;
+    },
     beforeShow() {},
     openDialog(mode) {
       this.mode = mode;
       if (this.mode === "add") {
         this.dialog_label = "New Site";
-      } else if (this.mode === "edit") {
-        this.site = this.selected[0];
-        this.dialog_label = "Update Site";
       }
       this.getBids()
       this.open = true;
@@ -292,6 +304,12 @@ export default {
           if(this.isNullOrUndefined(bid.siteId)){
              let object = {'value': bid.id, 'nit': bid.nit ,'label': bid.title, 'display_name': bid.displayName}
              this.bidList.push(object)
+          } else {
+            if(this.site.bid_linkage_id === bid.id) {
+             let object = {'value': bid.id, 'nit': bid.nit ,'label': bid.title, 'display_name': bid.displayName}
+             this.bidList.push(object)
+             this.bid = object
+            }
           }
         }
       }).catch(err => {

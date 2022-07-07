@@ -92,7 +92,6 @@ import { commonMixin } from "../../../mixin/common"
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 import {matClose, matCurrencyRupee} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
-import { date } from 'quasar'
 export default {
   name: 'BankGuarantee',
   mixins: [commonMixin],
@@ -116,16 +115,14 @@ export default {
           align: "left",
           label: "Open Date",
           field: "openDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {
           name: "maturityDate",
           align: "left", label:
           "Maturity Date",
           field: "maturityDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},

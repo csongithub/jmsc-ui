@@ -118,8 +118,8 @@
                     persistent
                     @hide="onHide"
                     ref="newGroupRef">
-    <q-card style="width: 1000px; max-width: 80vw;">
-      <q-bar class="bg-primary glossy">
+    <q-card style="width: 500px; max-width: 80vw;">
+      <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ dialogLabel }}
         <q-space />
         <q-btn dense flat icon="close" v-close-popup>
@@ -187,7 +187,7 @@
                 :rules="[val => (val && val > 0) || 'Enter Interest Rate']"
               />
               <div class="col q-mr-md">
-                <q-input filled v-model="loan.openingDate" :rules="['DD-MM-YYYY']"  label="Open Date">
+                <q-input dense outlined placeholder="dd-mm-yyyy" v-model="loan.openingDate" :rules="['DD-MM-YYYY']"  label="Open Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
@@ -340,7 +340,6 @@ import AdminAuth from "../../auth/AdminAuth.vue"
 import LoanService from "../../../services/LoanService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import { commonMixin } from "../../../mixin/common"
-import { date } from 'quasar'
 import { ref } from 'vue'
 export default {
   name: 'Loans',
@@ -386,7 +385,7 @@ export default {
           field: "interestRate",  format: val => `${val}`
         },
         { name: "openingDate", required: true, label: "Open Date", align: "left", sortable: true,
-          field: "openingDate",  format: val => date.formatDate(val, 'DD-MM-YYYY')
+          field: "openingDate"
         },
         { name: "bankName", label: "Bank", align: "left", sortable: true,
           field: "bankName",  format: val => `${val}`
@@ -410,11 +409,9 @@ export default {
         {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
         {
           name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
         },
         {
           name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
         },
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true}
@@ -427,12 +424,10 @@ export default {
         },
         {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true, format: val => val ? val.toLocaleString('en-IN') : 0},
         {
-          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true
         },
         {
-          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true
         },
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
@@ -574,7 +569,7 @@ export default {
         "link": true
       }
       let self = this
-
+      console.log(JSON.stringify('REQUEST: ' + manageCollateralRequest))
       LoanService.manageCollateral(manageCollateralRequest)
         .then(response => {
         console.log(JSON.stringify(response))
