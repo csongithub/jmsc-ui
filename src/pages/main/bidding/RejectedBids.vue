@@ -1088,7 +1088,7 @@ export default {
       });
     },
     getBidSourceSiteOptions() {
-      EnumService.getEumOptionsByName('EBidSourceSite')
+      EnumService.getOptions('EBidSourceSite')
         .then(response => {
           this.bidSourceSiteOPtions = []
           this.bidSourceSiteOPtions = response

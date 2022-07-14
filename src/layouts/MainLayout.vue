@@ -62,7 +62,7 @@
               <q-item-section avatar>
                 <q-icon :name="icons.creditors" />
               </q-item-section>
-              <q-item-section>Party</q-item-section>
+              <q-item-section>Party Accounts</q-item-section>
             </q-item>
             <q-item exact clickable v-ripple to="/payment" class="q-ml-md">
               <q-item-section avatar>
@@ -102,6 +102,12 @@
               <q-icon :name="icons.site" />
             </q-item-section>
             <q-item-section>Site</q-item-section>
+          </q-item>
+          <q-item exact clickable v-ripple to="/party">
+            <q-item-section avatar>
+              <q-icon :name="icons.creditors" />
+            </q-item-section>
+            <q-item-section>Party</q-item-section>
           </q-item>
           <q-separator></q-separator>
            <q-item exact clickable v-ripple to="/profile">

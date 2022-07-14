@@ -71,6 +71,7 @@
                 size="sm"
                 glossy
                 @click="!showClosed ? getAllActiveFacilities() : getAllClosedFacilities()"/>
+                {{'SUM:' + sum}}
         </template>
         <template v-slot:top-right>
          <q-checkbox class="q-mr-sm" v-model="showClosed" label="Show Closed" color="primary" @click="toggelShowAll()">

@@ -1,4 +1,3 @@
-/* eslint-disable vue/no-deprecated-slot-scope-attribute */
 <template>
     <div>
         <PartyAccount/>
@@ -41,9 +40,9 @@
         </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <div class="pointer">
+            <div >
                <!-- <q-icon color="primary" :name="icons.view" @click="openView(props.row)"/> -->
-               <q-icon class="q-ma-none q-pa-none" color="primary" :name="icons.edit" @click="editSite(props.row)"/>
+               <q-icon class="q-ma-none q-pa-none pointer" color="primary" :name="icons.edit" @click="editSite(props.row)"/>
             </div>
           </q-td>
         </template>
@@ -207,7 +206,7 @@ export default {
           sortable: true
         },
         {name: "agreement_value",  align: "left", label: "Agreement Value", field: "agreement_value", sortable: true},
-         {name: "actions", required: false, label: "Actions", field: "actions"}
+        {name: "actions", required: false, label: "Actions", field: "actions"}
       ],
       icons: {
         plus: fasPlus,

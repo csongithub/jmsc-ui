@@ -30,7 +30,8 @@ const routes = [
       { name: 'acceptedBids', path: '/accepted_bids', component: () => import('pages/main/bidding/AcceptedBids.vue') },
       { name: 'rejectedBids', path: '/rejected_bids', component: () => import('pages/main/bidding/RejectedBids.vue') },
       { name: 'awardedBids', path: '/awarded_bids', component: () => import('pages/main/bidding/AwardedBids.vue') },
-      { name: 'site', path: '/site', component: () => import('pages/main/site/Site.vue') }
+      { name: 'site', path: '/site', component: () => import('pages/main/site/Site.vue') },
+      { name: 'party', path: '/party', component: () => import('pages/main/party/Party.vue') }
     ]
   },
   {

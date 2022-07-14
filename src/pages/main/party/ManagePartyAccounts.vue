@@ -1,14 +1,14 @@
 <template>
     <div>
         <PartyAccount/>
-        <q-btn class="q-mt-sm q-mr-sm text-capitalize text-white text-weight-light text-subtitle2" 
+        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Add" 
                size="sm"
                glossy  
                @click="openDialog('add')"
                :icon="icons.plus"/>
-         <q-btn class="q-mt-sm q-mr-sm text-capitalize text-weight-light text-subtitle2" 
+         <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                 outline
                 color="primary" 
                 size="sm"
@@ -32,9 +32,9 @@
       >
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
-            <div class="pointer">
-               <q-icon color="primary" :name="icons.view" @click="openView(props.row)"/>
-               <q-icon class="q-ml-sm" color="primary" :name="icons.edit" @click="editAccount(props.row)"/>
+            <div>
+               <q-icon class="pointer" color="primary" :name="icons.view" @click="openView(props.row)"/>
+               <q-icon class="q-ml-sm pointer" color="primary" :name="icons.edit" @click="editAccount(props.row)"/>
             </div>
           </q-td>
         </template>
@@ -386,9 +386,3 @@ export default {
   }
 };
 </script>
-
-<style>
-.pointer {
-  cursor: pointer;
-}
-</style>

@@ -13,6 +13,7 @@
         :loading="loading"
         :pagination="myPagination"
         :filter="filter"
+        selection="multiple"
         v-model:selected="selected"
       >
         <template v-slot:body-cell-amount="props">
@@ -55,11 +56,19 @@
                 size="sm"
                 glossy
                 @click="!showClosed ? getAllActiveFixDeposits() : getAllClosedFixDeposits()"/>
-        </template>
-        <template v-slot:top-right>
           <q-checkbox class="q-mr-sm" v-model="showClosed" label="Show Closed" color="primary" @click="toggelShowAll()">
             <q-tooltip>Show all facility including closed</q-tooltip>
           </q-checkbox>
+        </template>
+        <template v-slot:top-right>
+          <q-bar v-if="selectedSum > 0"  class="bg-primary text-white q-mr-md text-weight-light">
+            <div >
+              <q-icon :name="icons.rupee"/>
+                {{selectedSum.toLocaleString('en-IN')}}
+            </div>
+             <q-tooltip>Sum of all selected facilities</q-tooltip>
+          </q-bar>
+          
           <q-input
             borderless
             dense
@@ -96,6 +105,16 @@ import { date } from 'quasar'
 export default {
   name: 'FixedDeposit',
   mixins: [commonMixin],
+  watch: {
+    selected(selected) {
+      this.selectedSum = 0
+      if(selected.length > 0) {
+        for(let cf of selected) {
+          this.selectedSum = this.selectedSum + cf.amount
+        }
+      }
+    }
+  },
   setup () {
     return {
       selected: ref([]),
@@ -161,7 +180,8 @@ export default {
       account: [],
       open: false,
       mode: "add",
-      dialogLabel: "New Facility"
+      dialogLabel: "New Facility",
+      selectedSum: 0
     };
   },
   methods: {
