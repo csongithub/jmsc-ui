@@ -206,7 +206,7 @@ export default {
           sortable: true
         },
         {name: "agreement_value",  align: "left", label: "Agreement Value", field: "agreement_value", sortable: true},
-        {name: "actions", required: false, label: "Actions", field: "actions"}
+        {name: "actions", required: true, label: "Actions", field: "actions"}
       ],
       icons: {
         plus: fasPlus,

@@ -82,9 +82,11 @@
           </q-bar>
           <div class="row q-ma-sm">
             <div class="col from q-mr-sm">
+              <q-card class="my-card">
+              <q-card-section>
               <div class="row">
                 <div class="col">
-                  <q-bar class="bg-primary text-white text-weight-light text-subtitle1 q-mb-md">{{'From'}}</q-bar>
+                  <q-bar class="bg-primary text-white text-weight-light  q-mb-md">{{'From Account'}}</q-bar>
                 </div>
               </div>
               <div class="row">
@@ -103,11 +105,15 @@
                 <div class="col-4">IFSC:</div>
                 <div class="col">{{fromAccount.ifscCode}}</div>
               </div>
+              </q-card-section>
+              </q-card>
             </div>
             <div class="col to">
+              <q-card class="my-card">
+              <q-card-section>
               <div class="row">
                 <div class="col">
-                  <q-bar class="bg-primary text-white text-weight-light text-subtitle1 q-mb-md">{{'To'}}</q-bar>
+                  <q-bar class="bg-primary text-white text-weight-light q-mb-md">{{'To Account'}}</q-bar>
                 </div>
               </div>
               <div class="row">
@@ -119,6 +125,10 @@
                 <div class="col">{{selected[0].accountHolder}}</div>
               </div>
               <div class="row">
+                <div class="col-4">Bank:</div>
+                <div class="col">{{selected[0].bankName}}</div>
+              </div>
+              <div class="row">
                 <div class="col-4">Account No:</div>
                 <div class="col">{{selected[0].accountNumber}}</div>
               </div>
@@ -126,9 +136,11 @@
                 <div class="col-4">IFSC:</div>
                 <div class="col">{{selected[0].ifscCode}}</div>
               </div>
+              </q-card-section>
+              </q-card>
             </div>
           </div>
-           <q-separator/>
+          
            <div class="q-ma-sm">
            <q-input class="q-mt-md"
                 dense

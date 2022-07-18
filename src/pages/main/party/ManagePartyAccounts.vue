@@ -72,24 +72,31 @@
 
           <q-card-section>
             <q-form @submit="addPartyAccount" @reset="reset" class="q-gutter-md">
-              <q-input
-                dense
-                outlined
-                v-model="account.partyName"
-                label="Party Name"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Party name']"
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.accountHolder"
-                label="Account Holder"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Account holder name']"
-              />
+              <div class="row">
+                <div class="col">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.partyName"
+                    label="Party Name"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Party name']"
+                  />
+                </div>
+                <div class="col q-ml-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.accountHolder"
+                    label="Account Holder"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Account holder name']"
+                  />
+                </div>
+              </div>
+
               <div class="row">
                 <div class="col">
                   <q-input

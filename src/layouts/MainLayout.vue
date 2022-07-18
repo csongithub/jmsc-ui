@@ -109,6 +109,12 @@
             </q-item-section>
             <q-item-section>Party</q-item-section>
           </q-item>
+          <q-item exact clickable v-ripple to="/machine">
+            <q-item-section avatar>
+              <q-icon :name="icons.machine" />
+            </q-item-section>
+            <q-item-section>Vehicle</q-item-section>
+          </q-item>
           <q-separator></q-separator>
            <q-item exact clickable v-ripple to="/profile">
             <q-item-section avatar>
@@ -168,7 +174,8 @@ import {
   fasGavel,
   fasPiggyBank,
   fasBook,
-  fasProjectDiagram
+  fasProjectDiagram,
+  fasCar
 } from "@quasar/extras/fontawesome-v5";
 import {
   matCurrencyRupee
@@ -210,7 +217,8 @@ export default {
         bank:fasPiggyBank,
         bgGroup: fasBook,
         loan: matCurrencyRupee,
-        site: fasProjectDiagram
+        site: fasProjectDiagram,
+        machine: fasCar
       },
       quotes: [
         {

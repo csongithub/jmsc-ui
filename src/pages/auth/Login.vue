@@ -5,14 +5,12 @@
       <div class="text-weight-bolder text-white text-h6 text-uppercase">
         {{'constructo'}}
       </div>
-  
     </q-toolbar>
   </q-header>
   
   <q-page-container>
     
     <q-page class="flex flex-center">
-      <!-- <q-parallax src="https://cdn.quasar.dev/img/parallax2.jpg"> -->
       <q-card 
         
         class="row my-card items-center q-pa-none q-ma-none shadow-24">

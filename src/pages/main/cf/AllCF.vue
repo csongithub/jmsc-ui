@@ -13,14 +13,14 @@
         :loading="loading"
         :pagination="myPagination"
         :filter="filter"
-        selection="single"
+        selection="multiple"
         v-model:selected="selected"
       >
       <template v-slot:body-cell-amount="props">
           <q-td :props="props">
             <div>
-            <q-icon :name="icons.rupee"/>
-                {{props.row.amount.toLocaleString('en-IN')}}
+              <q-icon :name="icons.rupee"/>
+              {{props.row.amount.toLocaleString('en-IN') + '0.00'}}
             </div>
           </q-td>
       </template>
@@ -71,12 +71,23 @@
                 size="sm"
                 glossy
                 @click="!showClosed ? getAllActiveFacilities() : getAllClosedFacilities()"/>
-                {{'SUM:' + sum}}
+          <q-checkbox class="q-mr-sm" v-model="showClosed" label="Show Closed" color="primary" @click="toggelShowAll()">
+           <q-tooltip>Show all closed/terminated facilities</q-tooltip>
+         </q-checkbox>
         </template>
         <template v-slot:top-right>
-         <q-checkbox class="q-mr-sm" v-model="showClosed" label="Show Closed" color="primary" @click="toggelShowAll()">
-          <q-tooltip>Show all facility including closed</q-tooltip>
-         </q-checkbox>
+          <q-bar v-if="selectedSum > 0"  class="bg-primary text-white q-mr-md text-weight-light shadow-4">
+            <div >
+              <q-icon :name="icons.rupee"/>
+                {{selectedSum.toLocaleString('en-IN') + '.00'}}
+            </div>
+             <q-tooltip 
+                  transition-show="scale"  
+                  transition-hide="scale" 
+                  class="bg-primary text-white shadow-4">
+                  {{inWords()}}
+              </q-tooltip>
+          </q-bar>
           <q-input
             borderless
             dense
@@ -257,6 +268,7 @@
 <script>
 
 import AdminAuth from "../../auth/AdminAuth.vue"
+import PaymentService from "../../../services/PaymentService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import BidService from "../../../services/BidService"
 import CreditFacility from "../cf/CreditFacility.vue"
@@ -267,6 +279,17 @@ import { ref } from 'vue'
 export default {
   name: 'AllCF',
   mixins: [commonMixin],
+  watch: {
+    selected(selected) {
+      this.selectedSum = 0
+      if(selected.length > 0) {
+        for(let cf of selected) {
+          this.selectedSum = this.selectedSum + cf.amount
+        }
+        this.inWords()
+      }
+    }
+  },
   setup () {
     return {
       selected: ref([]),
@@ -344,10 +367,20 @@ export default {
       postOfficeLabel: 'Post Office',
       postOffice: [],
       openPledge: false,
-      bid: {}
+      bid: {},
+      selectedSum: 0
     };
   },
   methods: {
+    inWords() {
+      let words = ''
+        if(this.selectedSum > 0)
+            words =  'Rupees ' + PaymentService.convertNumberToWords(this.selectedSum) + 'Only'
+        else
+            words = 'Sum of all selected facilities'
+      // window.prompt(JSON.stringify(words))
+      return words;
+    },
     toggelShowAll(){
       if(!this.showClosed){
          this.getAllActiveFacilities()
