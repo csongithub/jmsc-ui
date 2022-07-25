@@ -1,7 +1,7 @@
 import { api } from "src/boot/axios";
 
 export default {
-    getEumOptionsByName(enum_name) {
+    getOptions(enum_name) {
         return api.get( '/v1/enums/get_all_options/' + enum_name).then(response => {
             let options = response.data;
             return options;

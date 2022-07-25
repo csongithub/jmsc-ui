@@ -118,8 +118,8 @@
                     persistent
                     @hide="onHide"
                     ref="newGroupRef">
-    <q-card style="width: 1000px; max-width: 80vw;">
-      <q-bar class="bg-primary glossy">
+    <q-card style="width: 500px; max-width: 80vw;">
+      <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ dialogLabel }}
         <q-space />
         <q-btn dense flat icon="close" v-close-popup>
@@ -187,11 +187,11 @@
                 :rules="[val => (val && val > 0) || 'Enter Interest Rate']"
               />
               <div class="col q-mr-md">
-                <q-input filled v-model="loan.openingDate" :rules="['YYYY-MM-DD']"  label="Open Date">
+                <q-input dense outlined placeholder="dd-mm-yyyy" v-model="loan.openingDate" :rules="['DD-MM-YYYY']"  label="Open Date">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="loan.openingDate" mask="YYYY-MM-DD">
+                        <q-date v-model="loan.openingDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -266,14 +266,29 @@
   </q-dialog>
 
   <q-dialog v-model="openCollateral" persistent  @hide="onHideCollateral" ref="collateralRef">
-      <q-card style="width: 1000px; max-width: 80vw;">
-        <q-bar class="bg-primary glossy">
+      <q-card v-if="approvalRequired">
+        <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ 'Link Collateral' }}
           <q-space />
           <q-btn dense flat icon="close" v-close-popup>
             <q-tooltip>Close</q-tooltip>
           </q-btn>
         </q-bar>
+        <q-card-section>
+          <AdminAuth :embedded="'true'"
+               :options="openAuthorization" 
+               @success="approvalRequired = !approvalRequired"></AdminAuth>
+        </q-card-section>
+      </q-card>
+      <q-card v-else style="width: 1000px; max-width: 80vw;">
+        <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
+            {{ 'Link Collateral' }}
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip>Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+        
         <q-card-section>
           <q-table class="my-sticky-header-table" title="Select Collateral" dense bordered  flat
                     :rows="collateral"
@@ -308,15 +323,23 @@
     </q-dialog>
 
 </div>
+
+<AdminAuth :options="openAuthorization" 
+               :title="authTitle"
+               :message="authMessage"
+               :data="authData"
+               @cancel="cancelAuth"
+               @success="removeCollateral"></AdminAuth>
 </template>
 
 <script>
+
 import { fasTh, fasList,} from "@quasar/extras/fontawesome-v5";
 import {matAdd, matRefresh, matCurrencyRupee, matLink, matEdit, matDelete, matExpandMore, matExpandLess} from "@quasar/extras/material-icons";
+import AdminAuth from "../../auth/AdminAuth.vue"
 import LoanService from "../../../services/LoanService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import { commonMixin } from "../../../mixin/common"
-import { date } from 'quasar'
 import { ref } from 'vue'
 export default {
   name: 'Loans',
@@ -362,7 +385,7 @@ export default {
           field: "interestRate",  format: val => `${val}`
         },
         { name: "openingDate", required: true, label: "Open Date", align: "left", sortable: true,
-          field: "openingDate",  format: val => date.formatDate(val, 'DD-MM-YYYY')
+          field: "openingDate"
         },
         { name: "bankName", label: "Bank", align: "left", sortable: true,
           field: "bankName",  format: val => `${val}`
@@ -386,11 +409,9 @@ export default {
         {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
         {
           name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
         },
         {
           name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
         },
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true}
@@ -403,12 +424,10 @@ export default {
         },
         {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true, format: val => val ? val.toLocaleString('en-IN') : 0},
         {
-          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true
         },
         {
-          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true
         },
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
@@ -419,6 +438,9 @@ export default {
   },
   watch: {
   },
+  components: {
+    AdminAuth
+  },
   created() {},
   mounted() {
     this.allLoans()
@@ -426,6 +448,11 @@ export default {
   data() {
     return {
       clientId: this.getClientId(),
+      openAuthorization: false,
+      authTitle: '',
+      authMessage: '',
+      authData: null,
+      approvalRequired: true,
       pagination:  { rowsPerPage: 10 },
       filter: "",
       linkedColateralFilder: "",
@@ -443,7 +470,6 @@ export default {
       collateralFilter: "",
       editLoanRow: null,
       list: []
-
     };
   },
   methods: {
@@ -510,7 +536,8 @@ export default {
     reset() {
       this.loan = this.newLoan();
     },
-    showFreeColateral(loanRow){
+    showFreeColateral(loanRow) {
+      this.approvalRequired = true
       this.editLoanRow = loanRow
       this.openCollateral = true;
       let self = this
@@ -542,10 +569,12 @@ export default {
         "link": true
       }
       let self = this
+      console.log(JSON.stringify('REQUEST: ' + manageCollateralRequest))
       LoanService.manageCollateral(manageCollateralRequest)
         .then(response => {
         console.log(JSON.stringify(response))
         self.cancelLinkCollateral()
+        this.success('Operation successful, please refresh')
       }).catch(err => {
         self.fail(self.getErrorMessage(err))
       });
@@ -566,32 +595,17 @@ export default {
       });
     },
     confirmRemoveCollateral(loan, collateral){
-      this.$q.dialog({
-        title: 'Are you sure?',
-        message: 'This will make this collateral free from yhis loan',
-        ok: {
-          size: 'sm',
-          color: 'primary',
-          push: true
-        },
-        cancel: {
-          capitalize: true,
-          size: 'sm',
-          outline: true,
-          push: true
-        },
-        persistent: true
-      }).onOk(() => {
-        this.removeCollateral(loan, collateral)
-      }).onOk(() => {
-      }).onCancel(() => {
-        // console.log('>>>> Cancel')
-      }).onDismiss(() => {
-        // console.log('I am triggered on both OK and Cancel')
-      })
+      let data= {
+        'loan': loan,
+        'collateral': collateral
+      }
+      this.openAuth('Are you sure?', 
+                    'This will make this collateral free from this loan.',
+                    true,
+                    data)
     },
-    removeCollateral(loan, collateral){
-       let collateralList = [collateral]
+    removeCollateralInternal(loan, collateral){
+      let collateralList = [collateral]
       let manageCollateralRequest = {
         "loan": loan,
         "collateral": collateralList,
@@ -602,10 +616,25 @@ export default {
         .then(response => {
         console.log(JSON.stringify(response))
         self.cancelLinkCollateral()
+        this.success('Remove successful, please refresh')
       }).catch(err => {
         self.fail(self.getErrorMessage(err))
       });
-    }
+    },
+    removeCollateral(data) {
+      // window.alert('remove_collateral' + JSON.stringify(data))
+      this.removeCollateralInternal(data.loan, data.collateral)
+
+    },
+    openAuth(title, message, options, data){
+      this.authTitle = title,
+      this.authMessage = message
+      this.openAuthorization = options
+      this.authData = data
+    },
+    cancelAuth(val) {
+      this.openAuthorization = val
+    },
   }
 };
 </script>

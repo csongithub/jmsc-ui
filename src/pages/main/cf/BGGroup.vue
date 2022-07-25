@@ -162,9 +162,16 @@
     </q-card>
   </q-dialog>
 </div>
+<AdminAuth :options="openAuthorization" 
+               :title="authTitle"
+               :message="authMessage"
+               :data="authData"
+               @cancel="cancelAuth"
+               @success="postApproval"></AdminAuth>
 </template>
 
 <script>
+import AdminAuth from "../../auth/AdminAuth.vue"
 import { fasTh, fasList} from "@quasar/extras/fontawesome-v5";
 import {matAdd, matRefresh, matArrowForwardIos, matCurrencyRupee} from "@quasar/extras/material-icons";
 import BgGroupService from "../../../services/BgGroupService"
@@ -239,6 +246,9 @@ export default {
   },
   watch: {
   },
+  components: {
+    AdminAuth
+  },
   created() {},
   mounted() {
     this.getAllGroups()
@@ -246,6 +256,11 @@ export default {
   data() {
     return {
       clientId: this.getClientId(),
+      openAuthorization: false,
+      authTitle: '',
+      authMessage: '',
+      authData: null,
+      approvalType: '',
       groupPagination:  { rowsPerPage: 10 },
       mode: "add",
       dialogLabel: "Create New Group",
@@ -285,7 +300,15 @@ export default {
     },
     openDialog(mode) {
       this.mode = mode;
-      if (this.mode === "add") {
+      this.approvalType = 'create_bg_group'
+      this.openAuth('Are you an admin?', 
+                    'Only an admin can create BG Group',
+                    true,
+                    null)
+    },
+    postApproval() {
+      if(this.approvalType === 'create_bg_group') {
+        if (this.mode === "add") {
         this.dialogLabel = "Create New Group"
       } else if (this.mode === "edit") {
         this.group = this.selected[0]
@@ -295,6 +318,9 @@ export default {
       this.depositsList()
       this.guaranteesList()
       this.open = true;
+      } else {
+
+      }
     },
     closeDialog() {
       this.open = false
@@ -358,6 +384,15 @@ export default {
     openGroupDetail(group) {
       console.log(JSON.stringify(group.id))
       this.$router.push({ name: "bgGroupDetails", params: { groupId: group.id}});
+    },
+    openAuth(title, message, options, data){
+      this.authTitle = title,
+      this.authMessage = message
+      this.openAuthorization = options
+      this.authData = data
+    },
+    cancelAuth(val) {
+      this.openAuthorization = val
     }
   }
 };

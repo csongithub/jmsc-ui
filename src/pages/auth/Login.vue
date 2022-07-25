@@ -5,16 +5,14 @@
       <div class="text-weight-bolder text-white text-h6 text-uppercase">
         {{'constructo'}}
       </div>
-  
     </q-toolbar>
   </q-header>
   
   <q-page-container>
     
     <q-page class="flex flex-center">
-      <!-- <q-parallax src="https://cdn.quasar.dev/img/parallax2.jpg"> -->
       <q-card 
-        :style="$q.platform.is.desktop ? 'width:50%' : ''"
+        
         class="row my-card items-center q-pa-none q-ma-none shadow-24">
       
         <q-card-section
@@ -54,12 +52,20 @@
 
                 <q-input
                   dense
-                  type="password"
+                 :type="isPwd ? 'password' : 'text'"
                   v-model="loginRequest.password"
                   label="Password"
                   lazy-rules
                   :rules="[val => (val && val.length > 0) || 'Enter password']"
-                />
+                >
+                  <template v-slot:append>
+                        <q-icon
+                            :name="isPwd ? 'visibility_off' : 'visibility'"
+                            class="cursor-pointer"
+                            @click="isPwd = !isPwd"
+                        />
+                    </template>
+                </q-input>
                 <div>
                   <q-btn
                     dense
@@ -110,6 +116,7 @@ export default {
         message: '',
         token: ''
       },
+      isPwd: true
     };
   },
 

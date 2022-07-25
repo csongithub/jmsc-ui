@@ -14,7 +14,7 @@
                 </q-select>
               </div>
               <div class="col param">
-                <q-btn v-if="selected.length > 0" class="q-ml-sm text-capitalize" 
+                <q-btn v-if="selected.length > 0" class="q-ml-sm text-capitalize text-weight-light text-subtitle2" 
                   color="primary"
                   label="Create" 
                   size="md"
@@ -72,40 +72,86 @@
         @hide="onHide"
         ref="createPaymentRef"
       >
-        <q-card flat bordered>
-          <q-bar class="bg-primary glossy">
+        <q-card flat bordered style="width: 750px; max-width: 90vw;">
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ dialogLabel }}
             <q-space />
             <q-btn dense flat icon="close" v-close-popup>
               <q-tooltip>Close</q-tooltip>
             </q-btn>
           </q-bar>
-          <q-card-section>
-            <div class="text-h6">From Account</div>
-            <div class="text-subtitle2">Account Name: {{fromAccount.accountHolder}}</div>
-            <div class="text-subtitle2">Bank Name: {{fromAccount.bankName}}</div>
-            <div class="text-subtitle2">Account Number: {{fromAccount.accountNumber}}</div>
-            <div class="text-subtitle2">IFSC Code: {{fromAccount.ifscCode}}</div>
-          </q-card-section>
-          <q-separator/>
-          <q-card-section>
-            <div class="text-h6">To Account</div>
-            <div class="text-subtitle2">Party Name: {{selected[0].partyName}}</div>
-            <div class="text-subtitle2">Account Name: {{selected[0].accountHolder}}</div>
-            <div class="text-subtitle2">Account Number: {{selected[0].accountNumber}}</div>
-            <div class="text-subtitle2">IFSC Code: {{selected[0].ifscCode}}</div>
-          </q-card-section>
-           <q-separator/>
+          <div class="row q-ma-sm">
+            <div class="col from q-mr-sm">
+              <q-card class="my-card">
+              <q-card-section>
+              <div class="row">
+                <div class="col">
+                  <q-bar class="bg-primary text-white text-weight-light  q-mb-md">{{'From Account'}}</q-bar>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-4">Name:</div>
+                <div class="col">{{fromAccount.accountHolder}}</div>
+              </div>
+              <div class="row">
+                <div class="col-4">Bank:</div>
+                <div class="col">{{fromAccount.bankName}}</div>
+              </div>
+              <div class="row">
+                <div class="col-4">Account No:</div>
+                <div class="col">{{fromAccount.accountNumber}}</div>
+              </div>
+              <div class="row">
+                <div class="col-4">IFSC:</div>
+                <div class="col">{{fromAccount.ifscCode}}</div>
+              </div>
+              </q-card-section>
+              </q-card>
+            </div>
+            <div class="col to">
+              <q-card class="my-card">
+              <q-card-section>
+              <div class="row">
+                <div class="col">
+                  <q-bar class="bg-primary text-white text-weight-light q-mb-md">{{'To Account'}}</q-bar>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-4">Party:</div>
+                <div class="col">{{selected[0].partyName}}</div>
+              </div>
+              <div class="row">
+                <div class="col-4">Account Holder:</div>
+                <div class="col">{{selected[0].accountHolder}}</div>
+              </div>
+              <div class="row">
+                <div class="col-4">Bank:</div>
+                <div class="col">{{selected[0].bankName}}</div>
+              </div>
+              <div class="row">
+                <div class="col-4">Account No:</div>
+                <div class="col">{{selected[0].accountNumber}}</div>
+              </div>
+              <div class="row">
+                <div class="col-4">IFSC:</div>
+                <div class="col">{{selected[0].ifscCode}}</div>
+              </div>
+              </q-card-section>
+              </q-card>
+            </div>
+          </div>
+          
+           <div class="q-ma-sm">
            <q-input class="q-mt-md"
                 dense
                 outlined
                 v-model="paymentDraft.amount"
-                label="Amount"
+                label="Enter Payment Amount"
                 full-width
                 lazy-rules
                 :rules="[val => (val && val > 0) || 'Enter valid amount']"
               />
-            <div>{{getWords()}}</div>
+            <div class="text-caption text-italic"><b>In Words:</b>{{getWords()}}</div>
             <q-input class="q-mt-md"
                 dense
                 outlined
@@ -115,11 +161,12 @@
                 lazy-rules
                 :rules="[val => (val && val.length > 0) || 'What is the purpose of this payment']"
               />
+           </div>
            <q-separator />
           <q-card-section>
-            <q-form @submit="createPayment" @reset="cancelPayment" class="q-gutter-md">
+            <q-form @submit="createPayment" @reset="cancelPayment">
+              
               <div>
-                <q-space />
                 <q-btn
                   dense
                   glossy

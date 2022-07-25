@@ -64,7 +64,7 @@
         ref="newAccountRef"
       >
         <q-card style="width: 700px; max-width: 80vw;">
-          <q-bar class="bg-primary glossy">
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ dialogLabel }}
             <q-space />
             <q-btn dense flat icon="close" v-close-popup>
@@ -74,87 +74,113 @@
 
           <q-card-section>
             <q-form @submit="addAccount" @reset="reset" class="q-gutter-md">
-              <q-input
-                dense
-                outlined
-                v-model="account.accountHolder"
-                label="Account Name"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Account name']"
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.accountNumber"
-                label="Account Number"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Account number']"
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.ifscCode"
-                label="IFSC Code"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'IFSC Code']"
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.bankName"
-                label="Bank"
-                full-width
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.branchName"
-                label="Branch"
-                full-width
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.branchCode"
-                label="Branch Code"
-                full-width
-              />
-              <q-input
-                dense
-                outlined
-                v-model="account.mobileNo"
-                label="Mobile"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Registered number']"
-              />
-              <q-select
-                dense
-                outlined
-                v-model="account.acccountType"
-                :options="acccountTypeList"
-                label="Account Type"
-                lazy-rules
-                :rules="[
-                  val => (val && val.length > 0) || 'Account Type i.e saving or current'
-                ]"
-              />
-              <q-select
-                dense
-                outlined
-                v-model="account.status"
-                :options="accountStatusList"
-                label="Status"
-                lazy-rules
-                :rules="[
-                  val => (val && val.length > 0) || 'Account status i.e. Active or Inactive'
-                ]"
-              />
+              <div class="row">
+                <div class="col q-mr-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.accountHolder"
+                    label="Account Name"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Account name']"
+                  />
+                </div>
+                <div class="col">
+                  <q-select
+                    dense
+                    outlined
+                    v-model="account.acccountType"
+                    :options="acccountTypeList"
+                    label="Account Type"
+                    lazy-rules
+                    :rules="[
+                      val => (val && val.length > 0) || 'Account Type i.e saving or current'
+                    ]"
+                  />
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col q-mr-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.accountNumber"
+                    label="Account Number"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Account number']"
+                  />
+                </div>
+                <div class="col">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.ifscCode"
+                    label="IFSC Code"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'IFSC Code']"
+                  />
+                </div>
+              </div>
+              <div class="row">
+                <div class="col q-mr-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.bankName"
+                    label="Bank"
+                    full-width
+                  />
+                </div>
+                <div class="col q-mr-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.branchName"
+                    label="Branch"
+                    full-width
+                  />
+                </div>
+                <div class="col q-mr-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.branchCode"
+                    label="Branch Code"
+                    full-width
+                  />
+                </div>
+              </div>
+              <div class="row">
+                <div class="col q-mr-sm">
+                  <q-input
+                    dense
+                    outlined
+                    v-model="account.mobileNo"
+                    label="Mobile"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Registered number']"
+                  />
+                </div>
+                <div class="col">
+                  <q-select
+                    dense
+                    outlined
+                    v-model="account.status"
+                    :options="accountStatusList"
+                    label="Status"
+                    lazy-rules
+                    :rules="[
+                      val => (val && val.length > 0) || 'Account status i.e. Active or Inactive'
+                    ]"
+                  />
+                </div>
+              </div>
               <div>
-                <q-space />
                 <q-btn
                   dense
                   glossy

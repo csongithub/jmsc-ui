@@ -97,7 +97,7 @@
         size="bg"
       >
         <q-card style="width: 1000px; max-width: 100vw;">
-          <q-bar class="bg-primary glossy">
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ dialogLabel }}
             <q-space />
             <q-btn dense flat icon="close" v-close-popup>
@@ -170,11 +170,11 @@
                     :rules="[val => (val && val.length > 0) || 'Notice Inviting Tender Number']"/>
                 </div>
                 <div>
-                  <q-input filled v-model="bid.nitDate" :rules="['YYYY-MM-DD']"  label="NIT Date">
+                  <q-input dense outlined v-model="bid.nitDate" :rules="['DD-MM-YYYY']"  label="NIT Date" placeholder="dd-mm-yyyy">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="bid.nitDate" mask="YYYY-MM-DD">
+                        <q-date v-model="bid.nitDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -343,11 +343,11 @@
               </div>
               <div class="row">
                 <div class="col q-mr-md">
-                  <q-input filled v-model="bid.bidStartDate" :rules="['YYYY-MM-DD']"  label="Bid Submission Start Date">
+                  <q-input dense outlined v-model="bid.bidStartDate" :rules="['DD-MM-YYYY']"  label="Bid Submission Start Date" placeholder="dd-mm-yyyy">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="bid.bidStartDate" mask="YYYY-MM-DD">
+                        <q-date v-model="bid.bidStartDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -358,11 +358,11 @@
                   </q-input>
                 </div>
                 <div class="col q-mr-md">
-                  <q-input filled v-model="bid.bidEndDate" :rules="['YYYY-MM-DD']"  label="Bid Submission End Date">
+                  <q-input dense outlined v-model="bid.bidEndDate" :rules="['DD-MM-YYYY']"  label="Bid Submission End Date" placeholder="dd-mm-yyyy">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="bid.bidEndDate" mask="YYYY-MM-DD">
+                        <q-date v-model="bid.bidEndDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -373,11 +373,11 @@
                   </q-input>
                 </div>
                 <div class="col">
-                  <q-input filled v-model="bid.bidOpeningDate" :rules="['YYYY-MM-DD']"  label="Bid Opening Date">
+                  <q-input dense outlined v-model="bid.bidOpeningDate" :rules="['DD-MM-YYYY']"  label="Bid Opening Date" placeholder="dd-mm-yyyy">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="bid.bidOpeningDate" mask="YYYY-MM-DD">
+                        <q-date v-model="bid.bidOpeningDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -393,11 +393,11 @@
                    <q-select outlined v-model="bid.status" :options="bidStatusOptions" label="Status"/>
                 </div>
                 <div class="col q-mr-md">
-                  <q-input filled v-model="bid.bidSubmittedDate" :rules="['YYYY-MM-DD']"  label="Bid Submitted Date">
+                  <q-input dense outlined v-model="bid.bidSubmittedDate" :rules="['DD-MM-YYYY']"  label="Bid Submitted Date" placeholder="dd-mm-yyyy">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="bid.bidSubmittedDate" mask="YYYY-MM-DD">
+                        <q-date v-model="bid.bidSubmittedDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -689,8 +689,7 @@ export default {
           align: "left", 
           label: "NIT Date", 
           field: "nitDate", 
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {name: "title",  align: "left", label: "Work Name", field: "title", sortable: true},
         {name: "workValue",  align: "left", label: "Work Value", field: "workValue", sortable: true},
@@ -709,16 +708,14 @@ export default {
           align: "left",
           label: "Start",
           field: "bidStartDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {
           name: "bidEndDate",
           align: "left",
           label: "End", 
           field: "bidEndDate", 
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {
           name: "bidOpeningDate", 
@@ -726,7 +723,6 @@ export default {
           label: "Opening", 
           field: "bidOpeningDate",
           sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
         },
         {name: "status",  align: "left", label: "Status", field: "status", sortable: true},
       ],
@@ -747,16 +743,14 @@ export default {
           align: "left",
           label: "Open Date",
           field: "openDate", 
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {
           name: "maturityDate", 
           align: "left",
           label: "Maturity Date",
           field: "maturityDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
@@ -780,16 +774,14 @@ export default {
           align: "left",
           label: "Open Date",
           field: "openDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {
           name: "maturityDate", 
           align: "left",
           label: "Maturity Date",
           field: "maturityDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
         },
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
@@ -868,7 +860,7 @@ export default {
         sourceSite: '',
         bidAuthority:'',
         nit: '',
-        nitDate: ref(this.getTodaysDate()),
+        nitDate: null,
         tenderRefNumber:'',
         tenderId:'',
         title:'',
@@ -882,9 +874,9 @@ export default {
         bankCertificate: null,
         periodOfWork: null,
         bidValidity: null,
-        bidStartDate: ref(this.getTodaysDate()),
-        bidEndDate: ref(this.getTodaysDate()),
-        bidOpeningDate: ref(this.getTodaysDate()),
+        bidStartDate: null,
+        bidEndDate: null,
+        bidOpeningDate: null,
         status: 'CREATED'
       }
     },
@@ -1099,7 +1091,7 @@ export default {
       });
     },
     getBidSourceSiteOptions() {
-      EnumService.getEumOptionsByName('EBidSourceSite')
+      EnumService.getOptions('EBidSourceSite')
         .then(response => {
           this.bidSourceSiteOPtions = []
           this.bidSourceSiteOPtions = response

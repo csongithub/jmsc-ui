@@ -44,7 +44,16 @@ export const commonMixin = {
       if(month/10 < 1) {
         month = '0' + month
       }
-      return (year + '-' + month + '-' + date)
+      return (date + '-' + month + '-' + year)
+    },
+    isNullOrUndefined(obj){
+      if(obj === null || obj === undefined)
+        return true
+      else
+        return false
+    },
+    isNotNullOrUndefined(obj){
+      return !this.isNullOrUndefined(obj)
     },
     getErrorMessage(err){
       return err.response.data.message

@@ -38,7 +38,9 @@ export default {
   },
   created() {},
   mounted() {
-    this.getAccessCards()
+    if(this.client !== null){
+      this.getAccessCards()
+    }
   },
   data() {
     return {
@@ -61,7 +63,7 @@ export default {
 };
 </script>
 
-<style>
+<style lang="css" scoped>
 .pointer {
   cursor: pointer;
 }

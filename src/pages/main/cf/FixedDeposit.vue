@@ -13,8 +13,17 @@
         :loading="loading"
         :pagination="myPagination"
         :filter="filter"
+        selection="multiple"
         v-model:selected="selected"
       >
+        <template v-slot:body-cell-amount="props">
+          <q-td :props="props">
+            <div>
+              <q-icon :name="icons.rupee"/>
+              {{props.row.amount.toLocaleString('en-IN') + '0.00'}}
+            </div>
+          </q-td>
+        </template>
         <template v-slot:body-cell-status="props">
           <q-td :props="props">
             <div v-if="props.row.status === 'ALIVE'" class="text-green text-overline">
@@ -47,11 +56,24 @@
                 size="sm"
                 glossy
                 @click="!showClosed ? getAllActiveFixDeposits() : getAllClosedFixDeposits()"/>
+          <q-checkbox class="q-mr-sm" v-model="showClosed" label="Show Closed" color="primary" @click="toggelShowAll()">
+            <q-tooltip>Show all closed/terminated FD</q-tooltip>
+          </q-checkbox>
         </template>
         <template v-slot:top-right>
-          <q-checkbox class="q-mr-sm" v-model="showClosed" label="Show Closed" color="primary" @click="toggelShowAll()">
-            <q-tooltip>Show all facility including closed</q-tooltip>
-          </q-checkbox>
+          <q-bar v-if="selectedSum > 0"  class="bg-primary text-white q-mr-md text-weight-light shadow-4">
+            <div >
+              <q-icon :name="icons.rupee"/>
+                {{selectedSum.toLocaleString('en-IN') + '.00'}}
+            </div>
+             <q-tooltip 
+                  transition-show="scale"  
+                  transition-hide="scale" 
+                  class="bg-primary text-white shadow-4">
+                  {{inWords()}}
+              </q-tooltip>
+          </q-bar>
+          
           <q-input
             borderless
             dense
@@ -67,19 +89,39 @@
         </template>
       </q-table>
     </div>
+    <AdminAuth :options="openAuthorization" 
+               :title="authTitle"
+               :message="authMessage"
+               :data="authData"
+               @cancel="cancelAuth"
+               @success="closeFacility"></AdminAuth>
 </template>
 
 <script>
 
+import AdminAuth from "../../auth/AdminAuth.vue"
+import PaymentService from "../../../services/PaymentService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import CreditFacility from "../cf/CreditFacility.vue"
 import { commonMixin } from "../../../mixin/common"
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
-import {matClose} from "@quasar/extras/material-icons";
+import {matClose, matCurrencyRupee} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
+import { date } from 'quasar'
 export default {
   name: 'FixedDeposit',
   mixins: [commonMixin],
+  watch: {
+    selected(selected) {
+      this.selectedSum = 0
+      if(selected.length > 0) {
+        for(let cf of selected) {
+          this.selectedSum = this.selectedSum + cf.amount
+        }
+        this.inWords()
+      }
+    }
+  },
   setup () {
     return {
       selected: ref([]),
@@ -95,8 +137,20 @@ export default {
           sortable: true
         },
         {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
-        {name: "openDate",  align: "left", label: "Open Date", field: "openDate", sortable: true},
-        {name: "maturityDate",  align: "left", label: "Maturity Date", field: "maturityDate", sortable: true},
+        {
+          name: "openDate",
+          align: "left",
+          label: "Open Date",
+          field: "openDate",
+          sortable: true
+        },
+        {
+          name: "maturityDate",
+          align: "left", label:
+          "Maturity Date",
+          field: "maturityDate",
+          sortable: true
+        },
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
@@ -106,12 +160,14 @@ export default {
       icons: {
         plus: fasPlus,
         edit: fasEdit,
-        close: matClose
+        close: matClose,
+        rupee: matCurrencyRupee
       }
     }
   },
   components: {
-    CreditFacility
+    CreditFacility,
+    AdminAuth
   },
   created() {},
   mounted() {
@@ -120,6 +176,10 @@ export default {
   data() {
     return {
       clientId: this.getClientId(),
+      openAuthorization: false,
+      authTitle: '',
+      authMessage: '',
+      authData: null,
       myPagination: { rowsPerPage: 15 },
       filter: "",
       loading: true,
@@ -127,10 +187,20 @@ export default {
       account: [],
       open: false,
       mode: "add",
-      dialogLabel: "New Facility"
+      dialogLabel: "New Facility",
+      selectedSum: 0
     };
   },
   methods: {
+    inWords() {
+      let words = ''
+        if(this.selectedSum > 0)
+            words =  'Rupees ' + PaymentService.convertNumberToWords(this.selectedSum) + 'Only'
+        else
+            words = 'Sum of all selected facilities'
+      // window.prompt(JSON.stringify(words))
+      return words;
+    },
     toggelShowAll(){
       if(!this.showClosed){
          this.getAllActiveFixDeposits()
@@ -165,31 +235,21 @@ export default {
       this.$router.push({ name: "cfLinkageDetails", params: { facilityId: row.id, parent: 'FD'}});
     },
     confirmClose(cf) {
-      this.$q.dialog({
-        title: 'Are you sure?',
-        message: 'You wont be able to use this facility anymore.',
-        ok: {
-          size: 'sm',
-          color: 'primary',
-          push: true
-        },
-        cancel: {
-          capitalize: true,
-          size: 'sm',
-          outline: true,
-          push: true
-        },
-        persistent: true
-      }).onOk(() => {
-        this.closeFacility(cf)
-      }).onOk(() => {
-      }).onCancel(() => {
-        // console.log('>>>> Cancel')
-      }).onDismiss(() => {
-        // console.log('I am triggered on both OK and Cancel')
-      })
+      this.openAuth('Are you sure?', 
+                    'This facility will be closed permanently & you will not be able to open it again.',
+                    true,
+                    cf)
     },
-     closeFacility(cf) {
+    openAuth(title, message, options, cf){
+      this.authTitle = title,
+      this.authMessage = message
+      this.openAuthorization = options
+      this.authData = cf
+    },
+    cancelAuth(val) {
+      this.openAuthorization = val
+    },
+    closeFacility(cf) {
       CreditFacilityService.closeFacility(this.clientId, cf.id)
         .then(response => {
         if(response) {

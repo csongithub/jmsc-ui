@@ -13,9 +13,17 @@
         :loading="loading"
         :pagination="myPagination"
         :filter="filter"
-        selection="single"
+        selection="multiple"
         v-model:selected="selected"
       >
+      <template v-slot:body-cell-amount="props">
+          <q-td :props="props">
+            <div>
+              <q-icon :name="icons.rupee"/>
+              {{props.row.amount.toLocaleString('en-IN') + '0.00'}}
+            </div>
+          </q-td>
+      </template>
       <template v-slot:body-cell-status="props">
           <q-td :props="props">
             <div v-if="props.row.status === 'ALIVE'" class="text-green text-overline">
@@ -63,11 +71,23 @@
                 size="sm"
                 glossy
                 @click="!showClosed ? getAllActiveFacilities() : getAllClosedFacilities()"/>
+          <q-checkbox class="q-mr-sm" v-model="showClosed" label="Show Closed" color="primary" @click="toggelShowAll()">
+           <q-tooltip>Show all closed/terminated facilities</q-tooltip>
+         </q-checkbox>
         </template>
         <template v-slot:top-right>
-         <q-checkbox class="q-mr-sm" v-model="showClosed" label="Show Closed" color="primary" @click="toggelShowAll()">
-          <q-tooltip>Show all facility including closed</q-tooltip>
-         </q-checkbox>
+          <q-bar v-if="selectedSum > 0"  class="bg-primary text-white q-mr-md text-weight-light shadow-4">
+            <div >
+              <q-icon :name="icons.rupee"/>
+                {{selectedSum.toLocaleString('en-IN') + '.00'}}
+            </div>
+             <q-tooltip 
+                  transition-show="scale"  
+                  transition-hide="scale" 
+                  class="bg-primary text-white shadow-4">
+                  {{inWords()}}
+              </q-tooltip>
+          </q-bar>
           <q-input
             borderless
             dense
@@ -91,7 +111,7 @@
         ref="nefCfRef"
       >
         <q-card style="width: 700px; max-width: 80vw;">
-          <q-bar class="bg-primary glossy">
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ dialogLabel }}
             <q-space />
             <q-btn dense flat icon="close" v-close-popup>
@@ -176,14 +196,13 @@
                 lazy-rules
                 :rules="[val => (val && val > 0) || 'Enter Amount']"
               />
-
               <div class="row">
                 <div class="col q-mr-md">
-                  <q-input filled v-model="creditFacility.openDate" :rules="['YYYY-MM-DD']"  label="Open Date">
+                  <q-input dense outlined v-model="creditFacility.openDate" :rules="['DD-MM-YYYY']"  label="Open Date" placeholder="dd-mm-yyyy">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="creditFacility.openDate" mask="YYYY-MM-DD">
+                        <q-date v-model="creditFacility.openDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -195,11 +214,11 @@
                 </div>
 
                 <div class="col">
-                  <q-input filled v-model="creditFacility.maturityDate" :rules="['YYYY-MM-DD']" label="Maturity Date">
+                  <q-input dense outlined v-model="creditFacility.maturityDate" :rules="['DD-MM-YYYY']" label="Maturity Date" placeholder="dd-mm-yyyy">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                        <q-date v-model="creditFacility.maturityDate" mask="YYYY-MM-DD">
+                        <q-date v-model="creditFacility.maturityDate" mask="DD-MM-YYYY">
                           <div class="row items-center justify-end">
                             <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -238,25 +257,44 @@
         </q-card>
       </q-dialog>
     </div>
+    <AdminAuth :options="openAuthorization" 
+               :title="authTitle"
+               :message="authMessage"
+               :data="authData"
+               @cancel="cancelAuth"
+               @success="closeFacility"></AdminAuth>
 </template>
 
 <script>
 
+import AdminAuth from "../../auth/AdminAuth.vue"
+import PaymentService from "../../../services/PaymentService"
 import CreditFacilityService from "../../../services/CreditFacilityService"
 import BidService from "../../../services/BidService"
 import CreditFacility from "../cf/CreditFacility.vue"
 import { commonMixin } from "../../../mixin/common"
 import {fasEdit} from "@quasar/extras/fontawesome-v5";
-import {matAdd, matClose} from "@quasar/extras/material-icons";
+import {matAdd, matClose, matCurrencyRupee} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
-import { date } from 'quasar'
 export default {
   name: 'AllCF',
   mixins: [commonMixin],
+  watch: {
+    selected(selected) {
+      this.selectedSum = 0
+      if(selected.length > 0) {
+        for(let cf of selected) {
+          this.selectedSum = this.selectedSum + cf.amount
+        }
+        this.inWords()
+      }
+    }
+  },
   setup () {
     return {
       selected: ref([]),
       showClosed: ref(false),
+      date: ref(1657045800000),
       columns: [
         {name: "facilityType",  align: "left", label: "Type", field: "facilityType", sortable: true},
         {
@@ -274,17 +312,17 @@ export default {
           align: "left",
           label: "Open Date",
           field: "openDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          sortable: true
+          
         },
         {
           name: "maturityDate",
           align: "left", label:
           "Maturity Date",
           field: "maturityDate",
-          sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
-          },
+          sortable: true
+         
+        },
         {name: "issuerType",  align: "left", label: "Issuer", field: "issuerType", sortable: true},
         {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
         {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true},
@@ -294,12 +332,14 @@ export default {
       icons: {
         plus: matAdd,
         edit: fasEdit,
-        close: matClose
+        close: matClose,
+        rupee: matCurrencyRupee
       }
     }
   },
   components: {
     CreditFacility,
+    AdminAuth
   },
   created() {},
   mounted() {
@@ -309,6 +349,10 @@ export default {
   data() {
     return {
       clientId: this.getClientId(),
+      openAuthorization: false,
+      authTitle: '',
+      authMessage: '',
+      authData: null,
       myPagination: { rowsPerPage: 15 },
       filter: '',
       loading: true,
@@ -323,10 +367,20 @@ export default {
       postOfficeLabel: 'Post Office',
       postOffice: [],
       openPledge: false,
-      bid: {}
+      bid: {},
+      selectedSum: 0
     };
   },
   methods: {
+    inWords() {
+      let words = ''
+        if(this.selectedSum > 0)
+            words =  'Rupees ' + PaymentService.convertNumberToWords(this.selectedSum) + 'Only'
+        else
+            words = 'Sum of all selected facilities'
+      // window.prompt(JSON.stringify(words))
+      return words;
+    },
     toggelShowAll(){
       if(!this.showClosed){
          this.getAllActiveFacilities()
@@ -383,8 +437,8 @@ export default {
       return {
         accountNumber: null,
         amount: null,
-        openDate: ref(this.getTodaysDate()),
-        maturityDate: ref(this.getTodaysDate()),
+        openDate: null,
+        maturityDate: null,
         issuerType: null,
         issuerName: null,
         issuerBranch: null,
@@ -462,52 +516,29 @@ export default {
        this.fail(this.getErrorMessage(err))
       });
     },
-    getTodaysDate() {
-      var today = new Date()
-      let year = today.getFullYear()
-      let date = today.getDate()
-      let month = today.getMonth() + 1
-
-      if(date/10 < 1) {
-        date = '0'+ date
-      }
-
-      if(month/10 < 1) {
-        month = '0' + month
-      }
-      return (year + '-' + month + '-' + date)
-    },
     openLinkageDetail(row) {
       console.log(JSON.stringify(row.id))
       this.$router.push({ name: "cfLinkageDetails", params: { facilityId: row.id, parent: 'ALL'}});
     },
     confirmClose(cf) {
-      this.$q.dialog({
-        title: 'Are you sure?',
-        message: 'You wont be able to use this facility anymore.',
-        ok: {
-          size: 'sm',
-          color: 'primary',
-          push: true
-        },
-        cancel: {
-          capitalize: true,
-          size: 'sm',
-          outline: true,
-          push: true
-        },
-        persistent: true
-      }).onOk(() => {
-        this.closeFacility(cf)
-      }).onOk(() => {
-      }).onCancel(() => {
-        // console.log('>>>> Cancel')
-      }).onDismiss(() => {
-        // console.log('I am triggered on both OK and Cancel')
-      })
+      
+      this.openAuth('Are you sure?', 
+                    'This facility will be closed permanently & you will not be able to open it again.',
+                    true,
+                    cf)
     },
-     closeFacility(cf) {
-      CreditFacilityService.closeFacility(this.clientId, cf.id)
+    openAuth(title, message, options, cf){
+      this.authTitle = title,
+      this.authMessage = message
+      this.openAuthorization = options
+      this.authData = cf
+    },
+    cancelAuth(val) {
+      this.openAuthorization = val
+    },
+    closeFacility(data) {
+      // window.alert(JSON.stringify(data))
+      CreditFacilityService.closeFacility(this.clientId, data.id)
         .then(response => {
         if(response) {
           this.success('The credit facility has been closed')
