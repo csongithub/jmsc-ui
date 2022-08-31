@@ -33,7 +33,13 @@ const routes = [
       { name: 'site', path: '/site', component: () => import('pages/main/site/Site.vue') },
       { name: 'party', path: '/party', component: () => import('pages/main/party/Party.vue') },
 
-      { name: 'machine', path: '/machine', component: () => import('pages/main/machine/Machine.vue') }
+      { name: 'machine', path: '/machine', component: () => import('pages/main/machine/Machine.vue') },
+     
+      { name: 'payment_new', path: '/payment_new', component: () => import('pages/main/payment/PaymentNew.vue') },
+      { name: 'createPaymentNew', path: '/create_payment_new', component: () => import('pages/main/payment/CreatePaymentNew.vue') },
+      { name: 'paymentDraft', path: '/payment_draft', component: () => import('pages/main/payment/PaymentDraft.vue') },
+      { name: 'paymentApprovals', path: '/payments_approvals', component: () => import('pages/main/payment/Approvals.vue') },
+      { name: 'paymentHistory', path: '/payments', component: () => import('pages/main/payment/PaymentHistory.vue') },
     ]
   },
   {

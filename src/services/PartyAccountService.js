@@ -55,5 +55,14 @@ export default {
       console.log("Error in adding account: " + JSON.stringify(err));
       return Promise.reject(err);
     });
-  }
+  },
+  accountById(clientId, accountId) {
+    return api.get( '/v1/party/bankaccount/account_by_id/' + clientId + '/' + accountId).then(response => {
+        let account = response.data;
+        return account;
+    }).catch(err => {
+        console.log("Error in getting account: " + JSON.stringify(err));
+        return Promise.reject(err);
+    });
+  },
 };
