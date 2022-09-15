@@ -34,7 +34,6 @@
         />
         <q-btn v-if="print_list.length > 0"
           class="q-mt-sm q-mr-sm text-capitalize"
-          outline
           color="primary"
           icon="print"
           label="Print Selected"
