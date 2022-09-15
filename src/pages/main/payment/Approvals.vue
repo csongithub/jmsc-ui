@@ -32,6 +32,16 @@
           glossy
           @click="adminApproval(null, 'all')"
         />
+        <q-btn v-if="print_list.length > 0"
+          class="q-mt-sm q-mr-sm text-capitalize"
+          outline
+          color="primary"
+          icon="print"
+          label="Print Selected"
+          size="sm"
+          glossy
+          @click="openPrint"
+        />
         <q-btn
           class="q-mt-sm q-mr-sm text-capitalize"
           outline
@@ -42,6 +52,7 @@
           glossy
           @click="getAllDrafts()"
         />
+        
       </template>
       <template v-slot:top-right>
         <q-input
@@ -65,8 +76,15 @@
               color="primary"
               round
               dense
+              flat
               @click="expandDraft(props)"
-              :icon="props.expand ? 'remove' : 'add'"
+              :icon="props.expand ? icons.expendLess : icons.expendMore"
+            />
+            <q-toggle
+              v-model="props.row.print"
+              size="xs"
+              @click="addToPrint(props)"
+              checked-icon="check"
             />
           </q-td>
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
@@ -97,6 +115,9 @@
               <q-card-section
                 v-if="isNotNullOrUndefined(props.row.from_account)"
               >
+                <div class="row bg-grey text-white text-light q-mb-sm" style="max-width: 90px;">
+                  Debit Account
+                </div>
                 <div class="row">
                   <div class="col-2 text-bold">Account Holder</div>
                   <div class="col-3">
@@ -120,6 +141,9 @@
               </q-card-section>
               <q-separator />
               <q-card-section v-if="isNotNullOrUndefined(props.row.to_account)">
+                <div class="row bg-grey text-white text-light q-mb-sm" style="max-width: 90px;">
+                  Credit Account
+                </div>
                 <div class="row">
                   <div class="col-2 text-bold">Account Holder</div>
                   <div class="col-3">
@@ -167,6 +191,18 @@
       </template>
     </q-table>
   </div>
+  <div>
+      <q-dialog v-model="open" persistent @hide="onHide" ref="createPaymentRef">
+        <q-card flat bordered style="width: 1000px; max-width: 80vw">
+          <IndianBankRTGS
+            v-if="print_list.length > 0"
+            :payments="payments"
+            @clsoe="close"
+          >
+          </IndianBankRTGS>
+        </q-card>
+      </q-dialog>
+    </div>
   <AdminAuth :options="openAuthorization" 
                :title="authTitle"
                :message="authMessage"
@@ -182,8 +218,11 @@ import Payment from "../payment/PaymentNew.vue";
 import PaymentService2 from "../../../services/PaymentService2";
 import BankAccountService from "../../../services/BankAccountService";
 import PartyAccountService from "../../../services/PartyAccountService";
+import IndianBankRTGS from "../payment/templates/IndianBankRTGSNew.vue";
 import {
   matCurrencyRupee,
+  matExpandMore,
+  matExpandLess
 } from "@quasar/extras/material-icons";
 import { ref } from "vue";
 export default {
@@ -265,12 +304,15 @@ export default {
 
       icons: {
         rupee: matCurrencyRupee,
+        expendMore:matExpandMore,
+        expendLess:matExpandLess,
       },
     };
   },
   components: {
     Payment,
-    AdminAuth
+    AdminAuth,
+    IndianBankRTGS
   },
   watch: {   
   },
@@ -294,9 +336,79 @@ export default {
       tempDraft: {},
       tempPayment: {},
       tempPaymentSummary: {},
+      print_list: [],
+      open: false,
+      payments: []
     };
   },
   methods: {
+    openPrint() {
+      this.payments.splice(0, this.payments.length)
+      for(let p of this.print_list) {
+        let payment = {}
+        payment.from_acc_name = p.from_account.accountHolder
+        payment.from_acc_no = p.from_account.accountNumber
+        payment.from_branch = p.from_account.branchName
+        payment.from_mobile = p.from_account.mobileNo
+
+        payment.to_acc_name = p.to_account.accountHolder
+        payment.to_acc_no = p.to_account.accountNumber
+        payment.to_ifsc = p.to_account.ifscCode
+        payment.to_branch = p.to_account.branchName
+        payment.to_bank = p.to_account.bankName
+
+        payment.amount = p.amount
+        payment.amount_in_words = p.amount_in_words
+
+        this.payments.push(payment)
+      }
+      this.open = true
+    },
+    close() {
+      this.onHide()
+    },
+    onHide() {
+      this.open = false
+    },
+    addToPrint(props) {
+      if(this.print_list.length === 2 && props.row.print) {
+        this.fail('Maximum two payments can be printed')
+        props.row.print = !props.row.print
+        return
+      }
+      let print_object = {};
+      print_object.payment_id = props.row.payment_id
+      print_object.amount = props.row.amount
+      print_object.amount_in_words = props.row.amount_in_words
+      if (props.row.print) {
+        BankAccountService.accountById(
+          this.client_id,
+          props.row.from_account_id
+        )
+          .then((response) => {
+            print_object.from_account = response;
+            PartyAccountService.accountById(
+              this.client_id,
+              props.row.to_account_id
+            )
+              .then((response) => {
+                print_object.to_account = response;
+                this.print_list.push(print_object);
+                // window.alert(JSON.stringify(this.print_list));
+                console.log(JSON.stringify(this.print_list));
+              })
+              .catch((err) => {
+                this.fail(this.getErrorMessage(err));
+              });
+          })
+          .catch((err) => {
+            this.fail(this.getErrorMessage(err));
+          });
+      } else{
+       this.print_list = this.print_list.filter((item) => item.payment_id !== props.row.payment_id);
+      //  window.alert(JSON.stringify(this.print_list));
+      }
+    },
     adminApproval(draft, approval_mode) {
       this.approval_mode = approval_mode
       this.openAuth('Authentication required', 
@@ -348,6 +460,7 @@ export default {
         });
     },
     getAllDrafts() {
+      this.print_list = []
       this.loading = true;
       PaymentService2.getAllDrafts(this.client_id, "APPROVAL_REQUIRED")
         .then((response) => {

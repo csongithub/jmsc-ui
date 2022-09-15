@@ -12,7 +12,7 @@
       :loading="loading"
       :pagination="draft_pagination"
       :filter="filter_draft"
-      selection="single"
+      selection="multiple"
       v-model:selected="selected_draft"
     >
       <template v-slot:header="props">
@@ -24,6 +24,16 @@
         </q-tr>
       </template>
       <template v-slot:top-left>
+        <q-btn
+          v-if="print_list.length > 0"
+          class="q-mt-sm q-mr-sm text-capitalize"
+          color="primary"
+          icon="print"
+          label="Print Selected"
+          size="sm"
+          glossy
+          @click="openPrint"
+        />
         <q-btn
           class="q-mt-sm q-mr-sm text-capitalize"
           outline
@@ -51,27 +61,31 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
-        <q-td auto-width>
+          <q-td auto-width>
             <q-btn
               size="sm"
               color="primary"
               round
               dense
+              flat
               @click="expandDraft(props)"
-              :icon="props.expand ? 'remove' : 'add'"
+              :icon="props.expand ? icons.expendLess : icons.expendMore"
             />
-          </q-td>
-          <q-td auto-width>
-            <q-checkbox size="xs" v-model="props.select"/>
+            <q-toggle
+              v-model="props.row.print"
+              size="xs"
+              @click="addToPrint(props)"
+              checked-icon="check"
+            />
           </q-td>
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             <span v-if="col.value !== 'undefined'">
               <span v-if="col.currency">
                 <q-icon :name="icons.rupee" />
-                 {{ col.value.toLocaleString("en-IN") + ".00"}}
+                {{ col.value.toLocaleString("en-IN") + ".00" }}
               </span>
               <span v-else>
-                {{ col.value}}
+                {{ col.value }}
               </span>
             </span>
             <div v-else class="pointer">
@@ -104,6 +118,9 @@
               <q-card-section
                 v-if="isNotNullOrUndefined(props.row.from_account)"
               >
+                <div class="row bg-grey text-white text-light q-mb-sm" style="max-width: 90px;">
+                  Debit Account
+                </div>
                 <div class="row">
                   <div class="col-2 text-bold">Account Holder</div>
                   <div class="col-3">
@@ -127,6 +144,9 @@
               </q-card-section>
               <q-separator />
               <q-card-section v-if="isNotNullOrUndefined(props.row.to_account)">
+                <div class="row bg-grey text-white text-light q-mb-sm" style="max-width: 90px;">
+                  Credit Account
+                </div>
                 <div class="row">
                   <div class="col-2 text-bold">Account Holder</div>
                   <div class="col-3">
@@ -315,20 +335,34 @@
           </div>
         </q-card-section>
         <q-card-actions>
-          <q-space/>
-          <q-btn class="text-capitalize text-weight-light q-mr-sm"
-                  color="primary"
-                  label="Update Draft"
-                  @click="saveDraft('DRAFT')"
-                />
-          <q-btn class="text-capitalize text-weight-light q-mr-sm"
-                  color="primary"
-                  label="Send for Approval"
-                  @click="saveDraft('APPROVAL_REQUIRED')"
-                />
-      </q-card-actions>
+          <q-space />
+          <q-btn
+            class="text-capitalize text-weight-light q-mr-sm"
+            color="primary"
+            label="Update Draft"
+            @click="saveDraft('DRAFT')"
+          />
+          <q-btn
+            class="text-capitalize text-weight-light q-mr-sm"
+            color="primary"
+            label="Send for Approval"
+            @click="saveDraft('APPROVAL_REQUIRED')"
+          />
+        </q-card-actions>
       </q-card>
     </q-dialog>
+    <div>
+      <q-dialog v-model="open" persistent @hide="onHide" ref="createPaymentRef">
+        <q-card flat bordered style="width: 1000px; max-width: 80vw">
+          <IndianBankRTGS
+            v-if="print_list.length > 0"
+            :payments="payments"
+            @clsoe="close"
+          >
+          </IndianBankRTGS>
+        </q-card>
+      </q-dialog>
+    </div>
   </div>
 </template>
 
@@ -340,10 +374,13 @@ import Payment from "../payment/PaymentNew.vue";
 import PaymentService2 from "../../../services/PaymentService2";
 import BankAccountService from "../../../services/BankAccountService";
 import PartyAccountService from "../../../services/PartyAccountService";
+import IndianBankRTGS from "../payment/templates/IndianBankRTGSNew.vue";
 import {
   matCurrencyRupee,
   matEdit,
   matDelete,
+  matExpandMore,
+  matExpandLess,
 } from "@quasar/extras/material-icons";
 import { ref } from "vue";
 export default {
@@ -362,7 +399,7 @@ export default {
           field: "print",
           value: false,
           print: true,
-          model: false
+          model: false,
         },
         {
           name: "party_nick_name",
@@ -386,7 +423,7 @@ export default {
           label: "Amount",
           field: "amount",
           sortable: true,
-          currency: true
+          currency: true,
         },
         {
           name: "reason",
@@ -437,11 +474,14 @@ export default {
         rupee: matCurrencyRupee,
         delete: matDelete,
         edit: matEdit,
+        expendMore: matExpandMore,
+        expendLess: matExpandLess,
       },
     };
   },
   components: {
     Payment,
+    IndianBankRTGS,
   },
   watch: {
     payment_reason(val) {
@@ -453,7 +493,7 @@ export default {
         this.selected_machine = null;
         this.selected_site = null;
       }
-    }
+    },
   },
   created() {},
   mounted() {
@@ -489,17 +529,89 @@ export default {
       machines: [],
       tempDraft: {},
       tempPayment: {},
-      tempPaymentSummary: {}
+      tempPaymentSummary: {},
+      print_list: [],
+      open: false,
+      payments: [],
     };
   },
   methods: {
-    openUpdateDraftDialog() {
-      this.update_draft = true
+    openPrint() {
+      this.payments.splice(0, this.payments.length);
+      for (let p of this.print_list) {
+        let payment = {};
+        payment.from_acc_name = p.from_account.accountHolder;
+        payment.from_acc_no = p.from_account.accountNumber;
+        payment.from_branch = p.from_account.branchName;
+        payment.from_mobile = p.from_account.mobileNo;
+
+        payment.to_acc_name = p.to_account.accountHolder;
+        payment.to_acc_no = p.to_account.accountNumber;
+        payment.to_ifsc = p.to_account.ifscCode;
+        payment.to_branch = p.to_account.branchName;
+        payment.to_bank = p.to_account.bankName;
+
+        payment.amount = p.amount;
+        payment.amount_in_words = p.amount_in_words;
+
+        this.payments.push(payment);
+      }
+      this.open = true;
     },
-    resetDraft(){
-      this.tempDraft = {}
-      this.tempPaymentSummary = {}
-      this.tempPayment = {}
+    close() {
+      this.onHide();
+    },
+    onHide() {
+      this.open = false;
+    },
+    addToPrint(props) {
+      if (this.print_list.length === 2 && props.row.print) {
+        this.fail("Maximum two payments can be printed");
+        props.row.print = !props.row.print;
+        return;
+      }
+      let print_object = {};
+      print_object.payment_id = props.row.payment_id;
+      print_object.amount = props.row.amount;
+      print_object.amount_in_words = props.row.amount_in_words;
+      if (props.row.print) {
+        BankAccountService.accountById(
+          this.client_id,
+          props.row.from_account_id
+        )
+          .then((response) => {
+            print_object.from_account = response;
+            PartyAccountService.accountById(
+              this.client_id,
+              props.row.to_account_id
+            )
+              .then((response) => {
+                print_object.to_account = response;
+                this.print_list.push(print_object);
+                // window.alert(JSON.stringify(this.print_list));
+                console.log(JSON.stringify(this.print_list));
+              })
+              .catch((err) => {
+                this.fail(this.getErrorMessage(err));
+              });
+          })
+          .catch((err) => {
+            this.fail(this.getErrorMessage(err));
+          });
+      } else {
+        this.print_list = this.print_list.filter(
+          (item) => item.payment_id !== props.row.payment_id
+        );
+        // window.alert(JSON.stringify(this.print_list));
+      }
+    },
+    openUpdateDraftDialog() {
+      this.update_draft = true;
+    },
+    resetDraft() {
+      this.tempDraft = {};
+      this.tempPaymentSummary = {};
+      this.tempPayment = {};
     },
     getAllSites() {
       SiteService.all(this.client_id)
@@ -553,27 +665,27 @@ export default {
     },
     updateDraft(draft) {
       console.log(JSON.stringify(draft));
-      console.log('Getting Payment Draft')
+      console.log("Getting Payment Draft");
       PaymentService2.getPayment(this.client_id, draft.payment_id)
         .then((response) => {
-          this.tempDraft = response
-          this.tempPayment = JSON.parse(this.tempDraft.payment) 
-          this.tempPaymentSummary = JSON.parse(this.tempDraft.payment_summary)
+          this.tempDraft = response;
+          this.tempPayment = JSON.parse(this.tempDraft.payment);
+          this.tempPaymentSummary = JSON.parse(this.tempDraft.payment_summary);
 
-          this.payment_amount = this.tempPayment.payment_amount
-          this.amount_in_words = this.tempPayment.amount_inwords
-          this.payment_date = this.tempDraft.payment_date
-          this.payment_mode = this.tempPayment.payment_mode
-          this.transaction_ref = this.tempPayment.transaction_ref
-          this.payment_remark = this.tempPayment.payment_remark
-          this.payment_reason = this.tempPayment.payment_reason
-          this.selected_site = this.tempPayment.site
-          this.selected_machine = this.tempPayment.machine
+          this.payment_amount = this.tempPayment.payment_amount;
+          this.amount_in_words = this.tempPayment.amount_inwords;
+          this.payment_date = this.tempDraft.payment_date;
+          this.payment_mode = this.tempPayment.payment_mode;
+          this.transaction_ref = this.tempPayment.transaction_ref;
+          this.payment_remark = this.tempPayment.payment_remark;
+          this.payment_reason = this.tempPayment.payment_reason;
+          this.selected_site = this.tempPayment.site;
+          this.selected_machine = this.tempPayment.machine;
         })
         .catch((err) => {
           this.fail(this.getErrorMessage(err));
         });
-      this.openUpdateDraftDialog()
+      this.openUpdateDraftDialog();
     },
     saveDraft(mode) {
       let payment = {
@@ -587,29 +699,28 @@ export default {
       if (mode === "DRAFT") {
         payment.status = "DRAFT";
       } else if (mode === "APPROVAL_REQUIRED") {
-        
-        if(this.isNullOrUndefined(this.payment_date)) {
-          this.fail('Please select payment date')
-          return
-        }
-        if(this.isNullOrUndefined(this.payment_reason)) {
-          this.fail('Please select paymet reason')
+        if (this.isNullOrUndefined(this.payment_date)) {
+          this.fail("Please select payment date");
           return;
         }
-        if(this.isNullOrUndefined(this.payment_mode)) {
-          this.fail('Please select paymet mode')
+        if (this.isNullOrUndefined(this.payment_reason)) {
+          this.fail("Please select paymet reason");
           return;
         }
-        if(this.isNullOrUndefined(this.transaction_ref)) {
-          this.fail('Please enter cheque no/transaction reference number')
+        if (this.isNullOrUndefined(this.payment_mode)) {
+          this.fail("Please select paymet mode");
           return;
         }
-        if(this.isNullOrUndefined(this.payment_remark)) {
-          this.fail('Please enter payment description/remark')
+        if (this.isNullOrUndefined(this.transaction_ref)) {
+          this.fail("Please enter cheque no/transaction reference number");
           return;
         }
-        if(this.payment_reason === ""){
-          this.fail('Please select payment reason')
+        if (this.isNullOrUndefined(this.payment_remark)) {
+          this.fail("Please enter payment description/remark");
+          return;
+        }
+        if (this.payment_reason === "") {
+          this.fail("Please select payment reason");
           return;
         }
         payment.status = "APPROVAL_REQUIRED";
@@ -641,46 +752,47 @@ export default {
         transaction_ref: this.transaction_ref,
         remark: this.payment_remark,
         reason: this.payment_reason,
-      }
+      };
 
       if (this.payment_reason === "site") {
-        if(this.selected_site === null) {
-          this.fail('Please select site')
-          return
+        if (this.selected_site === null) {
+          this.fail("Please select site");
+          return;
         }
         payment_summary.reasonId = this.selected_site.id;
         payment_summary.reason_name = this.selected_site.display_name;
       } else if (this.payment_reason === "machine") {
-         if(this.selected_machine === null) {
-          this.fail('Please select machine')
-          return
+        if (this.selected_machine === null) {
+          this.fail("Please select machine");
+          return;
         }
         payment_summary.reasonId = this.selected_machine.id;
         payment_summary.reason_name = this.selected_machine.name;
       }
 
-      payment.payment =  JSON.stringify(payment_details)
-      payment.payment_summary = JSON.stringify(payment_summary)
+      payment.payment = JSON.stringify(payment_details);
+      payment.payment_summary = JSON.stringify(payment_summary);
 
       PaymentService2.savePayment(payment)
         .then((response) => {
           console.log(response);
-          this.resetDraft()
-          if(mode === "DRAFT") {
-             this.success("Draft updated successfully");
-          } else if(mode === "APPROVAL_REQUIRED") {
-             this.success("Payment sent for approval");
+          this.resetDraft();
+          if (mode === "DRAFT") {
+            this.success("Draft updated successfully");
+          } else if (mode === "APPROVAL_REQUIRED") {
+            this.success("Payment sent for approval");
           }
-          this.getAllDrafts()
-          this.update_draft = false
+          this.getAllDrafts();
+          this.update_draft = false;
         })
         .catch((err) => {
           this.fail(this.getErrorMessage(err));
         });
     },
     getAllDrafts() {
+      this.print_list = [];
       this.loading = true;
-      PaymentService2.getAllDrafts(this.client_id, 'DRAFT')
+      PaymentService2.getAllDrafts(this.client_id, "DRAFT")
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
           this.drafts = response;
