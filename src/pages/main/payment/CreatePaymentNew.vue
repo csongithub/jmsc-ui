@@ -19,6 +19,20 @@
             >
             </q-select>
           </div>
+          <div class="col-1 q-ml-lg" v-if="from_Account === null">
+            <q-btn class="text-bold"
+                  color="primary"
+                  label="OR"
+                  flat
+                />
+          </div>
+          <div class="col-2" v-if="from_Account === null">
+            <q-btn class="text-capitalize text-weight-light"
+                  color="primary"
+                  label="Pay in Cash"
+                  @click="onStart"
+                />
+          </div>
         </div>
         <div v-if="from_Account != null">
           <div class="row">
@@ -115,7 +129,7 @@
               icon="create_new_folder"
               :done="step > 1"
             >
-              <div>
+              <div v-if="from_Account !== null">
                 <div class="row q-mb-lg">
                   <div class="col-1 text-bold q-mr-sm">Party Name</div>
                   <div class="col">{{ selected_party[0].nick_name }}</div>
@@ -314,7 +328,6 @@
                   label="Save As Draft"
                   @click="savePayment('DRAFT')"
                 />
-
                 <q-btn v-if="selected_party_account.length > 0"
                   class="text-capitalize text-weight-light q-mr-sm"
                   @click="step === 2 ? savePayment('APPROVAL_REQUIRED') : $refs.stepper.next()"
@@ -322,10 +335,9 @@
                   :label="step === 2 ? 'Send for Approval' : 'Continue'"
                 />
 
-                <q-btn
+                <q-btn v-if="step > 1 && from_Account !== null"
                   class="text-capitalize text-weight-light"
                   outline
-                  v-if="step > 1"
                   flat
                   color="primary"
                   @click="$refs.stepper.previous()"
@@ -523,6 +535,10 @@ export default {
       this.openCreatePaymentWindow();
     },
     openCreatePaymentWindow() {
+      if(this.from_Account == null) {
+        this.step = 2
+        this.payment_mode = 'Cash'
+      }
       this.show_create_payment = true;
     },
     resetPayment() {
@@ -642,8 +658,8 @@ export default {
 
       let payment_details = {
         party: this.selected_party[0],
-        from_account: this.from_Account,
-        to_account: this.selected_party_account[0],
+        from_account: from_Account !== null ? this.from_Account : null,
+        to_account: this.selected_party_account[0] !== null ? this.selected_party_account[0] : null,
         payment_amount: this.payment_amount,
         amount_inwords: this.amount_inwords,
         payment_reason: this.payment_reason,
@@ -658,8 +674,8 @@ export default {
         party_id: this.selected_party.id,
         party_name: this.selected_party[0].name,
         party_nick_name: this.selected_party[0].nick_name,
-        from_account_id: this.from_Account.id,
-        to_account_id: this.selected_party_account[0].id,
+        from_account_id: from_Account !== null ? this.from_Account.id : null,
+        to_account_id: this.selected_party_account[0] != null ? this.selected_party_account[0].id : null,
         amount: this.payment_amount,
         amount_in_words: this.amount_inwords,
         mode: this.payment_mode,
