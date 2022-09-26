@@ -5,7 +5,7 @@
         <div class="q-pa-md">
             <div class="row">
               <div class="col param">
-                <q-select label="Select From Account"
+                <q-select label="Select From Account" disable
                   behavior="menu"
                   :lazy-rules="true"
                   :rules="[val => !!val || 'Select From Account']"
@@ -25,6 +25,7 @@
             </div>
            
         </div>
+        <span class="q-ma-lg bg-red text-white q-pa-sm"> This facility is closed, kindly use <b>"Payment New"</b> section to create any payment.</span>
         <div v-if="fromAccount !== null">
         <q-table
         class="my-sticky-header-table"
