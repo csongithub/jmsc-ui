@@ -24,14 +24,6 @@
         </q-tr>
       </template>
       <template v-slot:top-left>
-      <q-btn
-          class="q-mt-sm q-mr-sm text-capitalize"
-          color="primary"
-          label="Approve All"
-          size="sm"
-          glossy
-          @click="approveAll()"
-        />
         <q-btn
           class="q-mt-sm q-mr-sm text-capitalize"
           outline
@@ -44,6 +36,17 @@
         />
       </template>
       <template v-slot:top-right>
+        <q-btn
+          class=""
+          color="primary"
+          flat
+          :icon="icons.range"
+          @click="selectRange = !selectRange"
+        >
+          <q-tooltip :delay="500"
+            >Select Payments Date or Payments Between dates</q-tooltip
+          >
+        </q-btn>
         <q-input
           borderless
           dense
@@ -65,18 +68,26 @@
               color="primary"
               round
               dense
+              flat
               @click="expandDraft(props)"
-              :icon="props.expand ? 'remove' : 'add'"
-            />
+              :icon="props.expand ? icons.expendLess : icons.expendMore"
+            >
+              <q-tooltip v-if="!props.expand" :delay="1000"
+                >Open payment details</q-tooltip
+              >
+              <q-tooltip v-if="props.expand" :delay="1000"
+                >Hide payment details</q-tooltip
+              >
+            </q-btn>
           </q-td>
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             <span v-if="col.value !== 'undefined'">
               <span v-if="col.currency">
                 <q-icon :name="icons.rupee" />
-                 {{ col.value.toLocaleString("en-IN") + ".00"}}
+                {{ col.value.toLocaleString("en-IN") + ".00" }}
               </span>
               <span v-else>
-                {{ col.value}}
+                {{ col.value }}
               </span>
             </span>
           </q-td>
@@ -156,6 +167,29 @@
         </q-tr>
       </template>
     </q-table>
+    <div>
+      <q-dialog v-model="selectRange" persistent ref="selectDateRef">
+        <q-card flat bordered>
+          <q-date v-model="range" range today-btn />
+          <q-card-actions align="right">
+            <q-btn
+              class="text-capitalize"
+              color="primary"
+              flat
+              @click="cancelRange"
+              >cancel</q-btn
+            >
+            <q-btn
+              class="text-capitalize"
+              color="primary"
+              flat
+              @click="getForSelectedRange"
+              >ok</q-btn
+            >
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+    </div>
   </div>
 </template>
 
@@ -166,7 +200,10 @@ import PaymentService2 from "../../../services/PaymentService2";
 import BankAccountService from "../../../services/BankAccountService";
 import PartyAccountService from "../../../services/PartyAccountService";
 import {
-  matCurrencyRupee
+  matCurrencyRupee,
+  matExpandMore,
+  matExpandLess,
+  matDateRange,
 } from "@quasar/extras/material-icons";
 import { ref } from "vue";
 export default {
@@ -191,7 +228,7 @@ export default {
           align: "left",
           label: "Party Legal Name",
           field: "party_name",
-          sortable: true
+          sortable: true,
         },
         {
           name: "amount",
@@ -199,7 +236,7 @@ export default {
           label: "Amount",
           field: "amount",
           sortable: true,
-          currency: true
+          currency: true,
         },
         {
           name: "reason",
@@ -235,19 +272,21 @@ export default {
           label: "Payment Date",
           field: "payment_date",
           sortable: true,
-        }
+        },
       ],
 
       icons: {
         rupee: matCurrencyRupee,
+        expendMore: matExpandMore,
+        expendLess: matExpandLess,
+        range: matDateRange,
       },
     };
   },
   components: {
     Payment,
   },
-  watch: {   
-  },
+  watch: {},
   created() {},
   mounted() {
     this.getAllDrafts();
@@ -255,13 +294,45 @@ export default {
   data() {
     return {
       client_id: this.getClientId(),
-      draft_pagination: { rowsPerPage: 25 },
+      draft_pagination: { rowsPerPage: 20 },
       drafts: [],
       loading: false,
       filter_draft: "",
+      selectRange: false,
+      range: ref({ from: "", to: "" }),
     };
   },
   methods: {
+    cancelRange() {
+      this.selectRange = false;
+      this.range = { from: "", to: "" };
+    },
+    getForSelectedRange() {
+      let range = {};
+      if (this.range.from !== undefined && this.range.to !== undefined) {
+        range = {
+          from: this.range.from,
+          to: this.range.to,
+        };
+      } else {
+        range = {
+          from: this.range,
+          to: this.range,
+        };
+      }
+
+      let req = {
+        range: range,
+      };
+      // window.alert(JSON.stringify(req))
+      PaymentService2.paymentsBetweenDates(this.client_id, "APPROVED", req)
+        .then((response) => {
+          this.drafts.splice(0, this.drafts.length);
+          this.drafts = response;
+          this.cancelRange();
+        })
+        .catch((err) => {});
+    },
     getAllDrafts() {
       this.loading = true;
       PaymentService2.getAllDrafts(this.client_id, "APPROVED")
@@ -276,6 +347,11 @@ export default {
         });
     },
     expandDraft(props) {
+      console.log(JSON.stringify(props.row));
+      if (props.row.mode === "Cash") {
+        props.expand = !props.expand;
+        return;
+      }
       if (!props.expand) {
         BankAccountService.accountById(
           this.client_id,

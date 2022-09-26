@@ -24,7 +24,7 @@
         </q-tr>
       </template>
       <template v-slot:top-left>
-      <q-btn
+        <q-btn
           class="q-mt-sm q-mr-sm text-capitalize"
           color="primary"
           label="Approve All"
@@ -32,7 +32,8 @@
           glossy
           @click="adminApproval(null, 'all')"
         />
-        <q-btn v-if="print_list.length > 0"
+        <q-btn
+          v-if="print_list.length > 0"
           class="q-mt-sm q-mr-sm text-capitalize"
           color="primary"
           icon="print"
@@ -51,7 +52,6 @@
           glossy
           @click="getAllDrafts()"
         />
-        
       </template>
       <template v-slot:top-right>
         <q-input
@@ -78,7 +78,10 @@
               flat
               @click="expandDraft(props)"
               :icon="props.expand ? icons.expendLess : icons.expendMore"
-            />
+            >
+              <q-tooltip v-if="!props.expand" :delay="1000">Open payment details</q-tooltip>
+              <q-tooltip v-if="props.expand" :delay="1000">Hide payment details</q-tooltip>
+            </q-btn>
             <q-toggle
               v-model="props.row.print"
               size="xs"
@@ -90,10 +93,10 @@
             <span v-if="col.value !== 'undefined'">
               <span v-if="col.currency">
                 <q-icon :name="icons.rupee" />
-                 {{ col.value.toLocaleString("en-IN") + ".00"}}
+                {{ col.value.toLocaleString("en-IN") + ".00" }}
               </span>
               <span v-else>
-                {{ col.value}}
+                {{ col.value }}
               </span>
             </span>
             <div v-else class="pointer">
@@ -114,7 +117,10 @@
               <q-card-section
                 v-if="isNotNullOrUndefined(props.row.from_account)"
               >
-                <div class="row bg-grey text-white text-light q-mb-sm" style="max-width: 90px;">
+                <div
+                  class="row bg-grey text-white text-light q-mb-sm"
+                  style="max-width: 90px"
+                >
                   Debit Account
                 </div>
                 <div class="row">
@@ -140,7 +146,10 @@
               </q-card-section>
               <q-separator />
               <q-card-section v-if="isNotNullOrUndefined(props.row.to_account)">
-                <div class="row bg-grey text-white text-light q-mb-sm" style="max-width: 90px;">
+                <div
+                  class="row bg-grey text-white text-light q-mb-sm"
+                  style="max-width: 90px"
+                >
                   Credit Account
                 </div>
                 <div class="row">
@@ -191,27 +200,29 @@
     </q-table>
   </div>
   <div>
-      <q-dialog v-model="open" persistent @hide="onHide" ref="createPaymentRef">
-        <q-card flat bordered style="width: 1000px; max-width: 80vw">
-          <IndianBankRTGS
-            v-if="print_list.length > 0"
-            :payments="payments"
-            @clsoe="close"
-          >
-          </IndianBankRTGS>
-        </q-card>
-      </q-dialog>
-    </div>
-  <AdminAuth :options="openAuthorization" 
-               :title="authTitle"
-               :message="authMessage"
-               :data="authData"
-               @cancel="cancelAuth"
-               @success="postApproval"></AdminAuth>
+    <q-dialog v-model="open" persistent @hide="onHide" ref="createPaymentRef">
+      <q-card flat bordered style="width: 1000px; max-width: 80vw">
+        <IndianBankRTGS
+          v-if="print_list.length > 0"
+          :payments="payments"
+          @clsoe="close"
+        >
+        </IndianBankRTGS>
+      </q-card>
+    </q-dialog>
+  </div>
+  <AdminAuth
+    :options="openAuthorization"
+    :title="authTitle"
+    :message="authMessage"
+    :data="authData"
+    @cancel="cancelAuth"
+    @success="postApproval"
+  ></AdminAuth>
 </template>
 
 <script>
-import AdminAuth from "../../auth/AdminAuth"
+import AdminAuth from "../../auth/AdminAuth";
 import { commonMixin } from "../../../mixin/common";
 import Payment from "../payment/PaymentNew.vue";
 import PaymentService2 from "../../../services/PaymentService2";
@@ -221,7 +232,7 @@ import IndianBankRTGS from "../payment/templates/IndianBankRTGSNew.vue";
 import {
   matCurrencyRupee,
   matExpandMore,
-  matExpandLess
+  matExpandLess,
 } from "@quasar/extras/material-icons";
 import { ref } from "vue";
 export default {
@@ -254,7 +265,7 @@ export default {
           label: "Amount",
           field: "amount",
           sortable: true,
-          currency: true
+          currency: true,
         },
         {
           name: "reason",
@@ -303,18 +314,17 @@ export default {
 
       icons: {
         rupee: matCurrencyRupee,
-        expendMore:matExpandMore,
-        expendLess:matExpandLess,
+        expendMore: matExpandMore,
+        expendLess: matExpandLess,
       },
     };
   },
   components: {
     Payment,
     AdminAuth,
-    IndianBankRTGS
+    IndianBankRTGS,
   },
-  watch: {   
-  },
+  watch: {},
   created() {},
   mounted() {
     this.getAllDrafts();
@@ -322,8 +332,8 @@ export default {
   data() {
     return {
       openAuthorization: false,
-      authTitle: '',
-      authMessage: '',
+      authTitle: "",
+      authMessage: "",
       authData: null,
       approval_mode: null,
       client_id: this.getClientId(),
@@ -337,48 +347,53 @@ export default {
       tempPaymentSummary: {},
       print_list: [],
       open: false,
-      payments: []
+      payments: [],
     };
   },
   methods: {
     openPrint() {
-      this.payments.splice(0, this.payments.length)
-      for(let p of this.print_list) {
-        let payment = {}
-        payment.from_acc_name = p.from_account.accountHolder
-        payment.from_acc_no = p.from_account.accountNumber
-        payment.from_branch = p.from_account.branchName
-        payment.from_mobile = p.from_account.mobileNo
+      this.payments.splice(0, this.payments.length);
+      for (let p of this.print_list) {
+        let payment = {};
+        payment.from_acc_name = p.from_account.accountHolder;
+        payment.from_acc_no = p.from_account.accountNumber;
+        payment.from_branch = p.from_account.branchName;
+        payment.from_mobile = p.from_account.mobileNo;
 
-        payment.to_acc_name = p.to_account.accountHolder
-        payment.to_acc_no = p.to_account.accountNumber
-        payment.to_ifsc = p.to_account.ifscCode
-        payment.to_branch = p.to_account.branchName
-        payment.to_bank = p.to_account.bankName
+        payment.to_acc_name = p.to_account.accountHolder;
+        payment.to_acc_no = p.to_account.accountNumber;
+        payment.to_ifsc = p.to_account.ifscCode;
+        payment.to_branch = p.to_account.branchName;
+        payment.to_bank = p.to_account.bankName;
 
-        payment.amount = p.amount
-        payment.amount_in_words = p.amount_in_words
+        payment.amount = p.amount;
+        payment.amount_in_words = p.amount_in_words;
 
-        this.payments.push(payment)
+        this.payments.push(payment);
       }
-      this.open = true
+      this.open = true;
     },
     close() {
-      this.onHide()
+      this.onHide();
     },
     onHide() {
-      this.open = false
+      this.open = false;
     },
     addToPrint(props) {
-      if(this.print_list.length === 2 && props.row.print) {
-        this.fail('Maximum two payments can be printed')
-        props.row.print = !props.row.print
-        return
+      if (props.row.mode === "Cash") {
+        this.info("Cash payment can not be printed");
+        props.row.print = false;
+        return;
+      }
+      if (this.print_list.length === 2 && props.row.print) {
+        this.fail("Maximum two payments can be printed");
+        props.row.print = !props.row.print;
+        return;
       }
       let print_object = {};
-      print_object.payment_id = props.row.payment_id
-      print_object.amount = props.row.amount
-      print_object.amount_in_words = props.row.amount_in_words
+      print_object.payment_id = props.row.payment_id;
+      print_object.amount = props.row.amount;
+      print_object.amount_in_words = props.row.amount_in_words;
       if (props.row.print) {
         BankAccountService.accountById(
           this.client_id,
@@ -403,63 +418,82 @@ export default {
           .catch((err) => {
             this.fail(this.getErrorMessage(err));
           });
-      } else{
-       this.print_list = this.print_list.filter((item) => item.payment_id !== props.row.payment_id);
-      //  window.alert(JSON.stringify(this.print_list));
+      } else {
+        this.print_list = this.print_list.filter(
+          (item) => item.payment_id !== props.row.payment_id
+        );
+        //  window.alert(JSON.stringify(this.print_list));
       }
     },
     adminApproval(draft, approval_mode) {
-      this.approval_mode = approval_mode
-      this.openAuth('Authentication required', 
-                    'Please enter the admin password',
-                    true,
-                    draft)
+      this.approval_mode = approval_mode;
+      this.openAuth(
+        "",
+        "Please enter the admin password",
+        true,
+        draft
+      );
     },
-    openAuth(title, message, options, data){
-      this.authTitle = title,
-      this.authMessage = message
-      this.openAuthorization = options
-      this.authData = data
+    openAuth(title, message, options, data) {
+      (this.authTitle = title), (this.authMessage = message);
+      this.openAuthorization = options;
+      this.authData = data;
     },
     cancelAuth(val) {
-      this.openAuthorization = val
+      this.openAuthorization = val;
     },
-    postApproval(draft){
-      if (this.approval_mode === 'single') {
-        this.approveSingle(draft)
-      } else if (this.approval_mode === 'all') {
-        this.approveAll()
+    postApproval(draft) {
+      console.log('Draft' + JSON.stringify(draft));
+      if (this.approval_mode === "single") {
+        this.approveSingle(draft);
+      } else if (this.approval_mode === "all") {
+        this.approveAll();
       }
     },
-    approveAll(){
-        for(let payment of this.drafts) {
-            PaymentService2.approvePayment(this.client_id, payment.payment_id)
-            .then((response) => {
-                if(response === 0) {
-                    this.getAllDrafts()
-                    this.success('All payments has been approved')
-                }
-            })
-            .catch((err) => {
-                this.fail(this.getErrorMessage(err));
-            });
-        }
+    approveAll() {
+      let approval_begins = false
+      for (let payment of this.drafts) {
+        PaymentService2.approvePayment(this.client_id, payment.payment_id)
+          .then((response) => {
+            if (response === 0) {
+              this.getAllDrafts();
+              this.success("All payments has been approved");
+            }
+          })
+          .catch((err) => {
+            this.fail(this.getErrorMessage(err));
+          });
+      }
     },
     approveSingle(draft) {
-      console.log(JSON.stringify(draft));
+      let self = this
       PaymentService2.approvePayment(this.client_id, draft.payment_id)
         .then((response) => {
-            if(response === 0) {
-                this.getAllDrafts()
-                this.success('Payment has been approved')
+          if (response === 0) {
+            self.getAllDrafts();
+            self.success("Payment has been approved");
+            //Check if the payment is account payment and link to ther party
+            if(this.isNotNullOrUndefined(draft.to_account_id)) {
+              self.linkPartyAccount(draft.party_id, draft.to_account_id)
             }
+          }
+        })
+        .catch((err) => {
+          self.fail(self.getErrorMessage(err));
+        });
+    },
+    linkPartyAccount(party_id, account_id){
+      PaymentService2.linkPartyAccount(this.client_id, party_id, account_id)
+        .then((response) => {
+          if (response === 0) {
+          }
         })
         .catch((err) => {
           this.fail(this.getErrorMessage(err));
         });
     },
     getAllDrafts() {
-      this.print_list = []
+      this.print_list = [];
       this.loading = true;
       PaymentService2.getAllDrafts(this.client_id, "APPROVAL_REQUIRED")
         .then((response) => {
@@ -473,6 +507,11 @@ export default {
         });
     },
     expandDraft(props) {
+      console.log(JSON.stringify(props.row));
+      if (props.row.mode === "Cash") {
+        props.expand = !props.expand;
+        return;
+      }
       if (!props.expand) {
         BankAccountService.accountById(
           this.client_id,

@@ -70,7 +70,10 @@
               flat
               @click="expandDraft(props)"
               :icon="props.expand ? icons.expendLess : icons.expendMore"
-            />
+            >
+              <q-tooltip v-if="!props.expand" :delay="1000">Open payment details</q-tooltip>
+              <q-tooltip v-if="props.expand" :delay="1000">Hide payment details</q-tooltip>
+            </q-btn>
             <q-toggle
               v-model="props.row.print"
               size="xs"
@@ -82,10 +85,10 @@
             <span v-if="col.value !== 'undefined'">
               <span v-if="col.currency">
                 <q-icon :name="icons.rupee" />
-                {{ col.value.toLocaleString("en-IN") + ".00" }}
+                 {{ col.value.toLocaleString("en-IN") + ".00"}}
               </span>
               <span v-else>
-                {{ col.value }}
+                {{ col.value}}
               </span>
             </span>
             <div v-else class="pointer">
@@ -263,6 +266,7 @@
             </div>
             <div class="col-3 q-mr-sm">
               <q-select
+                :readonly="payment_mode === 'Cash' ? true : false"
                 label="Select Payment Mode"
                 behavior="menu"
                 dense
@@ -273,7 +277,7 @@
               </q-select>
             </div>
             <div class="col-3">
-              <q-input
+              <q-input :readonly="payment_mode === 'Cash' ? true : false"
                 dense
                 outlined
                 v-model="transaction_ref"
@@ -391,16 +395,6 @@ export default {
       selected_draft: ref([]),
       step: ref(1),
       columns: [
-        {
-          name: "print",
-          label: "",
-          required: true,
-          align: "center",
-          field: "print",
-          value: false,
-          print: true,
-          model: false,
-        },
         {
           name: "party_nick_name",
           required: true,
@@ -565,6 +559,11 @@ export default {
       this.open = false;
     },
     addToPrint(props) {
+      if(props.row.mode === 'Cash') {
+        props.row.print = false
+        this.info('Cash payment can not be printed')
+        return
+      }
       if (this.print_list.length === 2 && props.row.print) {
         this.fail("Maximum two payments can be printed");
         props.row.print = !props.row.print;
@@ -711,7 +710,7 @@ export default {
           this.fail("Please select paymet mode");
           return;
         }
-        if (this.isNullOrUndefined(this.transaction_ref)) {
+        if (this.isNullOrUndefined(this.transaction_ref) && this.payment_mode !== 'Cash') {
           this.fail("Please enter cheque no/transaction reference number");
           return;
         }
@@ -804,6 +803,12 @@ export default {
         });
     },
     expandDraft(props) {
+      console.log(JSON.stringify(props.row))
+      if(props.row.mode === 'Cash') {
+        props.expand = !props.expand;
+        return
+      }
+  
       if (!props.expand) {
         BankAccountService.accountById(
           this.client_id,

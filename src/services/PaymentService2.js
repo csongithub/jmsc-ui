@@ -46,6 +46,37 @@ export default {
             return Promise.reject(err);
         });
     },
+    linkPartyAccount(client_id, party_id, account_id) {
+        return api.put( '/v2/payment/linke_party_account/' +  client_id + '/' + party_id + '/' + account_id).then(response => {
+            let responseCode = response.data;
+            return responseCode;
+        }).catch(err => {
+            console.log("Error while updating party account linkage: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
+    getPartyLinkedAccounts(client_id, party_id) {
+        return api.get( '/v2/payment/party_linked_accounts/' +  client_id + '/' + party_id).then(response => {
+            let responseCode = response.data;
+            return responseCode;
+        }).catch(err => {
+            console.log("Error while getting party linked accounts: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
+    paymentsBetweenDates(client_id, status, req) {
+        const params = new URLSearchParams({
+            client_id: client_id,
+            status: status
+          }).toString();
+        return api.put('/v2/payment/payment_between_dates?' + params, req).then(response => {
+            let records = response.data;
+            return records;
+        }).catch(err => {
+            console.log("Error in getting records: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
     convertNumberToWords(amount) {
         var words = new Array();
         words[0] = '';
@@ -126,5 +157,5 @@ export default {
             words_string = words_string.split("  ").join(" ");
         }
         return words_string;
-        }
+    }
 };

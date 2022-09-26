@@ -8,8 +8,6 @@
             <q-select
               label="Select From Account"
               behavior="menu"
-              :lazy-rules="true"
-              :rules="[(val) => !!val || 'Select From Account']"
               dense
               outlined
               v-model="from_Account"
@@ -20,21 +18,21 @@
             </q-select>
           </div>
           <div class="col-1 q-ml-lg" v-if="from_Account === null">
-            <q-btn class="text-bold"
-                  color="primary"
-                  label="OR"
-                  flat
-                />
+            <q-btn class="text-bold" color="primary" label="OR" flat />
+          </div>
+          <div class="col-1 q-ml-lg" v-if="from_Account !== null">
+            <q-btn class="text-bold" outline color="primary" label="Reset" @click="resetMode"/>
           </div>
           <div class="col-2" v-if="from_Account === null">
-            <q-btn class="text-capitalize text-weight-light"
-                  color="primary"
-                  label="Pay in Cash"
-                  @click="onStart"
-                />
+            <q-btn
+              class="text-capitalize text-weight-light"
+              color="primary"
+              label="Pay in Cash"
+              @click="onStart"
+            />
           </div>
         </div>
-        <div v-if="from_Account != null">
+        <div class="q-mt-md" v-if="from_Account != null">
           <div class="row">
             <div class="col-2 text-bold">Account Holder</div>
             <div class="col">{{ from_Account.accountHolder }}</div>
@@ -73,7 +71,7 @@
       v-model:selected="selected_party"
     >
       <template v-slot:top-left>
-        <span class="text-primary text-bold"
+        <span class="text-white bg-primary q-pa-sm"
           >Please, select a party to start with !</span
         >
       </template>
@@ -96,7 +94,7 @@
           outlined
           debounce="300"
           v-model="filter"
-          placeholder="Search Site"
+          placeholder="Search Party"
         >
           <template v-slot:append>
             <q-icon name="search" />
@@ -125,7 +123,7 @@
             <q-step
               class=""
               :name="1"
-              title="Party Account"
+              :title="payment_mode === 'Cash' ? 'Party' : 'Party Account'"
               icon="create_new_folder"
               :done="step > 1"
             >
@@ -151,13 +149,40 @@
                 </q-tabs>
                 <q-tab-panels v-model="party_account_tab" animated>
                   <q-tab-panel name="existing">
-                    this is existing accounts
+                    <q-table
+                      class="my-sticky-header-table"
+                      title="Select From Existing Accounts"
+                      dense
+                      bordered
+                      flat
+                      :rows="party_linked_accounts"
+                      :columns="party_all_account_columns"
+                      row-key="accountNumber"
+                      :filter="party_all_acc_filter"
+                      selection="single"
+                      v-model:selected="selected_party_account"
+                    >
+                      <template v-slot:top-right>
+                        <q-input
+                          borderless
+                          dense
+                          outlined
+                          debounce="300"
+                          v-model="party_all_acc_filter"
+                          placeholder="Search Account"
+                        >
+                          <template v-slot:append>
+                            <q-icon name="search" />
+                          </template>
+                        </q-input>
+                      </template>
+                    </q-table>
                   </q-tab-panel>
 
                   <q-tab-panel name="new">
                     <q-table
                       class="my-sticky-header-table"
-                      title="Select Party Account"
+                      title="Select From All Accounts"
                       dense
                       bordered
                       flat
@@ -185,6 +210,42 @@
                     </q-table>
                   </q-tab-panel>
                 </q-tab-panels>
+              </div>
+              <div v-else>
+                <q-table
+                  class="my-sticky-header-table"
+                  dense
+                  bordered
+                  flat
+                  :rows="parties"
+                  :columns="columns"
+                  row-key="nick_name"
+                  :loading="loading"
+                  :pagination="party_pagination"
+                  :filter="filter"
+                  selection="single"
+                  v-model:selected="selected_party"
+                >
+                  <template v-slot:top-left>
+                    <span class="text-primary text-bold"
+                      >Please select a party to continue</span
+                    >
+                  </template>
+                  <template v-slot:top-right>
+                    <q-input
+                      borderless
+                      dense
+                      outlined
+                      debounce="300"
+                      v-model="filter"
+                      placeholder="Search Party"
+                    >
+                      <template v-slot:append>
+                        <q-icon name="search" />
+                      </template>
+                    </q-input>
+                  </template>
+                </q-table>
               </div>
             </q-step>
 
@@ -217,7 +278,7 @@
                     outlined
                     v-model="payment_date"
                     :rules="['DD-MM-YYYY']"
-                    label="Transaction Date"
+                    :label="payment_mode === 'Cash' ? 'Payment Date' : 'Transaction Date'"
                     :placeholder="'dd-mm-yyyy'"
                   >
                     <template v-slot:append>
@@ -246,6 +307,7 @@
                 </div>
                 <div class="col-3 q-mr-sm">
                   <q-select
+                    :readonly="payment_mode === 'Cash' ? true : false"
                     label="Select Payment Mode"
                     behavior="menu"
                     dense
@@ -256,7 +318,7 @@
                   </q-select>
                 </div>
                 <div class="col-3">
-                  <q-input
+                  <q-input :readonly="payment_mode === 'Cash' ? true : false"
                     dense
                     outlined
                     v-model="transaction_ref"
@@ -265,7 +327,9 @@
                     full-width
                   />
                 </div>
-                <div class="text-caption text-italic"><b>In Words:</b>{{getAmountInWords()}}</div>
+                <div class="text-caption text-italic">
+                  <b>In Words:</b>{{ getAmountInWords() }}
+                </div>
               </div>
               <div class="row q-mt-sm">
                 <q-input
@@ -314,28 +378,43 @@
                   </q-select>
                 </div>
               </div>
-              
-              
             </q-step>
-
-
 
             <template v-slot:navigation>
               <q-stepper-navigation align="right">
-                <q-btn v-if="step === 2"
+                <q-btn
+                  v-if="step === 2"
                   class="text-capitalize text-weight-light q-mr-sm"
                   color="primary"
                   label="Save As Draft"
                   @click="savePayment('DRAFT')"
                 />
-                <q-btn v-if="selected_party_account.length > 0"
+                <q-btn
+                  v-if="(payment_mode === 'Cash' && selected_party.length > 0) || selected_party_account.length > 0"
                   class="text-capitalize text-weight-light q-mr-sm"
-                  @click="step === 2 ? savePayment('APPROVAL_REQUIRED') : $refs.stepper.next()"
+                  @click="
+                    step === 2
+                      ? savePayment('APPROVAL_REQUIRED')
+                      : $refs.stepper.next()
+                  "
                   color="primary"
                   :label="step === 2 ? 'Send for Approval' : 'Continue'"
                 />
 
-                <q-btn v-if="step > 1 && from_Account !== null"
+                <!-- <q-btn
+                  v-if="
+                    from_Account == null &&
+                    selected_party.length > 0 &&
+                    step === 1
+                  "
+                  class="text-capitalize text-weight-light q-mr-sm"
+                  @click="$refs.stepper.next()"
+                  color="primary"
+                  label="Continue"
+                /> -->
+
+                <q-btn
+                  v-if="step > 1"
                   class="text-capitalize text-weight-light"
                   outline
                   flat
@@ -500,6 +579,7 @@ export default {
       accounts: [],
       from_Account: null,
       party_all_accounts: [],
+      party_linked_accounts: [],
       selected_party_account: [],
       sites: [],
       machines: [],
@@ -520,38 +600,44 @@ export default {
     };
   },
   methods: {
+    resetMode() {
+      this.from_Account = null
+      this.selected_party = ref([])
+      this.selected_party_account = ref([])
+    },
     getAmountInWords() {
-        if(this.payment_amount > 0)
-            this.amount_inwords = PaymentService2.convertNumberToWords(this.payment_amount) + 'Only'
-        else
-            this.amount_inwords = ''
-        
-        return this.amount_inwords;
+      if (this.payment_amount > 0)
+        this.amount_inwords =
+          PaymentService2.convertNumberToWords(this.payment_amount) + "Only";
+      else this.amount_inwords = "";
+
+      return this.amount_inwords;
     },
     onStart() {
+      this.payment_date = this.getTodaysDate()
       this.getPartyAllAccounts();
+      this.getPartyLinkedAccounts();
       this.getAllSites();
       this.getAllMachines();
       this.openCreatePaymentWindow();
     },
     openCreatePaymentWindow() {
-      if(this.from_Account == null) {
-        this.step = 2
-        this.payment_mode = 'Cash'
+      if (this.from_Account == null) {
+        this.payment_mode = "Cash";
       }
       this.show_create_payment = true;
     },
     resetPayment() {
       this.show_create_payment = false;
-      this.step = ref(1),
-      this.selected_site = null,
-      this.selected_machine = null,
-      this.payment_mode = null,
-      this.transaction_ref = null,
-      this.payment_remark = null,
-      this.payment_date = null,
-      this.payment_amount = null,
-      this.selected_party_account = []
+      (this.step = ref(1)),
+        (this.selected_site = null),
+        (this.selected_machine = null),
+        (this.payment_mode = null),
+        (this.transaction_ref = null),
+        (this.payment_remark = null),
+        (this.payment_date = null),
+        (this.payment_amount = null),
+        (this.selected_party_account = []);
     },
     getAllParties() {
       this.loading = true;
@@ -589,6 +675,18 @@ export default {
           this.fail("Error in loading party accounts");
         });
     },
+    getPartyLinkedAccounts() {
+      if(this.isNullOrUndefined(this.selected_party) || this.selected_party.length === 0)
+        return
+      PaymentService2.getPartyLinkedAccounts(this.client_id, this.selected_party[0].id)
+        .then((response) => {
+          this.party_linked_accounts.splice(0, this.party_all_accounts.length);
+          this.party_linked_accounts = response;
+        })
+        .catch((err) => {
+          this.fail("Error in loading party linked accounts");
+        });
+    },
     getAllSites() {
       SiteService.all(this.client_id)
         .then((response) => {
@@ -620,37 +718,40 @@ export default {
         payment_date: this.payment_date,
       };
 
-      if(this.isNullOrUndefined(this.payment_amount) || this.payment_amount === null  || this.payment_amount === 0) {
-          this.fail('Please enter the amount')
-          return
+      if (
+        this.isNullOrUndefined(this.payment_amount) ||
+        this.payment_amount === null ||
+        this.payment_amount === 0
+      ) {
+        this.fail("Please enter the amount");
+        return;
       }
 
       if (mode === "DRAFT") {
         payment.status = "DRAFT";
       } else if (mode === "APPROVAL_REQUIRED") {
-        
-        if(this.isNullOrUndefined(this.payment_date)) {
-          this.fail('Please select payment date')
-          return
-        }
-        if(this.isNullOrUndefined(this.payment_reason)) {
-          this.fail('Please select paymet reason')
+        if (this.isNullOrUndefined(this.payment_date)) {
+          this.fail("Please select payment date");
           return;
         }
-        if(this.isNullOrUndefined(this.payment_mode)) {
-          this.fail('Please select paymet mode')
+        if (this.isNullOrUndefined(this.payment_reason)) {
+          this.fail("Please select paymet reason");
           return;
         }
-        if(this.isNullOrUndefined(this.transaction_ref)) {
-          this.fail('Please enter cheque no/transaction reference number')
+        if (this.isNullOrUndefined(this.payment_mode)) {
+          this.fail("Please select paymet mode");
           return;
         }
-        if(this.isNullOrUndefined(this.payment_remark)) {
-          this.fail('Please enter payment description/remark')
+        if (this.isNullOrUndefined(this.transaction_ref) && this.payment_mode !== 'Cash') {
+          this.fail("Please enter cheque no/transaction reference number");
           return;
         }
-        if(this.payment_reason === ""){
-          this.fail('Please select payment reason')
+        if (this.isNullOrUndefined(this.payment_remark)) {
+          this.fail("Please enter payment description/remark");
+          return;
+        }
+        if (this.payment_reason === "") {
+          this.fail("Please select payment reason");
           return;
         }
         payment.status = "APPROVAL_REQUIRED";
@@ -658,8 +759,11 @@ export default {
 
       let payment_details = {
         party: this.selected_party[0],
-        from_account: from_Account !== null ? this.from_Account : null,
-        to_account: this.selected_party_account[0] !== null ? this.selected_party_account[0] : null,
+        from_account: this.from_Account !== null ? this.from_Account : null,
+        to_account:
+          this.selected_party_account[0] !== null
+            ? this.selected_party_account[0]
+            : null,
         payment_amount: this.payment_amount,
         amount_inwords: this.amount_inwords,
         payment_reason: this.payment_reason,
@@ -671,11 +775,14 @@ export default {
       };
 
       let payment_summary = {
-        party_id: this.selected_party.id,
+        party_id: this.selected_party[0].id,
         party_name: this.selected_party[0].name,
         party_nick_name: this.selected_party[0].nick_name,
-        from_account_id: from_Account !== null ? this.from_Account.id : null,
-        to_account_id: this.selected_party_account[0] != null ? this.selected_party_account[0].id : null,
+        from_account_id: this.from_Account !== null ? this.from_Account.id : null,
+        to_account_id:
+          this.selected_party_account[0] != null
+            ? this.selected_party_account[0].id
+            : null,
         amount: this.payment_amount,
         amount_in_words: this.amount_inwords,
         mode: this.payment_mode,
@@ -685,33 +792,33 @@ export default {
       };
 
       if (this.payment_reason === "site") {
-        if(this.selected_site === null) {
-          this.fail('Please select site')
-          return
+        if (this.selected_site === null) {
+          this.fail("Please select site");
+          return;
         }
         payment_summary.reasonId = this.selected_site.id;
         payment_summary.reason_name = this.selected_site.display_name;
       } else if (this.payment_reason === "machine") {
-         if(this.selected_machine === null) {
-          this.fail('Please select machine')
-          return
+        if (this.selected_machine === null) {
+          this.fail("Please select machine");
+          return;
         }
         payment_summary.reasonId = this.selected_machine.id;
         payment_summary.reason_name = this.selected_machine.name;
       }
 
-      payment.payment =  JSON.stringify(payment_details)
-      payment.payment_summary = JSON.stringify(payment_summary)
+      payment.payment = JSON.stringify(payment_details);
+      payment.payment_summary = JSON.stringify(payment_summary);
 
       PaymentService2.savePayment(payment)
         .then((response) => {
           console.log(response);
-          if(mode === "DRAFT") {
-             this.success("Payment draft has been created");
-          } else if(mode === "APPROVAL_REQUIRED") {
-             this.success("Payment sent for approval");
+          if (mode === "DRAFT") {
+            this.success("Payment draft has been created");
+          } else if (mode === "APPROVAL_REQUIRED") {
+            this.success("Payment sent for approval");
           }
-          this.resetPayment()
+          this.resetPayment();
         })
         .catch((err) => {
           this.fail(this.getErrorMessage(err));

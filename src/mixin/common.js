@@ -83,7 +83,7 @@ export const commonMixin = {
       this.$q.notify({
         message: message,
         caption: "",
-        type: "positive"
+        color: "primary"
       });
     },
     fail(message) {
