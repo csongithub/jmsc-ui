@@ -12,7 +12,7 @@
               outlined
               v-model="from_Account"
               :options="accounts"
-              option-label="accountNumber"
+              option-label="displayName"
               option-value="id"
             >
             </q-select>

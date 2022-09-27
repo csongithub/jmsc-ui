@@ -74,6 +74,17 @@
 
           <q-card-section>
             <q-form @submit="addAccount" @reset="reset" class="q-gutter-md">
+              <div class="row-12">
+                <q-input
+                    dense
+                    outlined
+                    v-model="account.displayName"
+                    label="Display Name"
+                    full-width
+                    lazy-rules
+                    :rules="[val => (val && val.length > 0) || 'Account name']"
+                  />
+              </div>
               <div class="row">
                 <div class="col q-mr-sm">
                   <q-input
@@ -271,6 +282,7 @@ export default {
       return {
         clientId: this.clientId,
         accountHolder:'',
+        displayName:'',
         bankName: '',
         branchName: '',
         branchCode:'',
