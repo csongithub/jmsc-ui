@@ -70,6 +70,12 @@
               </q-item-section>
               <q-item-section>Payments</q-item-section>
             </q-item>
+            <q-item exact clickable v-ripple to="/payment_new" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.plan" />
+              </q-item-section>
+              <q-item-section>Payments New</q-item-section>
+            </q-item>
             <q-item exact clickable v-ripple to="/credit_facility" class="q-ml-md">
               <q-item-section avatar>
                 <q-icon :name="icons.cf" />

@@ -20,7 +20,7 @@
           <q-td :props="props">
             <div>
               <q-icon :name="icons.rupee"/>
-              {{props.row.amount.toLocaleString('en-IN') + '0.00'}}
+              {{props.row.amount.toLocaleString('en-IN') + '.00'}}
             </div>
           </q-td>
       </template>

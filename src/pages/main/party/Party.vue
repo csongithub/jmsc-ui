@@ -17,7 +17,7 @@
                 @click="getAllParties()"/>
         <q-table
         class="my-sticky-header-table"
-        title="Sites"
+        title="All Party"
         dense
         bordered
         flat
