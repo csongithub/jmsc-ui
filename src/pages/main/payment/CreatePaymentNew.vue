@@ -596,7 +596,7 @@ export default {
       transaction_ref: null,
       payment_remark: null,
       payment_date: null,
-      payment_amount: null,
+      payment_amount: 0,
     };
   },
   methods: {
@@ -764,7 +764,7 @@ export default {
           this.selected_party_account[0] !== null
             ? this.selected_party_account[0]
             : null,
-        payment_amount: this.payment_amount,
+        payment_amount: parseInt(this.payment_amount),
         amount_inwords: this.amount_inwords,
         payment_reason: this.payment_reason,
         site: this.selected_site,
@@ -783,7 +783,7 @@ export default {
           this.selected_party_account[0] != null
             ? this.selected_party_account[0].id
             : null,
-        amount: this.payment_amount,
+        amount: parseInt(this.payment_amount),
         amount_in_words: this.amount_inwords,
         mode: this.payment_mode,
         transaction_ref: this.transaction_ref,
