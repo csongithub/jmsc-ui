@@ -8,9 +8,8 @@ import { LocalStorage } from "quasar";
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
-const api = axios.create({ baseURL: 'http://localhost:8001/jmsc/api/' })
-//axios.defaults.headers.common['Authorization'] = 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJqbXNjMDAxIiwiZXhwIjoxNjQ1NDUxMDQyLCJpYXQiOjE2NDUwMTkwNDJ9.kcGoCUjY8J1CndDILwxQA2XxzOfTpjq-E8Q30NBKKtawAATAqJ1u6mOlSOblBW7CxO1B791CK74H8DW9TQfkBA'
 
+const api = axios.create({ baseURL: 'http://localhost:9001/jmsc/api/' })
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
