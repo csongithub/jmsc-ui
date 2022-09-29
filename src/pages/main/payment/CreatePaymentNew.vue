@@ -76,6 +76,13 @@
         >
       </template>
       <template v-slot:top-right>
+         <q-btn
+          class="text-capitalize text-weight-light q-mr-sm"
+          color="primary"
+          label="reload"
+          icon="refresh"
+          @click="getAllParties"
+        />
         <q-btn
           v-if="selected_party.length > 0"
           class="text-capitalize text-weight-light q-mr-sm"
