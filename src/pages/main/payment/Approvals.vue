@@ -104,9 +104,17 @@
                 class="q-mt-sm q-mr-sm text-capitalize"
                 color="primary"
                 label="Approve"
-                size="sm"
+                size="xs"
                 glossy
                 @click="adminApproval(props.row, 'single')"
+              />
+              <q-btn
+                class="q-mt-sm q-mr-sm text-capitalize"
+                color="red"
+                label="Reject"
+                size="xs"
+                glossy
+                @click="reject(props.row, 'reject')"
               />
             </div>
           </q-td>
@@ -216,6 +224,7 @@
     :title="authTitle"
     :message="authMessage"
     :data="authData"
+    :actionLabel="actionLabel"
     @cancel="cancelAuth"
     @success="postApproval"
   ></AdminAuth>
@@ -335,6 +344,7 @@ export default {
       authTitle: "",
       authMessage: "",
       authData: null,
+      actionLabel: 'Approve',
       approval_mode: null,
       client_id: this.getClientId(),
       draft_pagination: { rowsPerPage: 25 },
@@ -428,16 +438,29 @@ export default {
     adminApproval(draft, approval_mode) {
       this.approval_mode = approval_mode;
       this.openAuth(
-        "",
+        "Approve",
         "Please enter the admin password",
         true,
-        draft
+        draft,
+        "Approve"
       );
     },
-    openAuth(title, message, options, data) {
-      (this.authTitle = title), (this.authMessage = message);
-      this.openAuthorization = options;
-      this.authData = data;
+    reject(draft, approval_mode) {
+      this.approval_mode = approval_mode;
+      this.openAuth(
+        "Reject",
+        "Please enter the admin password",
+        true,
+        draft,
+        "Reject"
+      );
+    },
+    openAuth(title, message, options, data, actionLabel) {
+      this.authTitle = title
+      this.authMessage = message
+      this.openAuthorization = options
+      this.authData = data
+      this.actionLabel = actionLabel
     },
     cancelAuth(val) {
       this.openAuthorization = val;
@@ -448,21 +471,33 @@ export default {
         this.approveSingle(draft);
       } else if (this.approval_mode === "all") {
         this.approveAll();
+      } else if (this.approval_mode === "reject") {
+        this.rejectPayment(draft);
       }
     },
     approveAll() {
       let approval_begins = false
+      let self = this
       for (let payment of this.drafts) {
         PaymentService2.approvePayment(this.client_id, payment.payment_id)
           .then((response) => {
             if (response === 0) {
-              this.getAllDrafts();
-              this.success("All payments has been approved");
+              self.getAllDrafts();
+              self.success("All payments has been approved");
+              // if(self.isNotNullOrUndefined(payment.to_account_id)) {
+              //   self.linkPartyAccount(payment.party_id, payment.to_account_id)
+              // }
             }
           })
           .catch((err) => {
-            this.fail(this.getErrorMessage(err));
+            self.fail(this.getErrorMessage(err));
           });
+      }
+      //Update Party linkage account
+      for (let draft of this.drafts) {
+          if(self.isNotNullOrUndefined(draft.to_account_id)) {
+          self.linkPartyAccount(draft.party_id, draft.to_account_id)
+        }
       }
     },
     approveSingle(draft) {
@@ -476,6 +511,19 @@ export default {
             if(this.isNotNullOrUndefined(draft.to_account_id)) {
               self.linkPartyAccount(draft.party_id, draft.to_account_id)
             }
+          }
+        })
+        .catch((err) => {
+          self.fail(self.getErrorMessage(err));
+        });
+    },
+    rejectPayment(draft) {
+      let self = this
+      PaymentService2.rejectPayment(this.client_id, draft.payment_id)
+        .then((response) => {
+          if (response === 0) {
+            self.getAllDrafts();
+            self.success("Payment has been rejected");
           }
         })
         .catch((err) => {

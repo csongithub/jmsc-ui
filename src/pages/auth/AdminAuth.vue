@@ -65,7 +65,7 @@
             <q-separator />
             <q-card-actions>
                 <q-space/>
-                <q-btn type="submit" dense label="Approve" color="primary" class="text-capitalize text-weight-light"/>
+                <q-btn type="submit" dense :label="isNullOrUndefined(actionLabel) ? 'Approve': actionLabel" color="primary" class="text-capitalize text-weight-light"/>
                 <q-btn dense label="Cancel"  color="primary" @click="cancel" outline class="text-capitalize text-weight-light"/>
             </q-card-actions>
            </q-form>
@@ -86,7 +86,8 @@ export default {
         embedded:{type: Boolean, dafault: false},
         title: {type: Text, default: 'Are you sure?'},
         message: {type: Text, default: 'Please Authorise Yourself.'},
-        data: {type: Object, default: null}
+        data: {type: Object, default: null},
+        actionLabel: {type: Text, default: 'Approve'},
   },
   computed: {
         open: {

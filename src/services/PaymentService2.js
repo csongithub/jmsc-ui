@@ -46,6 +46,15 @@ export default {
             return Promise.reject(err);
         });
     },
+    rejectPayment(client_id, payment_id) {
+        return api.put( '/v2/payment/reject/' +  client_id + '/' + payment_id).then(response => {
+            let responseCode = response.data;
+            return responseCode;
+        }).catch(err => {
+            console.log("Error while getting payment: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
     linkPartyAccount(client_id, party_id, account_id) {
         return api.put( '/v2/payment/linke_party_account/' +  client_id + '/' + party_id + '/' + account_id).then(response => {
             let responseCode = response.data;
