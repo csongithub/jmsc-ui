@@ -98,6 +98,12 @@
               <q-card-section
                 v-if="isNotNullOrUndefined(props.row.from_account)"
               >
+                <div
+                  class="row bg-grey text-white text-light q-mb-sm"
+                  style="max-width: 90px"
+                >
+                  Debit Account
+                </div>
                 <div class="row">
                   <div class="col-2 text-bold">Account Holder</div>
                   <div class="col-3">
@@ -121,6 +127,12 @@
               </q-card-section>
               <q-separator />
               <q-card-section v-if="isNotNullOrUndefined(props.row.to_account)">
+                <div
+                  class="row bg-grey text-white text-light q-mb-sm"
+                  style="max-width: 90px"
+                >
+                  Credit Account
+                </div>
                 <div class="row">
                   <div class="col-2 text-bold">Account Holder</div>
                   <div class="col-3">
@@ -133,9 +145,9 @@
                 </div>
                 <div class="row q-mt-sm">
                   <div class="col-2 text-bold">Bank</div>
-                  <div class="col-3">{{ props.row.from_account.bankName }}</div>
+                  <div class="col-3">{{ props.row.to_account.bankName }}</div>
                   <div class="col-2 text-bold">IFSC Code</div>
-                  <div class="col-2">{{ props.row.from_account.ifscCode }}</div>
+                  <div class="col-2">{{ props.row.to_account.ifscCode }}</div>
                 </div>
               </q-card-section>
               <q-separator />
@@ -214,6 +226,13 @@ export default {
       selected_draft: ref([]),
       step: ref(1),
       columns: [
+        {
+          name: "payment_id",
+          align: "left",
+          label: "ID",
+          field: "payment_id",
+          sortable: true,
+        },
         {
           name: "party_nick_name",
           required: true,

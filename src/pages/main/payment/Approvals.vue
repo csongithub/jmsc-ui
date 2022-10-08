@@ -33,7 +33,7 @@
           @click="adminApproval(null, 'all')"
         />
         <q-btn
-          v-if="print_list.length > 0"
+          v-if="selected_list.length > 0"
           class="q-mt-sm q-mr-sm text-capitalize"
           color="primary"
           icon="print"
@@ -54,6 +54,17 @@
         />
       </template>
       <template v-slot:top-right>
+        <q-btn
+          class=""
+          color="primary"
+          flat
+          :icon="icons.range"
+          @click="selectRange = !selectRange"
+        >
+          <q-tooltip :delay="500"
+            >Select Payments Date or Payments Between dates</q-tooltip
+          >
+        </q-btn>
         <q-input
           borderless
           dense
@@ -85,7 +96,7 @@
             <q-toggle
               v-model="props.row.print"
               size="xs"
-              @click="addToPrint(props)"
+              @click="selectPayment(props)"
               checked-icon="check"
             />
           </q-td>
@@ -172,9 +183,9 @@
                 </div>
                 <div class="row q-mt-sm">
                   <div class="col-2 text-bold">Bank</div>
-                  <div class="col-3">{{ props.row.from_account.bankName }}</div>
+                  <div class="col-3">{{ props.row.to_account.bankName }}</div>
                   <div class="col-2 text-bold">IFSC Code</div>
-                  <div class="col-2">{{ props.row.from_account.ifscCode }}</div>
+                  <div class="col-2">{{ props.row.to_account.ifscCode }}</div>
                 </div>
               </q-card-section>
               <q-separator />
@@ -208,10 +219,33 @@
     </q-table>
   </div>
   <div>
+      <q-dialog v-model="selectRange" persistent ref="selectDateRef">
+        <q-card flat bordered>
+          <q-date v-model="range" range today-btn />
+          <q-card-actions align="right">
+            <q-btn
+              class="text-capitalize"
+              color="primary"
+              flat
+              @click="cancelRange"
+              >cancel</q-btn
+            >
+            <q-btn
+              class="text-capitalize"
+              color="primary"
+              flat
+              @click="getForSelectedRange"
+              >ok</q-btn
+            >
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+    </div>
+  <div>
     <q-dialog v-model="open" persistent @hide="onHide" ref="createPaymentRef">
       <q-card flat bordered style="width: 1000px; max-width: 80vw">
         <IndianBankRTGS
-          v-if="print_list.length > 0"
+          v-if="selected_list.length > 0"
           :payments="payments"
           @clsoe="close"
         >
@@ -242,6 +276,7 @@ import {
   matCurrencyRupee,
   matExpandMore,
   matExpandLess,
+  matDateRange
 } from "@quasar/extras/material-icons";
 import { ref } from "vue";
 export default {
@@ -325,6 +360,7 @@ export default {
         rupee: matCurrencyRupee,
         expendMore: matExpandMore,
         expendLess: matExpandLess,
+        range: matDateRange,
       },
     };
   },
@@ -355,15 +391,47 @@ export default {
       tempDraft: {},
       tempPayment: {},
       tempPaymentSummary: {},
-      print_list: [],
+      selected_list: [],
       open: false,
       payments: [],
+      selectRange: false,
+      range: ref({ from: "", to: "" }),
     };
   },
   methods: {
+    cancelRange() {
+      this.selectRange = false;
+      this.range = { from: "", to: "" };
+    },
+    getForSelectedRange() {
+      let range = {};
+      if (this.range.from !== undefined && this.range.to !== undefined) {
+        range = {
+          from: this.range.from,
+          to: this.range.to,
+        };
+      } else {
+        range = {
+          from: this.range,
+          to: this.range,
+        };
+      }
+
+      let req = {
+        range: range,
+      };
+      // window.alert(JSON.stringify(req))
+      PaymentService2.paymentsBetweenDates(this.client_id, "APPROVAL_REQUIRED", req)
+        .then((response) => {
+          this.drafts.splice(0, this.drafts.length);
+          this.drafts = response;
+          this.cancelRange();
+        })
+        .catch((err) => {});
+    },
     openPrint() {
       this.payments.splice(0, this.payments.length);
-      for (let p of this.print_list) {
+      for (let p of this.selected_list) {
         let payment = {};
         payment.from_acc_name = p.from_account.accountHolder;
         payment.from_acc_no = p.from_account.accountNumber;
@@ -389,13 +457,13 @@ export default {
     onHide() {
       this.open = false;
     },
-    addToPrint(props) {
+    selectPayment(props) {
       if (props.row.mode === "Cash") {
         this.info("Cash payment can not be printed");
         props.row.print = false;
         return;
       }
-      if (this.print_list.length === 2 && props.row.print) {
+      if (this.selected_list.length === 2 && props.row.print) {
         this.fail("Maximum two payments can be printed");
         props.row.print = !props.row.print;
         return;
@@ -417,9 +485,9 @@ export default {
             )
               .then((response) => {
                 print_object.to_account = response;
-                this.print_list.push(print_object);
-                // window.alert(JSON.stringify(this.print_list));
-                console.log(JSON.stringify(this.print_list));
+                this.selected_list.push(print_object);
+                // window.alert(JSON.stringify(this.selected_list));
+                console.log(JSON.stringify(this.selected_list));
               })
               .catch((err) => {
                 this.fail(this.getErrorMessage(err));
@@ -429,10 +497,10 @@ export default {
             this.fail(this.getErrorMessage(err));
           });
       } else {
-        this.print_list = this.print_list.filter(
+        this.selected_list = this.selected_list.filter(
           (item) => item.payment_id !== props.row.payment_id
         );
-        //  window.alert(JSON.stringify(this.print_list));
+        //  window.alert(JSON.stringify(this.selected_list));
       }
     },
     adminApproval(draft, approval_mode) {
@@ -541,7 +609,7 @@ export default {
         });
     },
     getAllDrafts() {
-      this.print_list = [];
+      this.selected_list = [];
       this.loading = true;
       PaymentService2.getAllDrafts(this.client_id, "APPROVAL_REQUIRED")
         .then((response) => {
