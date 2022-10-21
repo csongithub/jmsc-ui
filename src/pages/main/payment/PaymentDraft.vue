@@ -92,7 +92,33 @@
               </span>
             </span>
             <div v-else class="pointer">
-              <q-btn
+              <q-btn-dropdown
+                dense
+                size="md"
+                flat
+                v-model="menu"
+                class="text-capitalize text-caption"
+                label="Actions"
+              >
+                <q-list dense>
+                   <!-- <q-item clickable dense flat v-close-popup @click="sendForApproval(props.row)">
+                     <q-icon name="arrow_forward" class="text-green q-mr-sm" size="sm"/>
+                     <span  class="text-weight-light">Send for Approval</span>
+                  </q-item> -->
+                  <q-item clickable dense flat v-close-popup @click="updateDraft(props.row)">
+                     <q-icon name="mode"  class="text-green q-mr-sm" size="sm"/>
+                     <span  class="text-weight-light">Edit Draft</span>
+                  </q-item>
+                  <q-separator/>
+                  <q-item clickable v-close-popup @click="deleteDraft(props.row)">
+                    <q-icon name="clear" class="text-red q-mr-sm" size="sm"/>
+                     <span  class="text-weight-light">Delete Draft</span>
+                  </q-item>
+                </q-list>
+                
+              </q-btn-dropdown>
+
+              <!-- <q-btn
                 class="q-pa-xs"
                 size="xs"
                 color="primary"
@@ -111,7 +137,7 @@
                 @click="deleteDraft(props.row)"
               >
                 <q-tooltip delay="400">Delete Draft</q-tooltip>
-              </q-btn>
+              </q-btn> -->
             </div>
           </q-td>
         </q-tr>
@@ -162,9 +188,13 @@
                 </div>
                 <div class="row q-mt-sm">
                   <div class="col-2 text-bold">Bank</div>
-                  <div class="col-3">{{ props.row.from_account.bankName }}</div>
+                  <div class="col-3">{{ props.row.to_account.bankName }}</div>
                   <div class="col-2 text-bold">IFSC Code</div>
-                  <div class="col-2">{{ props.row.from_account.ifscCode }}</div>
+                  <div class="col-2">{{ props.row.to_account.ifscCode }}</div>
+                  <div class="col-1 text-bold">Branch</div>
+                  <div class="col-1">
+                    {{ props.row.to_account.branchName }}
+                  </div>
                 </div>
               </q-card-section>
               <q-separator />
@@ -174,7 +204,7 @@
                 </div>
                 <div class="row q-mb-md">
                   <q-icon :name="icons.rupee" />
-                  <div class="col">
+                  <div class="col text-bold">
                     {{
                       props.row.amount.toLocaleString("en-IN") +
                       ".00" +
@@ -456,7 +486,7 @@ export default {
         },
         {
           name: "actions",
-          label: "Actions",
+          label: "",
           required: true,
           align: "center",
           field: "actions",
@@ -686,6 +716,11 @@ export default {
         });
       this.openUpdateDraftDialog();
     },
+    // sendForApproval(draft) {
+    //   this.payment_date = draft.payment_date
+    //   this.payment_mode = draft.mode
+    //   this.saveDraft('APPROVAL_REQUIRED')
+    // },
     saveDraft(mode) {
       let payment = {
         id: this.tempDraft.id,

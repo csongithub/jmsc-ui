@@ -148,6 +148,10 @@
                   <div class="col-3">{{ props.row.to_account.bankName }}</div>
                   <div class="col-2 text-bold">IFSC Code</div>
                   <div class="col-2">{{ props.row.to_account.ifscCode }}</div>
+                  <div class="col-1 text-bold">Branch</div>
+                  <div class="col-1">
+                    {{ props.row.to_account.branchName }}
+                  </div>
                 </div>
               </q-card-section>
               <q-separator />
@@ -157,7 +161,7 @@
                 </div>
                 <div class="row q-mb-md">
                   <q-icon :name="icons.rupee" />
-                  <div class="col">
+                  <div class="col text-bold">
                     {{
                       props.row.amount.toLocaleString("en-IN") +
                       ".00" +
