@@ -628,6 +628,22 @@ export default {
         .onDismiss(() => {});
     },
     backToDraft(draft) {
+      console.log(JSON.stringify(draft));
+      this.$q
+        .dialog({
+          title: "Are You Sure?",
+          message: "The payment will move to draft.",
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          this.backToDraftInternal(draft)
+        })
+        .onOk(() => {})
+        .onCancel(() => {})
+        .onDismiss(() => {});
+    },
+    backToDraftInternal(draft) {
       let self = this
       PaymentService2.rejectPayment(this.client_id, draft.payment_id)
         .then((response) => {
