@@ -424,13 +424,50 @@ export default {
     return {
       selected_draft: ref([]),
       step: ref(1),
+      
+
+      icons: {
+        rupee: matCurrencyRupee,
+        delete: matDelete,
+        edit: matEdit,
+        expendMore: matExpandMore,
+        expendLess: matExpandLess,
+      },
+    };
+  },
+  components: {
+    Payment,
+    IndianBankRTGS,
+  },
+  watch: {
+    payment_reason(val) {
+      if (val === "site") {
+        this.selected_machine = null;
+      } else if (val === "machine") {
+        this.selected_site = null;
+      } else {
+        this.selected_machine = null;
+        this.selected_site = null;
+      }
+    },
+  },
+  created() {},
+  mounted() {
+    this.getAllSites();
+    this.getAllMachines();
+    this.getAllDrafts();
+  },
+  data() {
+    return {
+      client_id: this.getClientId(),
+      draft_pagination: { rowsPerPage: 25 },
       columns: [
         {
           name: "party_nick_name",
           required: true,
           label: "Party",
           align: "left",
-          field: (row) => row.party_nick_name,
+          field: row => this.getPartyNames(row.party_id,'nick_name'),
           format: (val) => `${val}`,
           sortable: true,
         },
@@ -438,7 +475,7 @@ export default {
           name: "party_name",
           align: "left",
           label: "Party Legal Name",
-          field: "party_name",
+          field: row => this.getPartyNames(row.party_id,'name'),
           sortable: true,
         },
         {
@@ -493,42 +530,6 @@ export default {
           format: (val) => `${val}`,
         },
       ],
-
-      icons: {
-        rupee: matCurrencyRupee,
-        delete: matDelete,
-        edit: matEdit,
-        expendMore: matExpandMore,
-        expendLess: matExpandLess,
-      },
-    };
-  },
-  components: {
-    Payment,
-    IndianBankRTGS,
-  },
-  watch: {
-    payment_reason(val) {
-      if (val === "site") {
-        this.selected_machine = null;
-      } else if (val === "machine") {
-        this.selected_site = null;
-      } else {
-        this.selected_machine = null;
-        this.selected_site = null;
-      }
-    },
-  },
-  created() {},
-  mounted() {
-    this.getAllSites();
-    this.getAllMachines();
-    this.getAllDrafts();
-  },
-  data() {
-    return {
-      client_id: this.getClientId(),
-      draft_pagination: { rowsPerPage: 25 },
       drafts: [],
       loading: false,
       filter_draft: "",

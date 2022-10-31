@@ -1,10 +1,26 @@
 import { date } from "quasar";
 import { LocalStorage } from "quasar";
+
 export const commonMixin = {
   data() {
-    return {};
+    return {
+      cacheChanged: false
+    };
   },
   methods: {
+    updatePartyCache(party){
+      return this.$store.dispatch('party/updateParty', {party: party})
+    },
+    getPartyNames(party_id, name_type){
+      let party = this.$store.getters['party/getParty'](party_id)
+      if(!party) {
+        party = this.$store.dispatch('party/getAllParty', {client_id: this.getClientId(), party_id: party_id})
+      }
+      if(name_type === 'name')
+        return party.name
+      else if(name_type === 'nick_name')
+        return party.nick_name
+    },
     openLoginLayout() {
       this.$router.push({ name: "login" });
     },

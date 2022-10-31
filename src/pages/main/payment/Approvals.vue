@@ -300,13 +300,41 @@ export default {
     return {
       selected_draft: ref([]),
       step: ref(1),
+      icons: {
+        rupee: matCurrencyRupee,
+        expendMore: matExpandMore,
+        expendLess: matExpandLess,
+        range: matDateRange,
+      },
+    };
+  },
+  components: {
+    Payment,
+    AdminAuth,
+    IndianBankRTGS,
+  },
+  watch: {},
+  created() {},
+  mounted() {
+    this.getAllDrafts();
+  },
+  data() {
+    return {
+      openAuthorization: false,
+      authTitle: "",
+      authMessage: "",
+      authData: null,
+      actionLabel: 'Approve',
+      approval_mode: null,
+      client_id: this.getClientId(),
+      draft_pagination: { rowsPerPage: 25 },
       columns: [
         {
           name: "party_nick_name",
           required: true,
           label: "Party",
           align: "left",
-          field: (row) => row.party_nick_name,
+          field: row => this.getPartyNames(row.party_id,'nick_name'),
           format: (val) => `${val}`,
           sortable: true,
         },
@@ -314,7 +342,7 @@ export default {
           name: "party_name",
           align: "left",
           label: "Party Legal Name",
-          field: "party_name",
+          field: row => this.getPartyNames(row.party_id,'name'),
           sortable: true,
         },
         {
@@ -369,35 +397,6 @@ export default {
           format: (val) => `${val}`,
         },
       ],
-
-      icons: {
-        rupee: matCurrencyRupee,
-        expendMore: matExpandMore,
-        expendLess: matExpandLess,
-        range: matDateRange,
-      },
-    };
-  },
-  components: {
-    Payment,
-    AdminAuth,
-    IndianBankRTGS,
-  },
-  watch: {},
-  created() {},
-  mounted() {
-    this.getAllDrafts();
-  },
-  data() {
-    return {
-      openAuthorization: false,
-      authTitle: "",
-      authMessage: "",
-      authData: null,
-      actionLabel: 'Approve',
-      approval_mode: null,
-      client_id: this.getClientId(),
-      draft_pagination: { rowsPerPage: 25 },
       drafts: [],
       loading: false,
       filter_draft: "",
