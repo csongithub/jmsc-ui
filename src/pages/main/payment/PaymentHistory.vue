@@ -148,6 +148,10 @@
                   <div class="col-3">{{ props.row.to_account.bankName }}</div>
                   <div class="col-2 text-bold">IFSC Code</div>
                   <div class="col-2">{{ props.row.to_account.ifscCode }}</div>
+                  <div class="col-1 text-bold">Branch</div>
+                  <div class="col-1">
+                    {{ props.row.to_account.branchName }}
+                  </div>
                 </div>
               </q-card-section>
               <q-separator />
@@ -157,7 +161,7 @@
                 </div>
                 <div class="row q-mb-md">
                   <q-icon :name="icons.rupee" />
-                  <div class="col">
+                  <div class="col text-bold">
                     {{
                       props.row.amount.toLocaleString("en-IN") +
                       ".00" +
@@ -225,6 +229,26 @@ export default {
     return {
       selected_draft: ref([]),
       step: ref(1),
+      icons: {
+        rupee: matCurrencyRupee,
+        expendMore: matExpandMore,
+        expendLess: matExpandLess,
+        range: matDateRange,
+      },
+    };
+  },
+  components: {
+    Payment,
+  },
+  watch: {},
+  created() {},
+  mounted() {
+    this.getAllDrafts();
+  },
+  data() {
+    return {
+      client_id: this.getClientId(),
+      draft_pagination: { rowsPerPage: 20 },
       columns: [
         {
           name: "payment_id",
@@ -238,7 +262,7 @@ export default {
           required: true,
           label: "Party",
           align: "left",
-          field: (row) => row.party_nick_name,
+          field: row => this.getPartyNames(row.party_id,'nick_name'),
           format: (val) => `${val}`,
           sortable: true,
         },
@@ -246,7 +270,7 @@ export default {
           name: "party_name",
           align: "left",
           label: "Party Legal Name",
-          field: "party_name",
+          field: row => this.getPartyNames(row.party_id,'name'),
           sortable: true,
         },
         {
@@ -293,27 +317,6 @@ export default {
           sortable: true,
         },
       ],
-
-      icons: {
-        rupee: matCurrencyRupee,
-        expendMore: matExpandMore,
-        expendLess: matExpandLess,
-        range: matDateRange,
-      },
-    };
-  },
-  components: {
-    Payment,
-  },
-  watch: {},
-  created() {},
-  mounted() {
-    this.getAllDrafts();
-  },
-  data() {
-    return {
-      client_id: this.getClientId(),
-      draft_pagination: { rowsPerPage: 20 },
       drafts: [],
       loading: false,
       filter_draft: "",

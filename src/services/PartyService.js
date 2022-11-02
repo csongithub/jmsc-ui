@@ -3,13 +3,24 @@ import { api } from "src/boot/axios";
 export default {
     create(site) {
     return api.post( '/v1/party/create/', site).then(response => {
-        let records = response.data;
-        return records;
+        let party = response.data;
+        // this.$store.commit('UPDATE_PARTY', party)
+        // this.$store.getters['party/getParty'](party_id)
+        return party;
       })
       .catch(err => {
         console.log("Error site creation: " + JSON.stringify(err.response.data));
         return Promise.reject(err);
       });
+  },
+  getParty(client_id, party_id) {
+    return api.get( '/v1/party/'+ client_id + "/" + party_id).then(response => {
+      let record = response.data;
+      return record;
+    }).catch(err => {
+      console.log("Error in getting party: " + JSON.stringify(err.response.data));
+      return Promise.reject(err);
+    });
   },
   all(client_id) {
       return api.get( '/v1/party/all/'+ client_id).then(response => {

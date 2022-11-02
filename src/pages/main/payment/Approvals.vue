@@ -111,22 +111,32 @@
               </span>
             </span>
             <div v-else class="pointer">
-              <q-btn
-                class="q-mt-sm q-mr-sm text-capitalize"
-                color="primary"
-                label="Approve"
-                size="xs"
-                glossy
-                @click="adminApproval(props.row, 'single')"
-              />
-              <q-btn
-                class="q-mt-sm q-mr-sm text-capitalize"
-                color="red"
-                label="Reject"
-                size="xs"
-                glossy
-                @click="reject(props.row, 'reject')"
-              />
+              <q-btn-dropdown
+                dense
+                size="md"
+                flat
+                v-model="menu"
+                class="text-capitalize text-caption"
+                label="Actions"
+              >
+                <q-list dense>
+                  <q-item clickable dense flat v-close-popup @click="adminApproval(props.row, 'single')">
+                     <q-icon name="check" class="text-green q-mr-sm" size="sm"/>
+                     <span  class="text-weight-light">Approve Payment</span>
+                  </q-item>
+                  <q-separator/>
+                  <q-item clickable v-close-popup @click="backToDraft(props.row)">
+                    <q-icon name="arrow_back" class="text-orange q-mr-sm" size="sm"/>
+                     <span  class="text-weight-light">Back to Draft</span>
+                  </q-item>
+                  <q-separator/>
+                  <q-item clickable v-close-popup @click="deleteDraft(props.row)">
+                    <q-icon name="clear" class="text-red q-mr-sm" size="sm"/>
+                     <span  class="text-weight-light">Delete Payment</span>
+                  </q-item>
+                </q-list>
+                
+              </q-btn-dropdown>
             </div>
           </q-td>
         </q-tr>
@@ -186,6 +196,10 @@
                   <div class="col-3">{{ props.row.to_account.bankName }}</div>
                   <div class="col-2 text-bold">IFSC Code</div>
                   <div class="col-2">{{ props.row.to_account.ifscCode }}</div>
+                  <div class="col-1 text-bold">Branch</div>
+                  <div class="col-1">
+                    {{ props.row.to_account.branchName }}
+                  </div>
                 </div>
               </q-card-section>
               <q-separator />
@@ -195,7 +209,7 @@
                 </div>
                 <div class="row q-mb-md">
                   <q-icon :name="icons.rupee" />
-                  <div class="col">
+                  <div class="col text-bold">
                     {{
                       props.row.amount.toLocaleString("en-IN") +
                       ".00" +
@@ -286,13 +300,41 @@ export default {
     return {
       selected_draft: ref([]),
       step: ref(1),
+      icons: {
+        rupee: matCurrencyRupee,
+        expendMore: matExpandMore,
+        expendLess: matExpandLess,
+        range: matDateRange,
+      },
+    };
+  },
+  components: {
+    Payment,
+    AdminAuth,
+    IndianBankRTGS,
+  },
+  watch: {},
+  created() {},
+  mounted() {
+    this.getAllDrafts();
+  },
+  data() {
+    return {
+      openAuthorization: false,
+      authTitle: "",
+      authMessage: "",
+      authData: null,
+      actionLabel: 'Approve',
+      approval_mode: null,
+      client_id: this.getClientId(),
+      draft_pagination: { rowsPerPage: 25 },
       columns: [
         {
           name: "party_nick_name",
           required: true,
           label: "Party",
           align: "left",
-          field: (row) => row.party_nick_name,
+          field: row => this.getPartyNames(row.party_id,'nick_name'),
           format: (val) => `${val}`,
           sortable: true,
         },
@@ -300,7 +342,7 @@ export default {
           name: "party_name",
           align: "left",
           label: "Party Legal Name",
-          field: "party_name",
+          field: row => this.getPartyNames(row.party_id,'name'),
           sortable: true,
         },
         {
@@ -348,42 +390,13 @@ export default {
         },
         {
           name: "actions",
-          label: "Actions",
+          label: "",
           required: true,
           align: "center",
           field: "actions",
           format: (val) => `${val}`,
         },
       ],
-
-      icons: {
-        rupee: matCurrencyRupee,
-        expendMore: matExpandMore,
-        expendLess: matExpandLess,
-        range: matDateRange,
-      },
-    };
-  },
-  components: {
-    Payment,
-    AdminAuth,
-    IndianBankRTGS,
-  },
-  watch: {},
-  created() {},
-  mounted() {
-    this.getAllDrafts();
-  },
-  data() {
-    return {
-      openAuthorization: false,
-      authTitle: "",
-      authMessage: "",
-      authData: null,
-      actionLabel: 'Approve',
-      approval_mode: null,
-      client_id: this.getClientId(),
-      draft_pagination: { rowsPerPage: 25 },
       drafts: [],
       loading: false,
       filter_draft: "",
@@ -539,8 +552,6 @@ export default {
         this.approveSingle(draft);
       } else if (this.approval_mode === "all") {
         this.approveAll();
-      } else if (this.approval_mode === "reject") {
-        this.rejectPayment(draft);
       }
     },
     approveAll() {
@@ -585,12 +596,59 @@ export default {
           self.fail(self.getErrorMessage(err));
         });
     },
-    rejectPayment(draft) {
+    deleteDraft(draft) {
+      console.log(JSON.stringify(draft));
+      this.$q
+        .dialog({
+          title: "Are You Sure?",
+          message: "This will delete the draft permanently.",
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          PaymentService2.deletePayment(
+            this.client_id,
+            draft.payment_id,
+            "APPROVAL_REQUIRED"
+          )
+            .then((response) => {
+              if (response === 0) {
+                this.getAllDrafts();
+                this.success("Draft has been deleted");
+              }
+            })
+            .catch((err) => {
+              this.loading = false;
+              this.fail(this.getErrorMessage(err));
+            });
+        })
+        .onOk(() => {})
+        .onCancel(() => {})
+        .onDismiss(() => {});
+    },
+    backToDraft(draft) {
+      console.log(JSON.stringify(draft));
+      this.$q
+        .dialog({
+          title: "Are You Sure?",
+          message: "The payment will move to draft.",
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          this.backToDraftInternal(draft)
+        })
+        .onOk(() => {})
+        .onCancel(() => {})
+        .onDismiss(() => {});
+    },
+    backToDraftInternal(draft) {
       let self = this
       PaymentService2.rejectPayment(this.client_id, draft.payment_id)
         .then((response) => {
           if (response === 0) {
-            self.getAllDrafts();
+            // self.getAllDrafts();
+            this.drafts.splice(this.drafts.findIndex(d => d.payment_id === draft.payment_id) , 1)
             self.success("Payment has been rejected");
           }
         })

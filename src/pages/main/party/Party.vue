@@ -158,22 +158,7 @@ export default {
   setup () {
     return {
       selected: ref([]),
-      columns: [
-        {
-          name: "nick_name",
-          required: true,
-          label: "Name",
-          align: "left",
-          field: row => row.nick_name,
-          format: val => `${val}`,
-          sortable: true
-        },
-        {name: "name",  align: "left", label: "Legal Name", field: "name", sortable: true},
-        {name: "party_type",  align: "left", label: "Party Type", field: "party_type", sortable: true},
-        {name: "mobile", align: "left", label: "Mobie", field: "mobile",sortable: true},
-        {name: "address",  align: "left", label: "Address", field: "address", sortable: true},
-        {name: "actions", required: false, label: "Actions", field: "actions"}
-      ],
+      
       icons: {
         plus: fasPlus,
         edit: fasEdit,
@@ -192,6 +177,23 @@ export default {
       client_id: this.getClientId(),
       party_pagination: { rowsPerPage: 20 },
       filter: "",
+      columns: [
+        {
+          name: "nick_name",
+          required: true,
+          label: "Name",
+          align: "left",
+          field: row => row.nick_name,
+          format: val => `${val}`,
+          sortable: true
+        },
+        {name: "name",  align: "left", label: "Legal Name", field: "name", sortable: true},
+        {name: "party_type",  align: "left", label: "Party Type", field: "party_type", sortable: true},
+        {name: "mobile", align: "left", label: "Mobie", field: "mobile",sortable: true},
+        {name: "name", align: "left", label: "Cached", field: row => this.getPartyNames(row.id,'nick_name') ,sortable: true},
+        {name: "address",  align: "left", label: "Address", field: "address", sortable: true},
+        {name: "actions", required: false, label: "Actions", field: "actions"}
+      ],
       loading: true,
       parties: [],
       party: this.newParty(),
@@ -240,6 +242,7 @@ export default {
         .then(response => {
           if(this.mode === 'add') {
             this.success("Party added Successfully")
+            this.updatePartyCache(response)
           } else if(this.mode === 'edit'){
              this.success("Party Updated Successfully")
           }
