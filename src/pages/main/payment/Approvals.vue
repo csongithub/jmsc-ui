@@ -459,10 +459,10 @@ export default {
       PaymentService2.paymentsBetweenDates(this.client_id, "APPROVAL_REQUIRED", req)
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
+          this.drafts = response;
           for(let d of this.drafts) {
             this.sum = this.sum + d.amount
           }
-          this.drafts = response;
           this.cancelRange();
         })
         .catch((err) => {});
