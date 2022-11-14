@@ -46,6 +46,18 @@
         />
       </template>
       <template v-slot:top-right>
+        <q-bar v-if="sum > 0"  class="bg-primary text-white q-mr-md text-weight-light shadow-4">
+            <div >
+              <q-icon :name="icons.rupee"/>
+                {{sum.toLocaleString('en-IN') + '.00'}}
+            </div>
+             <q-tooltip 
+                  transition-show="scale"  
+                  transition-hide="scale" 
+                  class="bg-primary text-white shadow-4">
+                  {{getAmountInWords('sum')}}
+              </q-tooltip>
+          </q-bar>
         <q-input
           borderless
           dense
@@ -461,6 +473,7 @@ export default {
     return {
       client_id: this.getClientId(),
       draft_pagination: { rowsPerPage: 25 },
+      sum: 0,
       columns: [
         {
           name: "party_nick_name",
@@ -561,6 +574,14 @@ export default {
     };
   },
   methods: {
+    getAmountInWords(mode) {
+      if (this.sum > 0)
+        this.in_words =
+          PaymentService2.convertNumberToWords(this.sum) + "Only";
+      else this.in_words = "";
+
+      return this.in_words;
+    },
     openPrint() {
       this.payments.splice(0, this.payments.length);
       for (let p of this.print_list) {
@@ -831,6 +852,9 @@ export default {
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
           this.drafts = response;
+          for(let d of this.drafts) {
+            this.sum = this.sum +  d.amount
+          }
           this.loading = false;
         })
         .catch((err) => {
