@@ -438,6 +438,7 @@ export default {
       this.range = { from: "", to: "" };
     },
     getForSelectedRange() {
+      this.sum = 0
       let range = {};
       if (this.range.from !== undefined && this.range.to !== undefined) {
         range = {
@@ -458,6 +459,9 @@ export default {
       PaymentService2.paymentsBetweenDates(this.client_id, "APPROVAL_REQUIRED", req)
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
+          for(let d of this.drafts) {
+            this.sum = this.sum + d.amount
+          }
           this.drafts = response;
           this.cancelRange();
         })
@@ -688,6 +692,7 @@ export default {
         });
     },
     getAllDrafts() {
+      this.sum = 0
       this.selected_list = [];
       this.loading = true;
       PaymentService2.getAllDrafts(this.client_id, "APPROVAL_REQUIRED")
