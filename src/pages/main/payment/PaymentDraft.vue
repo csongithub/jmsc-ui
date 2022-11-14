@@ -846,6 +846,7 @@ export default {
         });
     },
     getAllDrafts() {
+      this.sum = 0
       this.print_list = [];
       this.loading = true;
       PaymentService2.getAllDrafts(this.client_id, "DRAFT")
