@@ -64,34 +64,37 @@
             </div>
             <div class="row">
                 <div class="col q-mr-md">
-                    <q-input filled v-model="offlineFeeDetails.issueDate" :rules="['YYYY-MM-DD']"  label="Issue Date">
-                        <template v-slot:append>
-                            <q-icon name="event" class="cursor-pointer">
-                                <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                                    <q-date v-model="offlineFeeDetails.issueDate" mask="YYYY-MM-DD">
-                                        <div class="row items-center justify-end">
-                                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
-                                        </div>
-                                    </q-date>
-                                </q-popup-proxy>
-                            </q-icon>
-                        </template>
-                    </q-input>
+                <q-input dense outlined v-model="offlineFeeDetails.issueDate" :rules="['DD-MM-YYYY']"  label="Issue Date" placeholder="dd-mm-yyyy">
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
+                        <q-date v-model="offlineFeeDetails.issueDate" mask="DD-MM-YYYY">
+                          <div class="row items-center justify-end">
+                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
+                          </div>
+                        </q-date>
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                  </q-input>
+
                 </div>
                 <div class="col">
-                    <q-input filled v-model="offlineFeeDetails.expiryDate" :rules="['YYYY-MM-DD']"  label="Expiry Date">
-                        <template v-slot:append>
-                            <q-icon name="event" class="cursor-pointer">
-                                <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
-                                    <q-date v-model="offlineFeeDetails.expiryDate" mask="YYYY-MM-DD">
-                                        <div class="row items-center justify-end">
-                                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
-                                        </div>
-                                    </q-date>
-                                </q-popup-proxy>
-                            </q-icon>
-                        </template>
-                    </q-input>
+                
+
+                    <q-input dense outlined v-model="offlineFeeDetails.expiryDate" :rules="['DD-MM-YYYY']"  label="Expiry Date" placeholder="dd-mm-yyyy">
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
+                        <q-date v-model="offlineFeeDetails.expiryDate" mask="DD-MM-YYYY">
+                          <div class="row items-center justify-end">
+                            <q-btn class="text-capitalize" v-close-popup label="Close" color="primary" flat />
+                          </div>
+                        </q-date>
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                  </q-input>
                 </div>
             </div>
 
@@ -202,7 +205,6 @@
 
 <script>
 import { ref } from 'vue'
-import { date } from 'quasar'
 import { commonMixin } from "../../../mixin/common"
 import BidService from "../../../services/BidService"
 export default {
@@ -232,15 +234,13 @@ export default {
           name: "issueDate",
           align: "left", 
           label: "Issue Date", 
-          field: "issueDate",
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          field: "issueDate"
         },
 		{
           name: "expiryDate",
           align: "left", 
           label: "Expiry Date", 
-          field: "expiryDate",
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          field: "expiryDate"
         }
 	],
     feeSelected: ref([])
@@ -271,7 +271,7 @@ export default {
   methods: {
       newOfflineFee(){
           return {
-              paymentMode: '',
+              mode: '',
               issuer: '',
               instrumentNo: '',
               amount: 0,
@@ -311,6 +311,7 @@ export default {
             'onlineFeeDetails': this.onlineFeeDetails,
             'comments': ''
         }
+        console.log('Fee Details' + JSON.stringify(feeDetails))
         BidService.saveBidFee(feeDetails, this.bid.clientId, this.bid.id)
             .then(response => {
             if(response.offlineFeeDetails !== null) {
