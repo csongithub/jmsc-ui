@@ -40,6 +40,8 @@ const routes = [
       { name: 'paymentDraft', path: '/payment_draft', component: () => import('pages/main/payment/PaymentDraft.vue') },
       { name: 'paymentApprovals', path: '/payments_approvals', component: () => import('pages/main/payment/Approvals.vue') },
       { name: 'paymentHistory', path: '/payments', component: () => import('pages/main/payment/PaymentHistory.vue') },
+
+      { name: 'accountStore', path: '/account_store', component: () => import('pages/main/account-store/AccountStore.vue') },
     ]
   },
   {
