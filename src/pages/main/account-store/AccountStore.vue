@@ -247,7 +247,7 @@
 
 <script>
 import AdminAuth from "../../auth/AdminAuth"
-import AccountService from "../../../services/AccountService"
+import AccountService from "../../../services/WebAccountService"
 import { commonMixin } from "../../../mixin/common"
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 import {
