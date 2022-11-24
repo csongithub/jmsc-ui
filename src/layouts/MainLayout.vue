@@ -36,12 +36,12 @@
       content-class="bg-grey-3"
     >
       <q-scroll-area
-        style="height: calc(100% - 150px);  border-right: 1px solid #ddd"
+        style="height: 100%;  border-right: 1px solid #ddd"
       >
-        <q-list padding>
+        <q-list padding class="text-weight-light">
           <q-item exact clickable v-ripple to="/">
               <q-item-section avatar>
-                <q-icon name="home" />
+                <q-icon name="home"/>
               </q-item-section>
               <q-item-section>Home</q-item-section>
             </q-item>
@@ -122,6 +122,12 @@
             <q-item-section>Vehicle</q-item-section>
           </q-item>
           <q-separator></q-separator>
+          <q-item exact clickable v-ripple to="/account_store">
+            <q-item-section avatar>
+              <q-icon :name="icons.profile" />
+            </q-item-section>
+            <q-item-section>Accounts</q-item-section>
+          </q-item>
            <q-item exact clickable v-ripple to="/profile">
             <q-item-section avatar>
               <q-icon :name="icons.profile" />
