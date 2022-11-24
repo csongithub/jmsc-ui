@@ -1,104 +1,102 @@
 /* eslint-disable vue/no-deprecated-slot-scope-attribute */
 <template>
     <div>
-        
-        <q-table
-          class="my-sticky-header-table"
-          dense
-          bordered
-          flat
-          :rows="accounts"
-          :columns="columns"
-          row-key="id"
-          :loading="loading"
-          :pagination="pagination"
-          :filter="filter"
-          selection="single"
-          v-model:selected="selected"
-        >
-      <template v-slot:header="props">
-        <q-tr :props="props">
-          <q-th auto-width />
-          <q-th v-for="col in props.cols" :key="col.name" :props="props">
-            {{ col.label }}
-          </q-th>
-        </q-tr>
-      </template>
-      <template v-slot:top-left>
-        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Add" 
-               size="sm"
-               glossy
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-      </template>
-      <template v-slot:top-right>
-        <q-input
-          borderless
-          dense
-          outlined
-          debounce="300"
-          v-model="filter"
-          placeholder="Search Accounts"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </template>
-      <template v-slot:body="props">
-        <q-tr :props="props">
-          <q-td auto-width>
-            <q-btn
-              size="sm"
-              color="primary"
-              round
-              dense
-              flat
-              @click="expandAccount(props)"
-              :icon="props.expand ? icons.expendLess : icons.expendMore"
-            >
-              <q-tooltip v-if="!props.expand" :delay="1000"
-                >Open details</q-tooltip
+      <q-table
+        class="my-sticky-header-table"
+        dense
+        bordered
+        flat
+        :rows="accounts"
+        :columns="columns"
+        row-key="id"
+        :loading="loading"
+        :pagination="pagination"
+        :filter="filter"
+        selection="single"
+        v-model:selected="selected">
+        <template v-slot:header="props">
+          <q-tr :props="props">
+            <q-th auto-width />
+            <q-th v-for="col in props.cols" :key="col.name" :props="props">
+              {{ col.label }}
+            </q-th>
+          </q-tr>
+        </template>
+        <template v-slot:top-left>
+          <q-btn  
+            class="q-mt-sm q-mr-sm text-capitalize" 
+            color="primary"
+            label="Add" 
+            size="sm"
+            glossy
+            @click="openDialog('add')"
+            :icon="icons.plus"/>
+          <q-btn
+            class="q-mt-sm q-mr-sm text-capitalize"
+            outline
+            color="primary"
+            icon="refresh"
+            label="Refresh"
+            size="sm"
+            glossy
+            @click="getAllAccounts()"
+        />
+        </template>
+        <template v-slot:top-right>
+          <q-input
+            borderless
+            dense
+            outlined
+            debounce="300"
+            v-model="filter"
+            placeholder="Search Accounts"
+          >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </template>
+        <template v-slot:body="props">
+          <q-tr :props="props">
+            <q-td auto-width>
+              <q-btn
+                size="sm"
+                color="primary"
+                round
+                dense
+                flat
+                @click="expandAccount(props)"
+                :icon="props.expand ? icons.expendLess : icons.expendMore"
               >
-              <q-tooltip v-if="props.expand" :delay="1000"
-                >Hide details</q-tooltip
-              >
-            </q-btn>
-          </q-td>
-          <q-td v-for="col in props.cols" :key="col.name" :props="props">
-            <span v-if="col.value !== 'undefined'">
-              <span>
-                {{ col.value }}
+                <q-tooltip v-if="!props.expand" :delay="1000">Open details</q-tooltip>
+                <q-tooltip v-if="props.expand" :delay="1000">Hide details</q-tooltip>
+              </q-btn>
+            </q-td>
+            <q-td v-for="col in props.cols" :key="col.name" :props="props">
+              <span v-if="col.value !== 'undefined'">
+                <span>{{ col.value }}</span>
               </span>
-            </span>
-          </q-td>
-        </q-tr>
-        <q-tr v-show="props.expand" :props="props">
-          <q-td colspan="100%">
-            <q-card>
-              <q-card-section
-                v-if="isNotNullOrUndefined(props.row)"
-              >
-                <div class="row" v-for="(attr,index) in props.row.attributes" :key="index">
-                  <div class="col-1">
-                    {{attr.name}}
+            </q-td>
+          </q-tr>
+          <q-tr v-show="props.expand" :props="props">
+            <q-td colspan="100%">
+              <q-card>
+                <q-card-section v-if="isNotNullOrUndefined(props.row)">
+                  <div class="row" v-for="(attr,index) in props.row.attributes" :key="index">
+                    <div class="col-1 q-pa-sm">{{attr.name}}</div>
+                    <div class="col q-pa-sm">{{attr.value}}</div>
                   </div>
-                  <div class="col">
-                    {{attr.value}}
-                  </div>
-                </div>
-                <q-btn class="text-capitalize q-mt-lg" size="sm" color="primary" label="View As Admin" dense outline/>
-              </q-card-section>
-            </q-card>
-          </q-td>
-        </q-tr>
-      </template>
-    </q-table>
-        
-
-        <q-dialog
+                  <q-btn @click="adminApproval(props.row, 'view')" class="text-capitalize q-mt-lg q-mr-sm" size="sm" color="primary" label="View As Admin" dense outline/>
+                  <q-btn @click="adminApproval(props.row, 'update')" class="text-capitalize q-mt-lg q-mr-sm" size="sm" color="primary" label="Update" dense outline/>
+                  <q-btn @click="adminApproval(props.row, 'remove')" class="text-capitalize q-mt-lg" size="sm" color="primary" label="Delete" dense outline/>
+                </q-card-section>
+              </q-card>
+            </q-td>
+          </q-tr>
+        </template>
+      </q-table>
+      
+      <q-dialog
             v-model="open"
             persistent
             @hide="onHide"
@@ -138,7 +136,10 @@
                     />
                 </div>
               </div>
-              
+              <q-separator/>
+              <div class="row text-bold text-u">
+                Account Attributes
+              </div>
               <div>
                     <div class="row" v-for="(attr,index) in attributes" :key="index">
                         <div class="col-3 q-mr-md">
@@ -187,10 +188,65 @@
           </q-card-section>
         </q-card>
       </q-dialog>
+
+      <q-dialog
+        v-model="view_all_attr"
+        persistent
+        @hide="onHideView"
+        ref="viewAllRef">
+          <q-card style="width: 900px; max-width: 80vw;">
+            <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
+              {{ 'Account Admin View' }}
+              <q-space />
+              <q-btn dense flat icon="close" v-close-popup>
+                <q-tooltip>Close</q-tooltip>
+              </q-btn>
+            </q-bar>
+            <q-card-section>
+              <!-- {{JSON.stringify(fetched_account)}} -->
+              <q-card-section>
+                  <div class="row">
+                    <div class="col-4 text-url text-black text-bold">
+                      {{fetched_account.name}}
+                    </div>
+                    <div class="col-8">
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-4 text-url text-weight-light">
+                      {{fetched_account.url}}
+                    </div>
+                    <div class="col-8">
+                    </div>
+                  </div>
+
+                  <q-separator/>                
+  
+                  <div class="row q-mt-md text-bold">
+                     Account Attributes
+                  </div>
+                  <div class="row" v-for="(attr,index) in fetched_account.attributes" :key="index">
+                    <div class="col-1 q-pa-xs">{{attr.name}}</div>
+                    <div class="col q-pa-xs">{{attr.value}}</div>
+                  </div>
+                </q-card-section>
+            </q-card-section>
+          </q-card>
+        </q-dialog>
     </div>
+    <AdminAuth
+    :options="openAuthorization"
+    :title="authTitle"
+    :message="authMessage"
+    :data="authData"
+    :actionLabel="actionLabel"
+    @cancel="cancelAuth"
+    @success="postApproval"
+  ></AdminAuth>
 </template>
 
 <script>
+import AdminAuth from "../../auth/AdminAuth"
 import AccountService from "../../../services/AccountService"
 import { commonMixin } from "../../../mixin/common"
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
@@ -230,6 +286,7 @@ export default {
     }
   },
   components: {
+    AdminAuth
   },
   created() {},
   mounted() {
@@ -247,10 +304,85 @@ export default {
       accounts: [],
       account: this.newAccount(),
       attributes: [],
-      attrTypes: ['Normal', 'Encrypt']
+      attrTypes: ['Normal', 'Encrypt'],
+      view_all_attr: false,
+      fetched_account: {},
+      openAuthorization: false,
+      authTitle:'Approve',
+      authMessage: 'Please enter the admin password',
+      approval_mode:'view',
+      authData: null,
+      actionLabel: 'Approve',
     };
   },
   methods: {
+    adminApproval(payload, approval_mode) {
+      this.approval_mode = approval_mode;
+      this.openAuth(
+        "Approve",
+        "Please enter the admin password",
+        true,
+        payload,
+        "Approve"
+      );
+    },
+    openAuth(title, message, options, data, actionLabel) {
+      this.authTitle = title
+      this.authMessage = message
+      this.openAuthorization = options
+      this.authData = data
+      this.actionLabel = actionLabel
+    },
+    cancelAuth(val) {
+      this.openAuthorization = val;
+    },
+    postApproval(payload) {
+      if (this.approval_mode === "view") {
+        this.getAccount(payload.id);
+      } else if (this.approval_mode === "update") {
+        this.updateAccount(payload.id);
+      } else if (this.approval_mode === "remove") {
+        this.removeAccount(payload.id);
+      }
+    },
+    removeAccount(id) {
+      AccountService.removeAccount(this.client_id, id)
+        .then(response => {
+          if(response) {
+            this.success('Accunt deleted successfully')
+          }
+          this.getAllAccounts()
+      }).catch(err => {
+        this.loading = false;
+        this.fail(this.getErrorMessage(err))
+      });
+    },
+    updateAccount(id) {
+      AccountService.getAccount(this.client_id, id)
+        .then(response => {
+          this.account = response
+          this.attributes = this.account.attributes
+          this.dialogLabel = "Update Account";
+          this.mode = 'edit'
+          this.open = true;
+      }).catch(err => {
+        this.loading = false;
+        this.fail(this.getErrorMessage(err))
+      });
+    },
+    getAccount(id) {
+      AccountService.getAccount(this.client_id, id)
+        .then(response => {
+          this.fetched_account = response
+          this.view_all_attr = true
+      }).catch(err => {
+        this.fail(this.getErrorMessage(err))
+      });
+    },
+    onHideView(){
+      this.fetched_account = {}
+      this.view_all_attr = false
+    },
     expandAccount(props) {
       console.log(JSON.stringify(props.row));
       props.expand = !props.expand;
@@ -276,15 +408,13 @@ export default {
       this.attributes = []
       this.mode = mode;
       if (this.mode === "add") {
-        this.dialogLabel = "New Account";
-      } else if (this.mode === "edit") {
-        // this.account = this.selected[0];
-        this.dialogLabel = "Update Account";
+        this.dialogLabel = "New Web Account";
       }
       this.open = true;
     },
     onHide() {
-
+      this.open = false;
+      this.attributes = []
     },
     addAttr() {
         let attr = {
@@ -310,6 +440,7 @@ export default {
              this.success("Account Updated Successfully")
           }
           this.open = false
+          this.getAllAccounts()
       }).catch(err => {
         this.loading = false;
         this.fail(this.getErrorMessage(err))
