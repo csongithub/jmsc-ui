@@ -415,6 +415,7 @@ export default {
     onHide() {
       this.open = false;
       this.attributes = []
+      this.account = this.newAccount()
     },
     addAttr() {
         let attr = {
