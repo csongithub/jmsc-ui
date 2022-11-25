@@ -49,7 +49,7 @@
             dense
             dense-toggle
             expand-separator
-            :icon="icons.loan"
+            :icon="icons.bank"
             label="Banking"
           >
             <q-item exact clickable v-ripple to="/account" class="q-ml-md">
@@ -124,9 +124,9 @@
           <q-separator></q-separator>
           <q-item exact clickable v-ripple to="/account_store">
             <q-item-section avatar>
-              <q-icon :name="icons.profile" />
+              <q-icon :name="icons.account" />
             </q-item-section>
-            <q-item-section>Accounts</q-item-section>
+            <q-item-section>Web-Accounts</q-item-section>
           </q-item>
            <q-item exact clickable v-ripple to="/profile">
             <q-item-section avatar>
@@ -187,10 +187,15 @@ import {
   fasPiggyBank,
   fasBook,
   fasProjectDiagram,
-  fasCar
+  fasCar,
+  fasCalendar
 } from "@quasar/extras/fontawesome-v5";
 import {
-  matCurrencyRupee
+  matCurrencyRupee,
+  matCreditCard,
+  matAccountBox,
+  matAccountCircle,
+  matCommentBank
 } from "@quasar/extras/material-icons";
 export default {
   name: "MainLayout",
@@ -226,11 +231,12 @@ export default {
         logout: fasPowerOff,
         cf: fasMoneyBillAlt,
         bidding: fasGavel,
-        bank:fasPiggyBank,
+        bank:matCurrencyRupee,
         bgGroup: fasBook,
         loan: matCurrencyRupee,
         site: fasProjectDiagram,
-        machine: fasCar
+        machine: fasCar,
+        account: matAccountCircle
       },
       quotes: [
         {
