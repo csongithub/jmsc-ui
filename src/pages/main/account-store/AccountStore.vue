@@ -75,6 +75,9 @@
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
               <span v-if="col.value !== 'undefined'">
                 <span>{{ col.value }}</span>
+                <q-icon @click="copyURL(col.value)" style="cursor: pointer" class="q-ml-sm" v-if="col.name === 'url'" :name="icons.copy">
+                  <q-tooltip>Copy to clipboard</q-tooltip>
+                </q-icon>
               </span>
             </q-td>
           </q-tr>
@@ -82,9 +85,9 @@
             <q-td colspan="100%">
               <q-card>
                 <q-card-section v-if="isNotNullOrUndefined(props.row)">
-                  <div class="row" v-for="(attr,index) in props.row.attributes" :key="index">
-                    <div class="col-1 q-pa-sm">{{attr.name}}</div>
-                    <div class="col q-pa-sm">{{attr.value}}</div>
+                  <div class="row row_attr" v-for="(attr,index) in props.row.attributes" :key="index">
+                    <div class="col-3">{{attr.name}}</div>
+                    <div class="col-3 q-pa-xs">{{attr.value}}</div>
                   </div>
                   <q-btn @click="adminApproval(props.row, 'view')" class="text-capitalize q-mt-lg q-mr-sm" size="sm" color="primary" label="View As Admin" dense outline/>
                   <q-btn @click="adminApproval(props.row, 'update')" class="text-capitalize q-mt-lg q-mr-sm" size="sm" color="primary" label="Update" dense outline/>
@@ -225,8 +228,8 @@
                   <div class="row q-mt-md text-bold">
                      Account Attributes
                   </div>
-                  <div class="row" v-for="(attr,index) in fetched_account.attributes" :key="index">
-                    <div class="col-1 q-pa-xs">{{attr.name}}</div>
+                  <div class="row row_attr" v-for="(attr,index) in fetched_account.attributes" :key="index">
+                    <div class="col-3 q-pa-xs">{{attr.name}}</div>
                     <div class="col q-pa-xs">{{attr.value}}</div>
                   </div>
                 </q-card-section>
@@ -253,6 +256,7 @@ import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 import {
   matExpandMore,
   matExpandLess,
+  matFileCopy
 } from "@quasar/extras/material-icons";
 import { ref } from 'vue'
 export default {
@@ -265,7 +269,8 @@ export default {
         plus: fasPlus,
         edit: fasEdit,
         expendMore: matExpandMore,
-        expendLess: matExpandLess
+        expendLess: matExpandLess,
+        copy:matFileCopy
       },
       columns: [
         {
@@ -316,6 +321,18 @@ export default {
     };
   },
   methods: {
+    async copyURL(mytext) {
+      try {
+        await navigator.clipboard.writeText(mytext);
+         this.$q.notify({
+          type: 'info',
+          message: 'URL copied to clipboard',
+          timeout: 500
+        })
+      } catch($e) {
+        alert('Cannot copy');
+      }
+    },
     adminApproval(payload, approval_mode) {
       this.approval_mode = approval_mode;
       this.openAuth(
@@ -453,3 +470,9 @@ export default {
   }
 };
 </script>
+
+<style lang="sass" scoped>
+.row_attr > div
+
+  border: 1px solid black
+</style>
