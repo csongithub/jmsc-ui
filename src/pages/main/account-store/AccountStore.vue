@@ -75,9 +75,9 @@
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
               <span v-if="col.value !== 'undefined'">
                 <span>{{ col.value }}</span>
-                <q-icon @click="copyURL(col.value)" style="cursor: pointer" class="q-ml-sm" v-if="col.name === 'url'" :name="icons.copy">
-                  <q-tooltip>Copy to clipboard</q-tooltip>
-                </q-icon>
+                <q-btn size="xs" color="black" class="" flat @click="copyURL(col.value)" style="cursor: pointer"  v-if="col.name === 'url'" :icon="icons.copy">
+                  <q-tooltip>Copy this url</q-tooltip>
+                </q-btn>
               </span>
             </q-td>
           </q-tr>
@@ -86,7 +86,7 @@
               <q-card>
                 <q-card-section v-if="isNotNullOrUndefined(props.row)">
                   <div class="row row_attr" v-for="(attr,index) in props.row.attributes" :key="index">
-                    <div class="col-3">{{attr.name}}</div>
+                    <div class="col-3 q-pa-xs">{{attr.name}}</div>
                     <div class="col-3 q-pa-xs">{{attr.value}}</div>
                   </div>
                   <q-btn @click="adminApproval(props.row, 'view')" class="text-capitalize q-mt-lg q-mr-sm" size="sm" color="primary" label="View As Admin" dense outline/>
@@ -206,7 +206,6 @@
               </q-btn>
             </q-bar>
             <q-card-section>
-              <!-- {{JSON.stringify(fetched_account)}} -->
               <q-card-section>
                   <div class="row">
                     <div class="col-4 text-url text-black text-bold">
@@ -216,21 +215,26 @@
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-4 text-url text-weight-light">
+                    <div class="col text-url text-weight-light">
                       {{fetched_account.url}}
-                    </div>
-                    <div class="col-8">
+                      <q-btn size="xs" color="black" class="" flat @click="copyURL(fetched_account.url)" style="cursor: pointer" :icon="icons.copy">
+                        <q-tooltip>Copy this url</q-tooltip>
+                      </q-btn>
                     </div>
                   </div>
 
                   <q-separator/>                
   
-                  <div class="row q-mt-md text-bold">
+                  <div class="row q-mt-md text">
                      Account Attributes
                   </div>
+                  <!-- <div class="row">
+                    <div class="col-4 q-pa-xs text-bold">{{'Name'}}</div>
+                    <div class="col-4 q-pa-xs text-bold">{{'Value'}}</div>
+                  </div> -->
                   <div class="row row_attr" v-for="(attr,index) in fetched_account.attributes" :key="index">
-                    <div class="col-3 q-pa-xs">{{attr.name}}</div>
-                    <div class="col q-pa-xs">{{attr.value}}</div>
+                    <div class="col-4 q-pa-xs">{{attr.name}}</div>
+                    <div class="col-4 q-pa-xs">{{attr.value}}</div>
                   </div>
                 </q-card-section>
             </q-card-section>
@@ -326,7 +330,7 @@ export default {
         await navigator.clipboard.writeText(mytext);
          this.$q.notify({
           type: 'info',
-          message: 'URL copied to clipboard',
+          message: 'URL has been copied',
           timeout: 500
         })
       } catch($e) {
