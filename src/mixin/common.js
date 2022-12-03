@@ -21,6 +21,9 @@ export const commonMixin = {
       else if(name_type === 'nick_name')
         return party.nick_name
     },
+    updateNotificationCache(client_id){
+      this.$store.dispatch('notification/all', {client_id: client_id})
+    },
     openLoginLayout() {
       this.$router.push({ name: "login" });
     },
