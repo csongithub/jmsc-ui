@@ -3,10 +3,12 @@ import Vue from 'vue'
 import Vuex  from 'vuex'
 
 import party from './party'
+import notification from './notification'
 // Vue.use(Vuex)
 
 const modules = {
-  party
+  party,
+  notification
 }
 
 //load our store with our modules

@@ -17,11 +17,31 @@
         </q-toolbar-title>
 
         <q-space/>
-        
+
         <q-btn class="" flat @click="$q.fullscreen.toggle()"
           :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'">
           <q-tooltip v-if="$q.fullscreen.isActive">Exit Full Screen</q-tooltip>
           <q-tooltip v-else>Full Screen</q-tooltip>
+        </q-btn>
+        <q-btn flat round dense icon="notifications" >
+          <q-badge v-if="$store.getters['notification/count'] > 0" floating color="red">{{$store.getters['notification/count']}}</q-badge>
+          <!-- <q-badge v-if="refreshing" floating>
+            <q-icon class="" size="xs" falt dense :name="icons.spin"/>
+          </q-badge> -->
+          <!-- <q-tooltip>You have {{' ' + notification_count}} notifications</q-tooltip> -->
+          <q-menu>
+            <q-list style="min-width: 100px">
+              <q-item clickable dense flat v-close-popup to="/notifications">
+                <q-icon name="list" class="text-green q-mr-sm" size="sm"/>
+                <span  class="text-weight-light">Show All</span>
+              </q-item>
+              <q-separator/>
+                <q-item clickable v-close-popup @click="updateNotificationCache(client.id)">
+                <q-icon name="refresh" class="text-orange q-mr-sm" size="sm"/>
+                  <span  class="text-weight-light">Refresh</span>
+                </q-item>
+            </q-list>
+          </q-menu>
         </q-btn>
         <div></div>
       </q-toolbar>
@@ -184,11 +204,10 @@ import {
   fasIdCard,
   fasMoneyBillAlt,
   fasGavel,
-  fasPiggyBank,
   fasBook,
   fasProjectDiagram,
   fasCar,
-  fasCalendar
+  fasSpinner
 } from "@quasar/extras/fontawesome-v5";
 import {
   matCurrencyRupee,
@@ -197,6 +216,7 @@ import {
   matAccountCircle,
   matCommentBank
 } from "@quasar/extras/material-icons";
+import NotificationService from 'src/services/NotificationService'
 export default {
   name: "MainLayout",
   mixins: [commonMixin],
@@ -214,12 +234,17 @@ export default {
     //if client has not logged in, then rout to login page, else open landing page
     if (!this.getClient()) {
       this.openLoginLayout();
+    } else{
+      this.updateNotificationCache(this.client.id)
+      if(this.$store.getters['notification/count'] > 0)
+        this.info("You have " + this.$store.getters['notification/count'] + " notifications")
     }
   },
   setup () {
   },
   data() {
     return {
+      refreshing: false,
       showWelcome: false,
       leftDrawerOpen: true,
       client: null,
@@ -236,7 +261,8 @@ export default {
         loan: matCurrencyRupee,
         site: fasProjectDiagram,
         machine: fasCar,
-        account: matAccountCircle
+        account: matAccountCircle,
+        spin:fasSpinner
       },
       quotes: [
         {

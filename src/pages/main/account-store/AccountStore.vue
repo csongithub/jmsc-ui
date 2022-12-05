@@ -328,11 +328,7 @@ export default {
     async copyURL(mytext) {
       try {
         await navigator.clipboard.writeText(mytext);
-         this.$q.notify({
-          type: 'info',
-          message: 'URL has been copied',
-          timeout: 500
-        })
+         this.info('URL Copied')
       } catch($e) {
         alert('Cannot copy');
       }

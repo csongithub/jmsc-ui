@@ -1,6 +1,5 @@
 <template>
     <div>
-        <PartyAccount/>
         <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Add"
@@ -178,7 +177,7 @@
 
               <div class="row">
                  <div class="col">
-                  <q-input class="q-mr-sm" dense outlined v-model="machine.insurance_valid_up_to" :rules="['DD-MM-YYYY']"  label="Ensurance Validiy" :placeholder="'dd-mm-yyyy'">
+                  <q-input class="q-mr-sm" dense outlined v-model="machine.insurance_valid_up_to" :rules="['DD-MM-YYYY']"  label="Insurance Validiy" :placeholder="'dd-mm-yyyy'">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy ref="qDateProxy" cover transition-show="scale" transition-hide="scale">
@@ -411,6 +410,7 @@ export default {
              this.success("Machine Updated Successfully")
           }
           this.$refs.newMachineRef.hide();
+          this.updateNotificationCache(this.client_id)
       }).catch(err => {
         this.loading = false;
         this.fail(this.getErrorMessage(err))

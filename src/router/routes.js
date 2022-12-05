@@ -42,6 +42,7 @@ const routes = [
       { name: 'paymentHistory', path: '/payments', component: () => import('pages/main/payment/PaymentHistory.vue') },
 
       { name: 'accountStore', path: '/account_store', component: () => import('pages/main/account-store/AccountStore.vue') },
+      { name: 'notification', path: '/notifications', component: () => import('pages/main/notification/Notifications.vue') },
     ]
   },
   {
