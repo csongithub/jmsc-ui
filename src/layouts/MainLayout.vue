@@ -17,7 +17,8 @@
         </q-toolbar-title>
 
         <q-space/>
-
+        <span v-if="!isAdmin">{{user !== null ? user.displayName : ''}}</span>
+        <span v-else>{{'Admin'}}</span>
         <q-btn class="" flat @click="$q.fullscreen.toggle()"
           :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'">
           <q-tooltip v-if="$q.fullscreen.isActive">Exit Full Screen</q-tooltip>
@@ -180,7 +181,7 @@
             </q-btn>
           </q-bar>
           <q-card-section>
-            <div class="text-h6">Welcome Back{{' ' + client.displayName}}</div>
+            <div v-if="isAdmin" class="text-h6">Welcome !</div>
             <div class="text-weight-thin">Have a wonderful experience !</div>
           </q-card-section>
           <q-separator dark/>
@@ -248,6 +249,8 @@ export default {
       showWelcome: false,
       leftDrawerOpen: true,
       client: null,
+      user:null,
+      isAdmin: false,
       tab: "home",
       icons: {
         plan: fasCreditCard,
@@ -341,7 +344,9 @@ export default {
       if (this.client === null && LocalStorage.getItem("auth")) {
         let auth =  LocalStorage.getItem("auth")
         this.client = auth.client
-        
+        this.isAdmin = auth.admin
+        if(!this.isAdmin && auth.user !== null)
+        this.user = auth.user
         // this if block is workaround of not loading app after login
         if(auth.newlogin){
           auth.newlogin = false

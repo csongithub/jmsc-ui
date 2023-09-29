@@ -41,7 +41,7 @@
                 >Welcome Back, Please Sign in</span>
                 
                 <q-input
-                  dense
+                  dense outlined
                   v-model="loginRequest.logonId"
                   label="Login ID"
                   lazy-rules
@@ -51,7 +51,7 @@
                 />
 
                 <q-input
-                  dense
+                  dense outlined
                  :type="isPwd ? 'password' : 'text'"
                   v-model="loginRequest.password"
                   label="Password"
@@ -66,6 +66,7 @@
                         />
                     </template>
                 </q-input>
+                 <q-checkbox class="q-mr-sm" dense v-model="loginRequest.admin" label="Admin" color="primary"/>
                 <div>
                   <q-btn
                     dense
@@ -108,7 +109,8 @@ export default {
     return {
       loginRequest: {
         logonId: "",
-        password: ""
+        password: "",
+        admin: false,
       },
       loginResponse: {
         loginSuccess: false,
@@ -143,9 +145,12 @@ export default {
     openMainLayout() {
       let auth = {
         client: this.loginResponse.clientDTO,
+        user: this.loginResponse.userDTO !== null ? this.loginResponse.userDTO : null,
         token: this.loginResponse.token,
+        admin: this.loginResponse.admin,
         newlogin: true
       }
+
       LocalStorage.set('auth', auth);
       //LocalStorage.set('client', this.loginResponse.clientDTO);
       //LocalStorage.set('token', this.loginResponse.token);

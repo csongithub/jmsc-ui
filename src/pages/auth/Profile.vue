@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <q-card class="my-card">
-      <q-card-section>
+      <q-card-section v-if="isAdmin">
         <div class="text-primary text-h5 q-mb-lg">Basic Info</div>
         <div class="row q-mb-sm">
             <div class="col-2">Login ID</div>
@@ -24,11 +24,26 @@
         </div>
         <br>
       </q-card-section>
+      <q-card-section v-else>
+        <div class="text-primary text-h5 q-mb-lg">Basic Info</div>
+        <div class="row q-mb-sm">
+            <div class="col-2">Login ID</div>
+            <div class="col"><b>{{user.logonId}}</b></div><div class="col"></div><div class="col"></div>
+        </div>
+        <div class="row" style="width: 100%">
+            <div class="col-2">User Name</div>
+            <div v-if="!update" class="col" >{{user.name}}</div>
+        </div>
+        <div class="row">
+            <div class="col-2">Display Name</div>
+            <div  v-if="!update" class="col">{{user.displayName}}</div>
+        </div>
+        <br>
+      </q-card-section>
       <q-separator/>
-      <q-card-actions>
+      <q-card-actions v-if="isAdmin">
         <q-btn class="text-capitalize text-weight-light" dense color="primary" v-if="!update" @click="update=!update">update</q-btn>
         <q-btn class="text-capitalize text-weight-light" dense color="primary" v-if="update" @click="updateBasicInfo">save</q-btn>
-         
       </q-card-actions>
     </q-card>
     <br>
@@ -76,7 +91,7 @@
             </q-form>
           </q-card>
       </div>
-      <div class="col-4 q-ml-md admin-password">
+      <div v-if="isAdmin" class="col-4 q-ml-md admin-password">
         <q-card class="my-card">
           <q-form @submit="updateAdminPassword" @reset="resetAdminPassword" class="">
             <q-card-section>
@@ -136,6 +151,8 @@ export default {
     return {
       client: this.getClient(),
       clientId: this.getClientId(),
+      user: this.getUser(),
+      isAdmin: this.isAdmin(),
       update:false,
       updatePasswordRequest: {
           logonId: null,
@@ -162,7 +179,8 @@ export default {
 
   methods: {
     updatePassword() {
-        this.updatePasswordRequest.logonId = this.client.logonId
+        this.updatePasswordRequest.logonId = this.isAdmin ? this.client.logonId : this.user.logonId
+         this.updatePasswordRequest.admin = this.isAdmin
         if(this.updatePasswordRequest.newPassword !== this.updatePasswordRequest.reNewPassword) {
             this.message='Password did not match'
             return

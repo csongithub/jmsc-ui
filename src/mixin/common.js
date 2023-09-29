@@ -38,6 +38,21 @@ export const commonMixin = {
         return null
       }
     },
+    getUser() {
+      let auth = LocalStorage.getItem("auth");
+      if(auth && auth.user) {
+        return auth.user
+      } else {
+        return null
+      }
+    },
+    isAdmin(){
+      let auth = LocalStorage.getItem("auth");
+      if(auth && auth.admin)
+        return true
+      else
+        return false
+    },
     getClientId(){
       let client = this.getClient()
       if(client !== null){
