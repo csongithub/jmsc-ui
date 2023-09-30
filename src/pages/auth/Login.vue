@@ -28,8 +28,8 @@
         </q-card-section>
         <q-card-actions class="col-md-8 col-lg-8 col-sm-12 sol-xs-12 float-left">
           <q-card-section class="item-center">
-            <div>
-              <q-form 
+            <div class="">
+              <q-form
                 @submit="login"
                 @reset="onReset" 
                 class="q-gutter-md"
@@ -40,8 +40,9 @@
                 <span class="text-subtitle1 text-weight-bold text-grey nowrap"
                 >Welcome Back, Please Sign in</span>
                 
-                <q-input
-                  dense outlined
+                <q-input style="max-width: 80%"
+                  dense
+                  outlined
                   v-model="loginRequest.logonId"
                   label="Login ID"
                   lazy-rules
@@ -50,8 +51,9 @@
                   :rules="[val => (val && val.length > 0) || 'Enter client login id']"
                 />
 
-                <q-input
-                  dense outlined
+                <q-input style="max-width: 80%"
+                  dense
+                  outlined
                  :type="isPwd ? 'password' : 'text'"
                   v-model="loginRequest.password"
                   label="Password"
@@ -66,14 +68,14 @@
                         />
                     </template>
                 </q-input>
-                 <q-checkbox class="q-mr-sm" dense v-model="loginRequest.admin" label="Admin" color="primary"/>
+                 <q-checkbox class="" dense v-model="loginRequest.admin" label="Admin" color="primary"/>
                 <div>
                   <q-btn
                     dense
                     label="Login"
                     type="submit"
                     color="primary"
-                    class="full-width text-caitalize" 
+                    class="text-caitalize q-mr-sm" 
                   />
                   <q-btn
                     dense
@@ -81,7 +83,7 @@
                     type="reset"
                     color="primary"
                     outline
-                    class="q-mt-sm full-width text-caitalize"
+                    class="text-caitalize"
                   />
                 </div>
               <br>
