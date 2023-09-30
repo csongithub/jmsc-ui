@@ -47,7 +47,6 @@
                   label="Login ID"
                   lazy-rules
                   autofocus
-                  no-error-icon
                   :rules="[val => (val && val.length > 0) || 'Enter client login id']"
                 />
 
@@ -68,14 +67,14 @@
                         />
                     </template>
                 </q-input>
-                 <q-checkbox class="" dense v-model="loginRequest.admin" label="Admin" color="primary"/>
+                 <q-checkbox class="" dense v-model="loginRequest.admin" label="Admin Login" color="primary"/>
                 <div>
                   <q-btn
                     dense
                     label="Login"
                     type="submit"
                     color="primary"
-                    class="text-caitalize q-mr-sm" 
+                    class="q-mr-sm text-capitalize" 
                   />
                   <q-btn
                     dense
@@ -83,7 +82,7 @@
                     type="reset"
                     color="primary"
                     outline
-                    class="text-caitalize"
+                    class="text-capitalize"
                   />
                 </div>
               <br>
