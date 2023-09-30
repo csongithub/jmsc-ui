@@ -101,7 +101,7 @@
                     dense
                     
                     type="password"
-                    v-model="admin.currentAdminPassword"
+                    v-model="adminPwd.currentAdminPassword"
                     label="Curent Password"
                     lazy-rules
                     :rules="[val => (val && val.length > 0) || 'Enter Current Password']"/>
@@ -109,7 +109,7 @@
                     dense
                     
                     type="password"
-                    v-model="admin.newAdminPassword"
+                    v-model="adminPwd.newAdminPassword"
                     label="New Password"
                     lazy-rules
                     :rules="[val => (val && val.length > 0) || 'Enter New Password']"/>
@@ -117,7 +117,7 @@
                     dense
                     
                     type="password"
-                    v-model="admin.reNewAdminPassword"
+                    v-model="adminPwd.reNewAdminPassword"
                     label="Re-enter New Password"
                     lazy-rules
                     :rules="[val => (val && val.length > 0) || 'Re-enter New Password']"/>
@@ -152,14 +152,14 @@ export default {
       client: this.getClient(),
       clientId: this.getClientId(),
       user: this.getUser(),
-      isAdmin: this.isAdmin(),
+      admin: this.isAdmin(),
       update:false,
       updatePasswordRequest: {
           logonId: null,
           currentPassword: null,
           newPassword: null,
           reNewPassword: null,
-          admin: this.isAdmin
+          admin: this.admin
       },
       updateBasicReq: {
         logonId: this.getLogonId(),
@@ -169,7 +169,7 @@ export default {
       },
       message:'',
       adminMessage: '',
-      admin: {
+      adminPwd: {
           clientId: null,
           currentAdminPassword: null,
           newAdminPassword: null,
@@ -180,8 +180,8 @@ export default {
 
   methods: {
     updatePassword() {
-        this.updatePasswordRequest.logonId = this.isAdmin ? this.client.logonId : this.user.logonId
-        this.updatePasswordRequest.admin = this.isAdmin
+        this.updatePasswordRequest.logonId = this.admin ? this.client.logonId : this.user.logonId
+        this.updatePasswordRequest.admin = this.admin
         if(this.updatePasswordRequest.newPassword !== this.updatePasswordRequest.reNewPassword) {
             this.message='Password did not match'
             return
@@ -210,15 +210,15 @@ export default {
         this.message=''
     },
     updateAdminPassword() {
-        this.admin.clientId = this.clientId
-        if(this.admin.newAdminPassword !== this.admin.reNewAdminPassword) {
+        this.adminPwd.clientId = this.clientId
+        if(this.adminPwd.newAdminPassword !== this.adminPwd.reNewAdminPassword) {
             this.adminMessage='Password did not match'
             return
         } else {
              this.adminMessage=''
         }
         // window.alert(JSON.stringify(this.admin))
-        AdminAuthService.updatePassword(this.admin)
+        AdminAuthService.updatePassword(this.adminPwd)
         .then(response => {
             if(response.updateSuccess){
                 // this.success(response.message)
@@ -233,10 +233,10 @@ export default {
         });
     },
     resetAdminPassword() {
-        this.admin.clientId = null
-        this.admin.currentAdminPassword = ''
-        this.admin.newAdminPassword = ''
-        this.admin.reNewAdminPassword = ''
+        this.adminPwd.clientId = null
+        this.adminPwd.currentAdminPassword = ''
+        this.adminPwd.newAdminPassword = ''
+        this.adminPwd.reNewAdminPassword = ''
         this.adminMessage=''
     },
     updateBasicInfo() {
