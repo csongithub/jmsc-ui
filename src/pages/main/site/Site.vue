@@ -1,6 +1,5 @@
 <template>
     <div>
-        <PartyAccount/>
         <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Add" 

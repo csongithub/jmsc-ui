@@ -416,7 +416,7 @@
 import SiteService from "../../../services/SiteService";
 import MachineService from "../../../services/MachineService";
 import { commonMixin } from "../../../mixin/common";
-import Payment from "../payment/PaymentNew.vue";
+import Payment from "../payment/Payment.vue";
 import PaymentService2 from "../../../services/PaymentService2";
 import BankAccountService from "../../../services/BankAccountService";
 import PartyAccountService from "../../../services/PartyAccountService";

@@ -6,10 +6,6 @@ const routes = [
     children: [
       { name: 'home', path: '', component: () => import('pages/main/home/Home.vue') },
       { name: 'account', path: '/account', component: () => import('pages/main/account/BankAccount.vue') },
-      { name: 'payment', path: '/payment', component: () => import('pages/main/payment/Payment.vue') },
-      { name: 'createPayment', path: '/create_payment', component: () => import('pages/main/payment/CreatePayment.vue') },
-      { name: 'printPayment', path: '/print_payment', component: () => import('pages/main/payment/PrintPayment.vue') },
-      { name: 'printedPayment', path: '/printed_payment', component: () => import('pages/main/payment/PrintedPayment.vue') },
       { name: 'creditors', path: '/party_accounts', component: () => import('src/pages/main/party/PartyAccounts.vue') },
       { name: 'managePartyAccounts', path: '/manage_party_accounts', component: () => import('src/pages/main/party/ManagePartyAccounts.vue') },
       { name: 'importPartyAccounts', path: '/import_party_accounts', component: () => import('src/pages/main/party/ImportPartyAccounts.vue') },
@@ -32,11 +28,12 @@ const routes = [
       { name: 'awardedBids', path: '/awarded_bids', component: () => import('pages/main/bidding/AwardedBids.vue') },
       { name: 'site', path: '/site', component: () => import('pages/main/site/Site.vue') },
       { name: 'party', path: '/party', component: () => import('pages/main/party/Party.vue') },
+      { name: 'users', path: '/users', component: () => import('pages/main/users/Users.vue') },
 
       { name: 'machine', path: '/machine', component: () => import('pages/main/machine/Machine.vue') },
      
-      { name: 'payment_new', path: '/payment_new', component: () => import('pages/main/payment/PaymentNew.vue') },
-      { name: 'createPaymentNew', path: '/create_payment_new', component: () => import('pages/main/payment/CreatePaymentNew.vue') },
+      { name: 'payment', path: '/payment', component: () => import('pages/main/payment/Payment.vue') },
+      { name: 'createPaymentNew', path: '/create_payment', component: () => import('pages/main/payment/CreatePayment.vue') },
       { name: 'paymentDraft', path: '/payment_draft', component: () => import('pages/main/payment/PaymentDraft.vue') },
       { name: 'paymentApprovals', path: '/payments_approvals', component: () => import('pages/main/payment/Approvals.vue') },
       { name: 'paymentHistory', path: '/payments', component: () => import('pages/main/payment/PaymentHistory.vue') },

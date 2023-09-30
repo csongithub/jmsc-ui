@@ -23,7 +23,7 @@
         >
           <div class="text-center full-width">
             <div class="text-weight-bolder text-white text-h6 text-uppercase">constructo</div>
-            <div class="text-caption text-black">A complete data solution platform</div>
+            <div class="text-caption text-black">A complete data solution</div>
           </div>
         </q-card-section>
         <q-card-actions class="col-md-8 col-lg-8 col-sm-12 sol-xs-12 float-left">
@@ -138,6 +138,7 @@ export default {
 
     onReset() {
       (this.loginRequest.logonId = ""), (this.loginRequest.password = "");
+      this.loginResponse.message = ""
     },
     updateLater() {
       this.openMainLayout();

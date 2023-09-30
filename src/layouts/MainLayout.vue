@@ -17,8 +17,8 @@
         </q-toolbar-title>
 
         <q-space/>
-        <span v-if="!isAdmin">{{user !== null ? user.displayName : ''}}</span>
-        <span v-else>{{'Admin'}}</span>
+        <!-- <span v-if="!isAdmin">{{user !== null ? user.displayName : ''}}</span>
+        <span v-else>{{'Admin'}}</span> -->
         <q-btn class="" flat @click="$q.fullscreen.toggle()"
           :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'">
           <q-tooltip v-if="$q.fullscreen.isActive">Exit Full Screen</q-tooltip>
@@ -56,8 +56,19 @@
       bordered
       content-class="bg-grey-3"
     >
+        <q-img class="absolute-top" src="https://cdn.quasar.dev/img/material.png" style="height: 150px">
+          <div class="absolute-bottom bg-transparent">
+            <q-avatar size="56px" class="q-mb-sm">
+              <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+            </q-avatar>
+            <div v-if="isAdmin" class="text-weight-bold">Admin</div>
+            <div v-else class="text-weight-bold">{{user.name}}</div>
+            <div v-if="isAdmin">@{{client.logonId}}</div>
+            <div v-else>@{{user.logonId}}</div>
+          </div>
+        </q-img>
       <q-scroll-area
-        style="height: 100%;  border-right: 1px solid #ddd"
+        style="height: calc(100% - 150px); margin-top: 150px; border-right: 1px solid #ddd"
       >
         <q-list padding class="text-weight-light">
           <q-item exact clickable v-ripple to="/">
@@ -90,12 +101,6 @@
                 <q-icon :name="icons.plan" />
               </q-item-section>
               <q-item-section>Payments</q-item-section>
-            </q-item>
-            <q-item exact clickable v-ripple to="/payment_new" class="q-ml-md">
-              <q-item-section avatar>
-                <q-icon :name="icons.plan" />
-              </q-item-section>
-              <q-item-section>Payments New</q-item-section>
             </q-item>
             <q-item exact clickable v-ripple to="/credit_facility" class="q-ml-md">
               <q-item-section avatar>
@@ -148,6 +153,12 @@
               <q-icon :name="icons.account" />
             </q-item-section>
             <q-item-section>Web-Accounts</q-item-section>
+          </q-item>
+          <q-item v-if="isAdmin" exact clickable v-ripple to="/users">
+            <q-item-section avatar>
+              <q-icon :name="icons.users" />
+            </q-item-section>
+            <q-item-section>Users</q-item-section>
           </q-item>
            <q-item exact clickable v-ripple to="/profile">
             <q-item-section avatar>
@@ -208,14 +219,15 @@ import {
   fasBook,
   fasProjectDiagram,
   fasCar,
-  fasSpinner
+  fasSpinner,
+  fasUser
 } from "@quasar/extras/fontawesome-v5";
 import {
   matCurrencyRupee,
   matCreditCard,
   matAccountBox,
   matAccountCircle,
-  matCommentBank
+  matCommentBank,
 } from "@quasar/extras/material-icons";
 import NotificationService from 'src/services/NotificationService'
 export default {
@@ -265,7 +277,8 @@ export default {
         site: fasProjectDiagram,
         machine: fasCar,
         account: matAccountCircle,
-        spin:fasSpinner
+        spin:fasSpinner,
+        users:fasUser
       },
       quotes: [
         {
