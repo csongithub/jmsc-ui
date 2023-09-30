@@ -159,6 +159,7 @@ export default {
           currentPassword: null,
           newPassword: null,
           reNewPassword: null,
+          admin: this.isAdmin
       },
       updateBasicReq: {
         logonId: this.getLogonId(),
@@ -180,7 +181,7 @@ export default {
   methods: {
     updatePassword() {
         this.updatePasswordRequest.logonId = this.isAdmin ? this.client.logonId : this.user.logonId
-         this.updatePasswordRequest.admin = this.isAdmin
+        this.updatePasswordRequest.admin = this.isAdmin
         if(this.updatePasswordRequest.newPassword !== this.updatePasswordRequest.reNewPassword) {
             this.message='Password did not match'
             return
