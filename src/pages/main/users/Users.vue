@@ -182,6 +182,7 @@ export default {
         {name: "displayName",  align: "left", label: "Display Name", field: "displayName", sortable: true},
         {name: "logonId",  align: "left", label: "Logon ID", field: "logonId", sortable: true},
         {name: "status",  align: "left", label: "Status", field: "status", sortable: true},
+        {name: "createdTimestamp",  align: "left", label: "Created", field: "createdTimestamp", sortable: true},
         {name: "actions", required: true, label: "Actions", field: "actions"}
       ],
       icons: {

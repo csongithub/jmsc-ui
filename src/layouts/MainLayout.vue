@@ -61,7 +61,7 @@
             <q-avatar size="56px" class="q-mb-sm">
               <img src="https://cdn.quasar.dev/img/boy-avatar.png">
             </q-avatar>
-            <div v-if="isAdmin" class="text-weight-bold">Admin</div>
+            <div v-if="isAdmin" class="text-weight-bold">Admin-{{client.name}}</div>
             <div v-else class="text-weight-bold">{{user.name}}</div>
             <div v-if="isAdmin">@{{client.logonId}}</div>
             <div v-else>@{{user.logonId}}</div>
