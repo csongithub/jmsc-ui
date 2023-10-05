@@ -1,8 +1,8 @@
 <template>
     <div>
-        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+        <q-btn v-if="admin" class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
-               label="Add User" 
+               label="Add Directory" 
                size="sm"
                glossy
                @click="openDialog('add')"
@@ -14,28 +14,33 @@
                 label="Refresh"
                 size="sm"
                 glossy
-                @click="getAllUsers()"/>
+                @click="getAllDirectories()"/>
         <q-table
         class="my-sticky-header-table"
-        title="Users"
+        title="Drive"
         dense
         bordered
         flat
-        :rows="users"
+        :rows="directories"
         :columns="columns"
-        row-key="logonId"
+        row-key="id"
         :loading="loading"
-        :pagination="user_pagination"
+        :pagination="directory_pagination"
+        selection="single"
         :filter="filter"
-        v-model:selected="selected"
       >
-        <template v-slot:body-cell-actions="props">
+        <template v-slot:body-cell-actions="props" v-if="admin">
           <q-td :props="props">
             <div >
-               <q-icon class="q-ma-sm q-pa-none pointer" color="red" :name="icons.delete" @click="deleteUser(props.row)"/>
-               <q-icon class="q-ma-none q-pa-none pointer" color="primary" :name="icons.edit" @click="editUser(props.row)"/>
+               <q-icon class="q-ma-sm q-pa-none pointer" color="red" :name="icons.delete" @click="deleteDirectory(props.row)"/>
+               <q-icon class="q-ma-none q-pa-none pointer" color="primary" :name="icons.edit" @click="editDirectory(props.row)"/>
             </div>
           </q-td>
+        </template>
+        <template v-slot:body-selection="props">
+          <q-btn class="pointer" :size="directory_size" color="yellow" flat :icon="icons.dir" @click="openDirectory(props)">
+            <q-tooltip>Open this folder</q-tooltip>
+          </q-btn>
         </template>
         <template v-slot:top-right>
           <q-input
@@ -44,7 +49,7 @@
             outlined
             debounce="300"
             v-model="filter"
-            placeholder="Search user"
+            placeholder="Search Directory"
           >
           <template v-slot:append>
               <q-icon name="search" />
@@ -58,7 +63,7 @@
         persistent
         @before-show="beforeShow"
         @hide="onHide"
-        ref="newUserRef"
+        ref="newDirectoryRef"
       >
         <q-card style="width: 700px; max-width: 80vw;">
           <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
@@ -70,56 +75,45 @@
           </q-bar>
 
           <q-card-section>
-            <q-form @submit="addUser" @reset="reset" class="q-gutter-md">
+            <q-form @submit="createDirectory" @reset="reset" class="q-gutter-md">
               <q-input
                 dense
                 outlined
-                v-model="user.name"
+                v-model="directory.name"
                 label="Name"
                 full-width
                 lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Enter Site name']"
+                :rules="[val => (val && val.length > 0) || 'Enter directory name']"
               />
               <q-input
                 dense
                 outlined
-                v-model="user.displayName"
-                label="Display Name"
+                v-model="directory.description"
+                label="Description"
                 full-width
                 lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Enter Display Name']"
-              />
-              <q-input
-                dense
-                outlined
-                v-model="user.logonId"
-                label="Logon Id"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Logon Id']"
-              />
-              <q-input v-if="mode === 'add'"
-                dense
-                outlined
-                v-model="user.password"
-                label="Password"
-                full-width
-                lazy-rules
-                :rules="[val => (val && val.length > 0) || 'Enter Password']"
+                :rules="[val => (val && val.length > 10) || 'Enter directory description']"
               />
               <q-select
                     dense
                     outlined
-                    v-model="user.status"
-                    :options="statusList"
-                    label="Status"
+                    v-model="directory.category"
+                    :options="categoryList"
+                    label="Category"
                     lazy-rules
                     :rules="[
-                      val => (val && val.length > 0) || 'Enter status'
+                      val => (val && val.length > 0) || 'Select a category'
                     ]"
                   />
-
-
+              <q-input v-if="directory.category==='Other'"
+                dense
+                outlined
+                v-model="otherCategory"
+                label="Ener a Category"
+                full-width
+                lazy-rules
+                :rules="[val => (val && val.length > 2) || 'Enter a category']"
+              />
               <div>
                 <q-space />
                 <q-btn
@@ -150,13 +144,13 @@
 </template>
 
 <script>
-import UserService from "../../../services/UserService"
+import DriveService from "../../../services/DriveService"
 import { commonMixin } from "../../../mixin/common"
-import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
-import { matDelete} from "@quasar/extras/material-icons";
+import { fasPlus, fasEdit, fasFolder } from "@quasar/extras/fontawesome-v5";
+import { matDelete, matFolder} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
 export default {
-  name: 'Users',
+  name: 'Drive',
   mixins: [commonMixin],
   setup () {
     return {
@@ -171,101 +165,112 @@ export default {
           format: val => `${val}`,
           sortable: true
         },
-        {name: "displayName",  align: "left", label: "Display Name", field: "displayName", sortable: true},
-        {name: "logonId",  align: "left", label: "Logon ID", field: "logonId", sortable: true},
-        {name: "status",  align: "left", label: "Status", field: "status", sortable: true},
-        {name: "createdTimestamp",  align: "left", label: "Created", field: "createdTimestamp", sortable: true},
-        {name: "actions", required: true, label: "Actions", field: "actions"}
+        {name: "description",  align: "left", label: "Description", field: "description", sortable: true},
+        {name: "category",  align: "left", label: "Category", field: "category", sortable: true},
+        {name: "createdTimestamp",  align: "left", label: "Created", field: "createdTimestamp", sortable: true}
       ],
       icons: {
         plus: fasPlus,
         edit: fasEdit,
-        delete: matDelete
+        delete: matDelete,
+        directory:matFolder,
+        dir:fasFolder
       }
     }
   },
   components: {
   },
-  created() {},
+  created() {
+    if(this.admin){
+      this.columns.push( {name: "actions", required: true, label: "Actions", field: "actions"})
+    }
+  },
   mounted() {
-   this.getAllUsers()
+   this.getAllDirectories()
   },
   data() {
     return {
       client_id: this.getClientId(),
-      user_pagination: { rowsPerPage: 10 },
+      admin: this.isAdmin(),
+      directory_size: 'md',
+      otherCategory: '',
+      directory_pagination: { rowsPerPage: 15 },
       filter: "",
       loading: true,
-      users: [],
-      user: this.newUser(),
+      directories: [],
+      directory: this.newDirectory(),
       open: false,
       mode: "add",
-      dialog_label: "New User",
-      statusList: ['ACTIVE', 'BLOCKED']
+      dialog_label: "New Directory",
+      categoryList: ['Personal', 'Bank', 'Firm', 'GST', 'Income Tax', 'Site', 'Home', 'Land & Property', 'Other']
     };
   },
   methods: {
-    newUser() {
+    newDirectory() {
       return {
         id: null,
         clientId: this.client_id,
         name:'',
-        displayName: '',
-        status: '',
-        logonId:'',
-        password:null
+        description: '',
+        category: ''
       }
     },
-    getAllUsers() {
+    openDirectory(prop){
+      console.log(JSON.stringify(prop.row.id))
+      this.$router.push({ name: "directoryFiles", params: { directory_id: prop.row.id}});
+    },
+    getAllDirectories() {
       this.loading = true;
-      UserService.all(this.client_id)
+      DriveService.all(this.client_id)
         .then(response => {
-        this.users.splice(0, this.users.length)
-        this.users = response;
+        this.directories.splice(0, this.directories.length)
+        this.directories = response;
         this.loading = false;
       }).catch(err => {
         this.loading = false;
       });
     },
-    addUser() {
-      this.user.clientId = this.client_id
-      UserService.create(this.user)
+    createDirectory() {
+      this.directory.clientId = this.client_id
+      if(this.directory.category === 'Other')
+        this.directory.category = this.otherCategory
+      DriveService.create(this.directory)
         .then(response => {
           if(this.mode === 'add') {
-            this.users.unshift(response)
-            this.success("User create Successfully")
+            this.directories.unshift(response)
+            this.success("Directory create Successfully")
           } else if(this.mode === 'edit'){
-             this.success("User Updated Successfully")
+             this.success("Directory Updated Successfully")
           }
-          this.$refs.newUserRef.hide();
+          this.$refs.newDirectoryRef.hide();
       }).catch(err => {
         this.loading = false;
         this.fail(this.getErrorMessage(err))
       });
     },
-    editUser(row){
-      this.user = row
-      this.dialog_label = "Update User";
+    editDirectory(row){
+      this.directory = row
+      this.dialog_label = "Update Directory";
       this.mode = 'edit'
       this.open = true;
     },
-    deleteUser(row) {
+    deleteDirectory(row) {
       this.$q
         .dialog({
           title: "Are You Sure?",
-          message: "This will delete the user permanently.",
+          message: "This will delete this directory permanently.",
           cancel: true,
           persistent: true,
         })
         .onOk(() => {
-          UserService.deleteUser(
+          DriveService.deleteDirectory(
             this.client_id,
             row.id
           )
             .then((response) => {
               if (response === 0) {
-                this.getAllUsers();
-                this.success("User has been deleted");
+                this.getAllDirectories();
+                this.success("Directory has been deleted");
               }
             })
             .catch((err) => {
@@ -281,7 +286,8 @@ export default {
     openDialog(mode) {
       this.mode = mode;
       if (this.mode === "add") {
-        this.dialog_label = "New User";
+        this.directory = this.newDirectory()
+        this.dialog_label = "New Directory";
       }
       this.open = true;
     },
@@ -290,7 +296,7 @@ export default {
       this.mode='add'
     },
     reset() {
-      this.user = this.newUser();
+      this.user = this.newDirectory();
     }
   }
 };

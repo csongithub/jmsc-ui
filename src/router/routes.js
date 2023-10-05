@@ -40,6 +40,9 @@ const routes = [
 
       { name: 'accountStore', path: '/account_store', component: () => import('pages/main/account-store/AccountStore.vue') },
       { name: 'notification', path: '/notifications', component: () => import('pages/main/notification/Notifications.vue') },
+
+      { name: 'drive', path: '/drive', component: () => import('pages/main/drive/Drive.vue') },
+      { name: 'directoryFiles', path: '/directory_files', component: () => import('src/pages/main/drive/DirectoryFiles.vue') },
     ]
   },
   {

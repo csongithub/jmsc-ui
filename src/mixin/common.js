@@ -65,6 +65,13 @@ export const commonMixin = {
         return client.logonId
       } 
     },
+    getToken(){
+      let auth = LocalStorage.getItem("auth");
+      if(auth)
+        return auth.token
+      else
+        return ""
+    },
     getTodaysDate() {
       var today = new Date()
       let year = today.getFullYear()
