@@ -58,20 +58,8 @@ export default {
   });
 },
   uploadFile(file) {
-    // return new Promise((resolve, reject) => {
-    //   let  formData= new FormData();
-    //   formData.append('file', file);
-    //   return resolve(api({
-    //     url: '/v1/drive/uploadFile',
-    //     method: 'POST',
-    //     data:formData,
-    //     headers: {'Content-Type': 'multipart/form-data'}
-    //   }))
-
-    // })
-    
-      let  formData= new FormData();
-      formData.append('file', file);
+    let  formData= new FormData();
+    formData.append('file', file);
     return api.post( '/v1/drive/uploadFile',formData, {
       headers: {'Content-Type': 'multipart/form-data'}
       }).then(response => {

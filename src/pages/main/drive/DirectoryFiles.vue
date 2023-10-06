@@ -58,47 +58,62 @@
         ref="newUploadRef"
       >
         <q-card style="">
-          <q-bar class="">
-            {{ '' }}
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
+            {{ 'Upload Files' }}
             <q-space />
             <q-btn dense flat icon="close" v-close-popup>
               <q-tooltip>Close</q-tooltip>
             </q-btn>
           </q-bar>
           <q-card-section>
-            <q-uploader 
-              
-              :factory="uploadFile"
-              label="Files"
+            <q-uploader style="width: 500px;"
+              flat
+              bordered
               multiple
-              @uploading="closeUploader"
+              :hide-upload-btn="true"
+              max-file-size="1073741824"
+              @added="fileSelected"
+              @rejected="fileRejected"
             >
+              <template v-slot:header="scope">
+                <div class="row no-wrap items-center q-pa-sm q-gutter-xs">
+                  <q-btn v-if="selectedFiles.length > 0" icon="clear_all" @click="removeAllFiles()" round dense flat >
+                    <q-tooltip>Clear All</q-tooltip>
+                  </q-btn>
+                  <div class="col">
+                    <!-- <div class="q-uploader__title">Files</div> -->
+                    <!-- <div class="q-uploader__subtitle">{{ scope.uploadSizeLabel }}</div> -->
+                  </div>
+                  <q-btn v-if="scope.canAddFiles" icon="add_box"  round dense flat>
+                    <q-uploader-add-trigger />
+                    <q-tooltip>Select Files</q-tooltip>
+                  </q-btn>
+                  <q-btn v-if="selectedFiles.length > 0" icon="cloud_upload" @click="uploadFile()" round dense flat >
+                    <q-tooltip>Upload Files</q-tooltip>
+                  </q-btn>
+                </div>
+              </template>
               <template v-slot:list="scope">
                 <q-list separator>
-                  <q-item v-for="file in scope.files" :key="file.__key">
+                  <q-item v-for="(file,index) in selectedFiles" :key="index">
                     <q-item-section>
                       <q-item-label class="full-width">
                         {{ file.name }}
                       </q-item-label>
-
                       <q-item-label caption>
-                        {{ file.status }}
+                        {{ file.size }}
                       </q-item-label>
-
                       <q-item-label caption>
-                        {{ file.__sizeLabel }}
+                        <span v-if="file.status !== 'Selected'" :style="{color: file.status==='Done!' ? 'green': 'blue'}">{{ file.status }}</span>
+                        <q-btn v-if="file.status === 'Selected'" class="gt-xs text-capitalize" color="red" label="Remove" size="sm" flat dense @click="removeFile(index, scope)"/>
+                        <q-icon v-if="file.status==='Done!'" name="check_circle" size="xs" color="green"/>
+                        <q-icon v-if="file.status==='Uploading...'" name="file_upload" size="xs" color="blue"/>
                       </q-item-label>
                     </q-item-section>
-
-                    <q-item-section v-if="file.__img" thumbnail class="gt-xs">
+                    <!-- <q-item-section v-if="file.__img" thumbnail class="gt-xs">
                       <img :src="file.__img.src">
-                    </q-item-section>
-
-                    <q-item-section top side>
-                      <q-btn class="gt-xs" size="12px" flat dense round icon="delete" @click="scope.removeFile(file)"/>
-                    </q-item-section>
+                    </q-item-section> -->
                   </q-item>
-
                 </q-list>
               </template>
             </q-uploader>
@@ -147,7 +162,7 @@
           </template>
           </q-input>
         </template>
-      </q-table>
+  </q-table>
 </div>
 </template>
 
@@ -156,6 +171,7 @@
 import DriveService from "../../../services/DriveService"
 import { commonMixin } from "../../../mixin/common"
 import { ref } from 'vue'
+import { api } from "src/boot/axios";
 import {matArrowBackIosNew,matFolder, matCreateNewFolder, matFileUpload} from "@quasar/extras/material-icons";
 export default {
   name: 'File list',
@@ -215,7 +231,8 @@ export default {
       open: false,
       openUpload: false,
       description:'',
-      file_name:''
+      file_name:'',
+      selectedFiles: []
       
     };
   },
@@ -226,7 +243,6 @@ export default {
            this.directory = response
            this.system_path = this.directory.name
         }).catch(err => {
-          files = []
           this.fail(err.message)
         });
     },
@@ -262,11 +278,9 @@ export default {
     openFileUpload(){
       this.openUpload = true
     },
-    closeUploader(){
-      window.alert('ok')
-    },
     onHideUpload() {
       this.openUpload = false
+      this.selectedFiles = []
     },
     getAllfiles(){
       let getFilesRequest ={
@@ -293,25 +307,53 @@ export default {
         this.$router.push({ name: "drive"});
       }
     },
-    uploadFile(files) {
-      let meta = {
-        id: null,
-        clientId: this.clientId,
-        directory_id: this.directory_id,
-        system_path: this.system_path,
-        file_name: files[0].name,
-        file_type: 'File',
-        file_path: null,
-        created_by: this.user_name
+    fileSelected(selectedFile){
+      let file = {
+        file :selectedFile[0],
+        name: selectedFile[0].name,
+        status: 'Selected',
+        img: selectedFile[0].__img,
+        key: selectedFile[0].__key,
+        size:selectedFile[0].__sizeLabel
       }
-      files[0].status = 'uploading...'
-      DriveService.uploadFile(files[0])
+      this.selectedFiles.push(file)
+    },
+    fileRejected(file){
+      if(file[0].failedPropValidation === 'duplicate')
+        this.warn('File already selected (duplicate file)')
+      else if(file[0].failedPropValidation === 'max-file-size')
+        this.fail('File size exceeded limit: 1gb')
+    },
+    removeFile(index, scope) {
+      this.selectedFiles.splice(index,1)
+    },
+    removeAllFiles (){
+      this.selectedFiles = []
+    },
+    uploadFile() {
+      // let meta = {
+      //   id: null,
+      //   clientId: this.clientId,
+      //   directory_id: this.directory_id,
+      //   system_path: this.system_path,
+      //   file_name: files[0].name,
+      //   file_type: 'File',
+      //   file_path: null,
+      //   created_by: this.user_name
+      // }
+      for(let selectedFile of this.selectedFiles) {
+        if(selectedFile.status === 'Done!')
+          continue
+        selectedFile.status = 'Uploading...'
+         DriveService.uploadFile(selectedFile.file)
         .then(response => {
-          files[0].status = 'done!'
-          return files[0]
+          selectedFile.status = 'Done!'
+          console.log(response)
         }).catch(err => {
           this.fail(err.message)
         })
+      }
+      
 
     }
   }
@@ -321,4 +363,13 @@ export default {
 .pointer {
   cursor: pointer;
 }
+
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}
+
 </style>
