@@ -57,11 +57,12 @@ export default {
     return Promise.reject(err);
   });
 },
-  uploadFile(file) {
+  uploadFile(file, fileMetaData) {
     let  formData= new FormData();
     formData.append('file', file);
+    formData.append('metadata', JSON.stringify(fileMetaData));
     return api.post( '/v1/drive/uploadFile',formData, {
-      headers: {'Content-Type': 'multipart/form-data'}
+      headers: {'Accept': 'application/json','Content-Type': 'multipart/form-data'}
       }).then(response => {
         console.log(JSON.stringify(response.data));
         return response.data;

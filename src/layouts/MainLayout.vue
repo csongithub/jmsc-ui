@@ -14,6 +14,17 @@
 
         <q-toolbar-title>
          {{client !== null ? client.displayName : ''}}
+         <q-space/>
+        <q-breadcrumbs gutter="none" class="text-body2" active-color="green" separator-color="green">
+          <template v-slot:separator>
+            <q-icon size="1.5em" name="chevron_right" color="white"/>
+          </template>
+          <q-breadcrumbs-el  v-for="r in currentRouteNames"
+              :key="r.label" 
+              :label="r.label" 
+              :to="r.routName">
+          </q-breadcrumbs-el>
+        </q-breadcrumbs>
         </q-toolbar-title>
 
         <q-space/>
@@ -258,6 +269,11 @@ export default {
       this.updateNotificationCache(this.client.id)
       if(this.$store.getters['notification/count'] > 0)
         this.info("You have " + this.$store.getters['notification/count'] + " notifications")
+    }
+  },
+  computed: {
+    currentRouteNames(){
+      return this.$route.meta.breadcrumbs ? this.$route.meta.breadcrumbs : [];
     }
   },
   setup () {

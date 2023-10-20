@@ -1,23 +1,7 @@
 <template>
     <div>
-        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Add User" 
-               size="sm"
-               glossy
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-         <q-btn class="q-mt-sm q-mr-sm text-capitalize"
-                outline
-                color="primary" 
-                icon="refresh" 
-                label="Refresh"
-                size="sm"
-                glossy
-                @click="getAllUsers()"/>
         <q-table
         class="my-sticky-header-table"
-        title="Users"
         dense
         bordered
         flat
@@ -51,7 +35,26 @@
           </template>
           </q-input>
         </template>
+        <template v-slot:top-left>
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+               color="primary"
+               label="Add User" 
+               size="sm"
+               glossy
+               @click="openDialog('add')"
+               :icon="icons.plus"/>
+         <q-btn class="q-mt-sm q-mr-sm text-capitalize"
+                outline
+                color="primary" 
+                icon="refresh" 
+                label="Refresh"
+                size="sm"
+                glossy
+                @click="getAllUsers()"/>
+        </template>
       </q-table>
+       
+
 
       <q-dialog
         v-model="open"

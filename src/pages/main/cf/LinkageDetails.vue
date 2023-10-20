@@ -1,11 +1,8 @@
 <template>
 <div>
-    <div class="row bg-primary text-white text-bold">
-        <span class="text-subtitle2 q-ml-md">Facility Linkage Details</span> <q-space/>
-        <q-btn flat size="sm" class="text-capitalize" :icon="icons.back" label="Back" @click="goBack()">
-            <q-tooltip>Go Back to Facility</q-tooltip>
-        </q-btn>
-    </div>
+  <q-btn outline size="xs" class="text-capitalize" :icon="icons.back" label="Back" @click="goBack()">
+      <q-tooltip>Go Back to Facility</q-tooltip>
+  </q-btn>
   <div  class="q-ma-md">
       <div class="q-pa-md text-center">
         <div class="row">

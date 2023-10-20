@@ -1,20 +1,6 @@
 <template>
     <div>
-        <q-btn v-if="admin" class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Add Directory" 
-               size="sm"
-               glossy
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-         <q-btn class="q-mt-sm q-mr-sm text-capitalize"
-                outline
-                color="primary" 
-                icon="refresh" 
-                label="Refresh"
-                size="sm"
-                glossy
-                @click="getAllDirectories()"/>
+       
         <q-table
         class="my-sticky-header-table"
         title="Drive"
@@ -38,7 +24,7 @@
           </q-td>
         </template>
         <template v-slot:body-selection="props">
-          <q-btn class="pointer" :size="directory_size" color="yellow" flat :icon="icons.dir" @click="openDirectory(props)">
+          <q-btn class="pointer" :size="directory_size" color="yellow-14" flat :icon="icons.dir" @click="openDirectory(props)">
             <q-tooltip>Open this folder</q-tooltip>
           </q-btn>
         </template>
@@ -55,6 +41,27 @@
               <q-icon name="search" />
           </template>
           </q-input>
+        </template>
+         <template v-slot:top-left>
+          <q-icon class="q-mb-md q-mr-md" color="blue" size="lg" :name = "icons.drive"/>
+          <span class="text-h5"></span>
+          <q-space/>
+           <q-btn v-if="admin" class="q-ml-sm q-mr-sm q-mb-sm text-capitalize" 
+               color="primary"
+               size="xs"
+               outline
+               @click="openDialog('add')"
+               :icon="icons.plus">
+               <q-tooltip>Create new directory</q-tooltip>
+           </q-btn>
+         <q-btn class="q-mr-sm text-capitalize q-mb-sm"
+                color="primary" 
+                icon="refresh" 
+                size="xs"
+                outline
+                @click="getAllDirectories()">
+                <q-tooltip>Refresh</q-tooltip>
+           </q-btn>
         </template>
       </q-table>
 
@@ -147,7 +154,7 @@
 import DriveService from "../../../services/DriveService"
 import { commonMixin } from "../../../mixin/common"
 import { fasPlus, fasEdit, fasFolder } from "@quasar/extras/fontawesome-v5";
-import { matDelete, matFolder} from "@quasar/extras/material-icons";
+import { matDelete, matFolder, matCloud} from "@quasar/extras/material-icons";
 import { ref } from 'vue'
 export default {
   name: 'Drive',
@@ -174,7 +181,8 @@ export default {
         edit: fasEdit,
         delete: matDelete,
         directory:matFolder,
-        dir:fasFolder
+        dir:fasFolder,
+        drive: matCloud
       }
     }
   },

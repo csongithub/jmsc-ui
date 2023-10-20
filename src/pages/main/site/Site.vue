@@ -1,23 +1,7 @@
 <template>
-    <div>
-        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Add" 
-               size="sm"
-               glossy
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-         <q-btn class="q-mt-sm q-mr-sm text-capitalize"
-                outline
-                color="primary" 
-                icon="refresh" 
-                label="Refresh"
-                size="sm"
-                glossy
-                @click="getAllSites()"/>
-        <q-table
+    <div>  
+      <q-table
         class="my-sticky-header-table"
-        title="Sites"
         dense
         bordered
         flat
@@ -58,6 +42,23 @@
               <q-icon name="search" />
           </template>
           </q-input>
+        </template>
+        <template v-slot:top-left>
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+               color="primary"
+               label="Add" 
+               size="sm"
+               glossy
+               @click="openDialog('add')"
+               :icon="icons.plus"/>
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize"
+                outline
+                color="primary" 
+                icon="refresh" 
+                label="Refresh"
+                size="sm"
+                glossy
+                @click="getAllSites()"/>
         </template>
       </q-table>
 

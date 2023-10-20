@@ -1,8 +1,5 @@
 <template>
 <div>
-  <div class="row bg-primary text-white">
-    <span class="text-subtitle2 q-ml-md"> BG Groups </span>
-  </div>
   <q-table class="my-sticky-header-table"
           :grid="grid"
           :hide-header="grid"

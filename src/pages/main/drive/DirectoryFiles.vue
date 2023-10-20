@@ -1,13 +1,11 @@
 <template>
 <div>
-  <div class="row bg-primary text-white text-bold">
-    <span class="text-subtitle2 text-blue" style="cursor:pointer">Files://{{system_path}}</span> <q-space/>
-    <q-btn flat size="sm" class="text-capitalize" :icon="icons.leftArrow" label="Back" @click="back()">
+  <div class="row bg-greay text-bold">
+    <span class="text-subtitle2 text-blue" style="cursor:pointer">Drive://{{system_path}}</span> <q-space/>
+    <q-btn size="sm" class="text-capitalize" flat color="primary" :icon="icons.leftArrow" label="Back" @click="back()">
       <q-tooltip>Go back</q-tooltip>
     </q-btn>
   </div>
-  
-
     <q-dialog
         v-model="open"
         persistent
@@ -66,7 +64,7 @@
             </q-btn>
           </q-bar>
           <q-card-section>
-            <q-uploader style="width: 500px;"
+            <q-uploader style="width: 300px;"
               flat
               bordered
               multiple
@@ -77,7 +75,7 @@
             >
               <template v-slot:header="scope">
                 <div class="row no-wrap items-center q-pa-sm q-gutter-xs">
-                  <q-btn v-if="selectedFiles.length > 0" icon="clear_all" @click="removeAllFiles()" round dense flat >
+                  <q-btn v-if="selectedFiles.length > 0" icon="clear_all" @click="removeAllFiles(scope)" round dense flat >
                     <q-tooltip>Clear All</q-tooltip>
                   </q-btn>
                   <div class="col">
@@ -103,7 +101,7 @@
                       <q-item-label caption>
                         {{ file.size }}
                       </q-item-label>
-                      <q-item-label caption>
+                      <q-item-label>
                         <span v-if="file.status !== 'Selected'" :style="{color: file.status==='Done!' ? 'green': 'blue'}">{{ file.status }}</span>
                         <q-btn v-if="file.status === 'Selected'" class="gt-xs text-capitalize" color="red" label="Remove" size="sm" flat dense @click="removeFile(index, scope)"/>
                         <q-icon v-if="file.status==='Done!'" name="check_circle" size="xs" color="green"/>
@@ -135,11 +133,20 @@
         :filter="filter"
       >
         <template v-slot:body-selection="props">
-          <q-btn class="pointer" :size="directory_size" color="yellow" flat :icon="icons.folder" @click="openDirectory(props)">
-            <q-tooltip>Open this folder</q-tooltip>
+          <q-btn class="pointer" :size="directory_size" :color="getColor(props.row)" flat :icon="getIcon(props.row)" @click="openDirectory(props.row)">
+            <q-tooltip v-if="props.row.file_type === 'DIRECTORY'">Open this folder</q-tooltip>
+            <q-tooltip v-else>Download this file</q-tooltip>
           </q-btn>
         </template>
-        <template v-slot:top-left>
+        <template v-slot:body-cell-actions="props">
+          <q-btn class="text-capitalize" color="green" flat dense size="sm" :icon="icons.download" @click="download(props.row)">
+              <q-tooltip>Download this item</q-tooltip>
+            </q-btn>
+           <q-btn class="text-capitalize" color="red" flat dense size="sm" :icon="icons.delete" @click="confirmDelete(props.row)">
+              <q-tooltip>Move to trash</q-tooltip>
+            </q-btn>
+        </template>
+        <template v-slot:top-left v-if="system_path">
           <q-btn size="md" color="primary" class="q-ma-non q-pa-none pointer" flat :icon="icons.newFolder" @click="openCreateFolderDialog()">
             <q-tooltip>create folder</q-tooltip>
           </q-btn>
@@ -172,7 +179,17 @@ import DriveService from "../../../services/DriveService"
 import { commonMixin } from "../../../mixin/common"
 import { ref } from 'vue'
 import { api } from "src/boot/axios";
-import {matArrowBackIosNew,matFolder, matCreateNewFolder, matFileUpload} from "@quasar/extras/material-icons";
+import {
+  matArrowBackIosNew,matFolder,
+  matCreateNewFolder,
+  matFileUpload,
+  matImage,
+  matFolderZip,
+  matPictureAsPdf,
+  matFileCopy,
+  matDelete,
+  matDownload
+} from "@quasar/extras/material-icons";
 export default {
   name: 'File list',
   mixins: [commonMixin],
@@ -182,9 +199,16 @@ export default {
     return {
       icons: {
         leftArrow: matArrowBackIosNew,
-        folder: matFolder,
         newFolder: matCreateNewFolder,
-        upload: matFileUpload
+        upload: matFileUpload,
+        directory: matFolder,
+        image: matImage,
+        zip: matFolderZip,
+        pdf: matPictureAsPdf,
+        other: matFileCopy,
+        delete: matDelete,
+        download: matDownload
+
       },
       selected: ref([]),
       columns: [
@@ -198,14 +222,17 @@ export default {
           sortable: true
         },
         {name: "file_type",  align: "left", label: "Category", field: "file_type", sortable: true},
-        {name: "created_by",  align: "left", label: "Created By", field: "created_by", sortable: true},
-        {name: "createdTimestamp",  align: "left", label: "Created", field: "createdTimestamp", sortable: true}
+        {name: "created_by",  align: "left", label: "Uploaded By", field: "created_by", sortable: true},
+        {name: "createdTimestamp",  align: "left", label: "Upload Date", field: "createdTimestamp", sortable: true},
+        {name: "updated_by",  align: "left", label: "Modified By", field: "updated_by", sortable: true},
+        {name: "updatedTimestamp",  align: "left", label: "Modify Date", field: "updatedTimestamp", sortable: true},
+         {name: "actions",  align: "left", label: "Actions", field: "actions", sortable: true}
       ],
       
     }
   },
   watch: {
-    system_path(val){
+    system_path(val) {
       this.getAllfiles()
     }
   },
@@ -237,7 +264,56 @@ export default {
     };
   },
   methods: {
+    download(row){
+
+    },
+    confirmDelete(row){
+      this.$q.dialog({
+        title: 'Are You Sure?',
+        message: '',
+        cancel: true,
+        persistent: true
+      }).onOk(() => {
+        
+      }).onOk(() => {
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      }).onDismiss(() => {
+        // console.log('I am triggered on both OK and Cancel')
+      })
+    },
+    getIcon(row){
+      if(row.file_type === 'DIRECTORY')
+        return this.icons.directory
+      else if(row.file_type === 'IMAGE')
+        return this.icons.image
+      else if(row.file_type === 'PDF')
+        return this.icons.pdf
+      else if(row.file_type === 'ZIP')
+        return this.icons.zip
+      else if(row.file_type === 'OTHER')
+        return this.icons.other
+     
+    },
+    getColor(row) {
+      if(row.file_type === 'DIRECTORY')
+        return 'yellow-14'
+      else if(row.file_type === 'IMAGE')
+        return 'light-green-9'
+      else if(row.file_type === 'PDF')
+        return 'red'
+      else if(row.file_type === 'ZIP')
+        return 'blue-grey-10'
+      // else if(row.file_type === 'OTHER')
+      //   return this.icons.other
+     
+    },
     getRootDirectory() {
+      if(this.isNullOrUndefined(this.directory_id)){
+         this.back()
+         return
+      }
+       
       DriveService.getDirectory(this.clientId, this.directory_id)
         .then(response => {
            this.directory = response
@@ -260,9 +336,11 @@ export default {
         directory_id: this.directory_id,
         system_path: this.system_path,
         file_name: this.folder_name,
-        file_type: 'Folder',
+        file_type: 'DIRECTORY',
         file_path: null,
         created_by: this.user_name,
+        updated_by: this.user_name,
+        status: 'PRESENT',
         description: 'Folder'
       }
       DriveService.createFolder(meta)
@@ -271,7 +349,6 @@ export default {
           this.open = false
           this.getAllfiles()
         }).catch(err => {
-          files = []
           this.fail(err.message)
         });
     },
@@ -281,6 +358,7 @@ export default {
     onHideUpload() {
       this.openUpload = false
       this.selectedFiles = []
+      this.getAllfiles()
     },
     getAllfiles(){
       let getFilesRequest ={
@@ -296,8 +374,9 @@ export default {
           this.fail(err.message)
         });
     },
-    openDirectory(props){
-      this.system_path = this.system_path + '/' + props.row.file_name
+    openDirectory(file){
+      if(file.file_type === 'DIRECTORY')
+        this.system_path = this.system_path + '/' + file.file_name
     },
     back() {
       if(this.system_path.includes('/')){
@@ -327,35 +406,52 @@ export default {
     removeFile(index, scope) {
       this.selectedFiles.splice(index,1)
     },
-    removeAllFiles (){
+    removeAllFiles (scope){
+      scope.files = []
       this.selectedFiles = []
     },
     uploadFile() {
-      // let meta = {
-      //   id: null,
-      //   clientId: this.clientId,
-      //   directory_id: this.directory_id,
-      //   system_path: this.system_path,
-      //   file_name: files[0].name,
-      //   file_type: 'File',
-      //   file_path: null,
-      //   created_by: this.user_name
-      // }
+      
       for(let selectedFile of this.selectedFiles) {
         if(selectedFile.status === 'Done!')
           continue
+        let fileMetaData = {
+          id: null,
+          clientId: this.clientId,
+          directory_id: this.directory_id,
+          system_path: this.system_path,
+          file_name: selectedFile.name,
+          file_type: this.getFileType(selectedFile),
+          file_path: null,
+          created_by: this.user_name,
+          updated_by: this.user_name,
+          description: 'File',
+          file_size: selectedFile.size,
+          status: 'PRESENT'
+        }
         selectedFile.status = 'Uploading...'
-         DriveService.uploadFile(selectedFile.file)
+         DriveService.uploadFile(selectedFile.file, fileMetaData)
         .then(response => {
           selectedFile.status = 'Done!'
           console.log(response)
         }).catch(err => {
+          selectedFile.status = 'Upload Failed'
           this.fail(err.message)
         })
       }
-      
-
-    }
+    },
+    getFileType(file){
+        if(file.img !== undefined)
+          return 'IMAGE'
+        else if (file.img === undefined) {
+          if(file.name.endsWith('.pdf'))
+            return 'PDF'
+          else if(file.name.endsWith('.zip'))
+            return 'ZIP'
+          else
+            return 'OTHER' 
+        }
+      }
   }
 };
 </script>
