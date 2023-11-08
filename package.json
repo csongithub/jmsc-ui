@@ -14,6 +14,7 @@
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "idle-vue": "^2.0.5",
+    "js-file-download": "^0.4.12",
     "quasar": "^2.0.0",
     "vue-html-to-paper": "^1.4.4",
     "vue3-print-nb": "^0.1.4",

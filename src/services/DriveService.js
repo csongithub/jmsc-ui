@@ -49,7 +49,7 @@ export default {
     });
   },
   getAllFiles(getFilesRequest) {
-    return api.post( '/v1/drive/get_all_files', getFilesRequest).then(response => {
+    return api.post( '/v1/drive/list_files', getFilesRequest).then(response => {
     let files = response.data;
     return files;
   }).catch(err => {
@@ -61,9 +61,8 @@ export default {
     let  formData= new FormData();
     formData.append('file', file);
     formData.append('metadata', JSON.stringify(fileMetaData));
-    return api.post( '/v1/drive/uploadFile',formData, {
-      headers: {'Accept': 'application/json','Content-Type': 'multipart/form-data'}
-      }).then(response => {
+    return api.post( '/v1/drive/upload_file',formData, {
+        headers: {'Accept': 'application/json','Content-Type': 'multipart/form-data'}}).then(response => {
         console.log(JSON.stringify(response.data));
         return response.data;
       })
@@ -72,4 +71,13 @@ export default {
         return Promise.reject(err);
       });
   },
+  downloadFile(client_id, directory_id, file_id) {
+    return api.get( '/v1/drive/download_file/' + client_id +'/' + directory_id + '/' + file_id, {responseType: 'blob'}).then(response => {
+      return response;
+    })
+    .catch(err => {
+      console.log("Error in folder creation: " + JSON.stringify(err.response.data));
+      return Promise.reject(err);
+    });
+  }
 };

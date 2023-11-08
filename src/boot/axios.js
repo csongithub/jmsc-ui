@@ -32,8 +32,11 @@ export default boot(({ app }) => {
   api.interceptors.request.use(function (config) {
     const auth = LocalStorage.getItem('auth')
     //console.log(JSON.stringify(token))
-    if(auth && auth.token) {
+    if(auth && auth.token && !config.url.includes('download')) {
       config.headers.Authorization =  'Bearer ' + auth.token
+      console.log(JSON.stringify(config))
+    } else {
+      console.log(JSON.stringify(config))
     }
     console.log("axios.interceptors.request common header " + JSON.stringify(config))
     return config;

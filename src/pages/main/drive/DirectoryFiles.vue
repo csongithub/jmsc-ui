@@ -140,7 +140,7 @@
         </template>
         <template v-slot:body-cell-actions="props">
           <q-btn class="text-capitalize" color="green" flat dense size="sm" :icon="icons.download" @click="download(props.row)">
-              <q-tooltip>Download this item</q-tooltip>
+              <q-tooltip>Download this file</q-tooltip>
             </q-btn>
            <q-btn class="text-capitalize" color="red" flat dense size="sm" :icon="icons.delete" @click="confirmDelete(props.row)">
               <q-tooltip>Move to trash</q-tooltip>
@@ -190,6 +190,7 @@ import {
   matDelete,
   matDownload
 } from "@quasar/extras/material-icons";
+const FileDownload = require('js-file-download');
 export default {
   name: 'File list',
   mixins: [commonMixin],
@@ -265,7 +266,12 @@ export default {
   },
   methods: {
     download(row){
-
+      DriveService.downloadFile(row.clientId, row.directory_id, row.id)
+        .then(response => {
+         FileDownload(response.data, row.file_name);
+        }).catch(err => {
+          this.fail(err.message)
+        });
     },
     confirmDelete(row){
       this.$q.dialog({
