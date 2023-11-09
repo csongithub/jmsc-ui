@@ -170,6 +170,7 @@
           </q-input>
         </template>
   </q-table>
+  <q-btn  class="text-capitalize justify-center" color="primary" label="Download POC" @click="downloadPOC()"/>
 </div>
 </template>
 
@@ -178,7 +179,7 @@
 import DriveService from "../../../services/DriveService"
 import { commonMixin } from "../../../mixin/common"
 import { ref } from 'vue'
-import { api } from "src/boot/axios";
+import { downloadAPI } from "src/boot/axios";
 import {
   matArrowBackIosNew,matFolder,
   matCreateNewFolder,
@@ -265,12 +266,38 @@ export default {
     };
   },
   methods: {
-    download(row){
-      DriveService.downloadFile(row.clientId, row.directory_id, row.id)
-        .then(response => {
-         FileDownload(response.data, row.file_name);
+    downloadPOC() {
+      console.log('Download Axios Client: ' + JSON.stringify(this.$downloadAPI))
+      return downloadAPI.get( '/v1/file/download/doc.jpg', {
+        headers: {},
+        responseType: 'arraybuffer'
+      }).then(response => {
+        let fileUrl = window.URL.createObjectURL(new Blob([response.data]))
+        let fileLink = document.createElement('a');
+        fileLink.href = fileUrl;
+        fileLink.setAttribute('download', 'import-excel-template.jpg');
+        document.body.appendChild(fileLink)
+        fileLink.click(); 
         }).catch(err => {
-          this.fail(err.message)
+            console.log("Error in getting records: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
+    download(row){
+      console.log('Download Axios Client: ' + JSON.stringify(this.$downloadAPI))
+      return downloadAPI.get( '/v1/file/download/doc.jpg', {
+        headers: {},
+        responseType: 'arraybuffer'
+      }).then(response => {
+        let fileUrl = window.URL.createObjectURL(new Blob([response.data]))
+        let fileLink = document.createElement('a');
+        fileLink.href = fileUrl;
+        fileLink.setAttribute('download', 'import-excel-template.jpg');
+        document.body.appendChild(fileLink)
+        fileLink.click(); 
+        }).catch(err => {
+            console.log("Error in getting records: " + JSON.stringify(err));
+            return Promise.reject(err);
         });
     },
     confirmDelete(row){
