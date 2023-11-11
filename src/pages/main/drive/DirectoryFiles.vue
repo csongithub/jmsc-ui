@@ -14,7 +14,7 @@
       >
         <q-card style="width: 300px;">
           <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
-            {{ '' }}
+            {{ 'Create Folder' }}
             <q-space />
             <q-btn dense flat icon="close" v-close-popup>
               <q-tooltip>Close</q-tooltip>
@@ -97,6 +97,12 @@
                     <q-item-section>
                       <q-item-label class="full-width">
                         {{ file.name }}
+                        <q-input borderless 
+                          dense
+                          outlined
+                          debounce="300"
+                          v-model="file.description"
+                          placeholder="File Desciption"/>
                       </q-item-label>
                       <q-item-label caption>
                         {{ file.size }}
@@ -118,7 +124,7 @@
           </q-card-section>
         </q-card>
       </q-dialog>
-  <q-table
+    <q-table
         class="my-sticky-header-table"
         title="Files"
         dense
@@ -135,11 +141,11 @@
         <template v-slot:body-selection="props">
           <q-btn class="pointer" :size="directory_size" :color="getColor(props.row)" flat :icon="getIcon(props.row)" @click="openDirectory(props.row)">
             <q-tooltip v-if="props.row.file_type === 'DIRECTORY'">Open this folder</q-tooltip>
-            <q-tooltip v-else>Download this file</q-tooltip>
+            <q-tooltip v-else>View this file</q-tooltip>
           </q-btn>
         </template>
         <template v-slot:body-cell-actions="props">
-          <q-btn class="text-capitalize" color="green" flat dense size="sm" :icon="icons.download" @click="download(props.row)">
+          <q-btn class="text-capitalize" color="green" flat dense size="sm" :icon="icons.download" @click="download(props.row, false)">
               <q-tooltip>Download this file</q-tooltip>
             </q-btn>
            <q-btn class="text-capitalize" color="red" flat dense size="sm" :icon="icons.delete" @click="confirmDelete(props.row)">
@@ -170,7 +176,48 @@
           </q-input>
         </template>
   </q-table>
-  <q-btn  class="text-capitalize justify-center" color="primary" label="Download POC" @click="downloadPOC()"/>
+  <!-- <q-btn  class="text-capitalize justify-center" color="primary" label="Download POC" @click="downloadPOC()"/> -->
+      <q-dialog
+        v-model="viewImage"
+        persistent
+        @hide="closeImageView"
+        ref="viewImageRef"
+      >
+        <q-card style="width: 600px;">
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
+            {{ '' }}
+            <q-space />
+            <q-btn class="text-capitalize" dense flat label="Download this image" @click="downloadImage()"/>
+            <q-btn dense flat icon="close" v-close-popup>
+              <q-tooltip>Close</q-tooltip>
+            </q-btn>
+          </q-bar>
+          <q-card-section>
+              <!-- <q-img :src="fileUrl" ></q-img> -->
+              <img :src="fileUrl" class="responsive">
+          </q-card-section>
+        </q-card>
+      </q-dialog>
+      <q-dialog
+        v-model="viewPdf"
+        persistent
+        @hide="closePdfView"
+        ref="viewImageRef"
+        :maximized="$q.screen.lt.md"
+      >
+        <q-card class="no-scroll" style="background: primary; min-width: 80vw; min-height: 80vh; width: 100%; height: 100%;">
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
+            {{ 'Viewing Document' }}
+            <q-space />
+            <q-btn dense flat icon="close" v-close-popup>
+              <q-tooltip>Close</q-tooltip>
+            </q-btn>
+          </q-bar>
+          <div v-if="fileUrl !== null" class="q-pa-md q-gutter-sm" style="height: 600px;">
+            <q-pdfviewer type="pdfjs" :src="fileUrl"/>
+          </div>
+        </q-card>
+      </q-dialog>
 </div>
 </template>
 
@@ -191,7 +238,7 @@ import {
   matDelete,
   matDownload
 } from "@quasar/extras/material-icons";
-const FileDownload = require('js-file-download');
+// const FileDownload = require('js-file-download');
 export default {
   name: 'File list',
   mixins: [commonMixin],
@@ -223,12 +270,13 @@ export default {
           format: val => `${val}`,
           sortable: true
         },
+        {name: "description",  align: "left", label: "Description", field: "description", sortable: false},
         {name: "file_type",  align: "left", label: "Category", field: "file_type", sortable: true},
         {name: "created_by",  align: "left", label: "Uploaded By", field: "created_by", sortable: true},
         {name: "createdTimestamp",  align: "left", label: "Upload Date", field: "createdTimestamp", sortable: true},
-        {name: "updated_by",  align: "left", label: "Modified By", field: "updated_by", sortable: true},
-        {name: "updatedTimestamp",  align: "left", label: "Modify Date", field: "updatedTimestamp", sortable: true},
-         {name: "actions",  align: "left", label: "Actions", field: "actions", sortable: true}
+        // {name: "updated_by",  align: "left", label: "Modified By", field: "updated_by", sortable: true},
+        // {name: "updatedTimestamp",  align: "left", label: "Modify Date", field: "updatedTimestamp", sortable: true},
+         {name: "actions",  align: "left", label: "Actions", field: "actions", sortable: false}
       ],
       
     }
@@ -249,7 +297,7 @@ export default {
     return {
       clientId: this.getClientId(),
       admin: this.isAdmin(),
-      user_name: this.getUser() !== null ? this.getUser().name : 'Admin',
+      user_name: this.getUser() !== null ? this.getUser().logonId : 'Admin',
       file_pagination: { rowsPerPage: 15 },
       filter: "",
       directory_id: this.$route.params.directory_id,
@@ -260,22 +308,52 @@ export default {
       open: false,
       openUpload: false,
       description:'',
-      file_name:'',
-      selectedFiles: []
+      selectedFiles: [],
+      fileUrl: null,
+      viewImage: false,
+      viewing_file_name:null,
+      viewPdf: false
       
     };
   },
   methods: {
-    downloadPOC() {
+    // downloadPOC() {
+    //   console.log('Download Axios Client: ' + JSON.stringify(this.$downloadAPI))
+    //   return downloadAPI.get( '/v1/file/download/doc.jpg', {
+    //     headers: {},
+    //     responseType: 'arraybuffer'
+    //   }).then(response => {
+    //     let fileUrl = window.URL.createObjectURL(new Blob([response.data]))
+    //     let fileLink = document.createElement('a');
+    //     fileLink.href = fileUrl;
+    //     fileLink.setAttribute('download', 'import-excel-template.jpg');
+    //     document.body.appendChild(fileLink)
+    //     fileLink.click(); 
+    //     }).catch(err => {
+    //         console.log("Error in getting records: " + JSON.stringify(err));
+    //         return Promise.reject(err);
+    //     });
+    // },
+    download(row, viewOnly){
       console.log('Download Axios Client: ' + JSON.stringify(this.$downloadAPI))
-      return downloadAPI.get( '/v1/file/download/doc.jpg', {
+      return downloadAPI.get( '/v1/file/download/' + row.clientId + '/' + row.directory_id + '/' + row.id, {
         headers: {},
         responseType: 'arraybuffer'
       }).then(response => {
         let fileUrl = window.URL.createObjectURL(new Blob([response.data]))
+        if(viewOnly){
+          this.fileUrl = fileUrl
+          this.viewing_file_name = row.file_name
+          if(row.file_type === 'IMAGE') {
+             this.viewImage = true
+          } else if(row.file_type === 'PDF') {
+             this.viewPdf = true
+          }
+          return
+        }
         let fileLink = document.createElement('a');
         fileLink.href = fileUrl;
-        fileLink.setAttribute('download', 'import-excel-template.jpg');
+        fileLink.setAttribute('download', row.file_name);
         document.body.appendChild(fileLink)
         fileLink.click(); 
         }).catch(err => {
@@ -283,36 +361,32 @@ export default {
             return Promise.reject(err);
         });
     },
-    download(row){
-      console.log('Download Axios Client: ' + JSON.stringify(this.$downloadAPI))
-      return downloadAPI.get( '/v1/file/download/doc.jpg', {
-        headers: {},
-        responseType: 'arraybuffer'
-      }).then(response => {
-        let fileUrl = window.URL.createObjectURL(new Blob([response.data]))
+    downloadImage(){
         let fileLink = document.createElement('a');
-        fileLink.href = fileUrl;
-        fileLink.setAttribute('download', 'import-excel-template.jpg');
+        fileLink.href = this.fileUrl;
+        fileLink.setAttribute('download', this.viewing_file_name);
         document.body.appendChild(fileLink)
         fileLink.click(); 
-        }).catch(err => {
-            console.log("Error in getting records: " + JSON.stringify(err));
-            return Promise.reject(err);
-        });
     },
     confirmDelete(row){
       this.$q.dialog({
-        title: 'Are You Sure?',
+        title: 'The File will be deleted permanentlly, Are You Sure?',
         message: '',
         cancel: true,
         persistent: true
       }).onOk(() => {
-        
+        DriveService.deleteFile(row.clientId, row.directory_id, row.id)
+        .then(response => {
+           this.success('File deleted: ' + row.file_name)
+           this.getAllfiles()
+        }).catch(err => {
+          this.fail(this.getErrorMessage(err))
+        });
       }).onOk(() => {
       }).onCancel(() => {
-        // console.log('>>>> Cancel')
+        
       }).onDismiss(() => {
-        // console.log('I am triggered on both OK and Cancel')
+        
       })
     },
     getIcon(row){
@@ -336,7 +410,7 @@ export default {
       else if(row.file_type === 'PDF')
         return 'red'
       else if(row.file_type === 'ZIP')
-        return 'blue-grey-10'
+        return 'yellow-14'
       // else if(row.file_type === 'OTHER')
       //   return this.icons.other
      
@@ -391,7 +465,6 @@ export default {
     onHideUpload() {
       this.openUpload = false
       this.selectedFiles = []
-      this.getAllfiles()
     },
     getAllfiles(){
       let getFilesRequest ={
@@ -410,6 +483,18 @@ export default {
     openDirectory(file){
       if(file.file_type === 'DIRECTORY')
         this.system_path = this.system_path + '/' + file.file_name
+      else {
+        let view_only = true
+        this.download(file, view_only)
+      }
+    },
+    closeImageView(){
+      this.viewImage = false
+      this.fileUrl = null
+    },
+    closePdfView(){
+      this.pdfView = false
+      this.fileUrl = null
     },
     back() {
       if(this.system_path.includes('/')){
@@ -460,6 +545,7 @@ export default {
           updated_by: this.user_name,
           description: 'File',
           file_size: selectedFile.size,
+          description: selectedFile.description,
           status: 'PRESENT'
         }
         selectedFile.status = 'Uploading...'
@@ -467,6 +553,7 @@ export default {
         .then(response => {
           selectedFile.status = 'Done!'
           console.log(response)
+          this.getAllfiles()
         }).catch(err => {
           selectedFile.status = 'Upload Failed'
           this.fail(err.message)

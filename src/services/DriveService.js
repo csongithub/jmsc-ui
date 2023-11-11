@@ -71,13 +71,23 @@ export default {
         return Promise.reject(err);
       });
   },
-  downloadFile(client_id, directory_id, file_id) {
-    return api.get( '/v1/drive/download_file/' + client_id +'/' + directory_id + '/' + file_id, {responseType: 'blob'}).then(response => {
-      return response;
+  // downloadFile(client_id, directory_id, file_id) {
+  //   return api.get( '/v1/drive/download_file/' + client_id +'/' + directory_id + '/' + file_id, {responseType: 'blob'}).then(response => {
+  //     return response;
+  //   })
+  //   .catch(err => {
+  //     console.log("Error in folder creation: " + JSON.stringify(err.response.data));
+  //     return Promise.reject(err);
+  //   });
+  // },
+  deleteFile(client_id, directory_id, file_id) {
+    return api.delete( '/v1/drive/delete_file/' + client_id +'/' + directory_id + '/' + file_id).then(response => {
+      let responseCode =  response.data;
+      return responseCode
     })
     .catch(err => {
       console.log("Error in folder creation: " + JSON.stringify(err.response.data));
       return Promise.reject(err);
     });
-  }
+  },
 };

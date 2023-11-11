@@ -72,9 +72,9 @@
         @hide="onHide"
         ref="newDirectoryRef"
       >
-        <q-card style="width: 700px; max-width: 80vw;">
+        <q-card style="width: 400px; max-width: 80vw;">
           <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
-            {{ dialog_label }}
+            {{ dialog_label + ' (Category)'}}
             <q-space />
             <q-btn dense flat icon="close" v-close-popup>
               <q-tooltip>Close</q-tooltip>
