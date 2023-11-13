@@ -14,6 +14,17 @@
 
         <q-toolbar-title>
          {{client !== null ? client.displayName : ''}}
+         <q-space/>
+        <q-breadcrumbs gutter="none" class="text-body2" active-color="green" separator-color="green">
+          <template v-slot:separator>
+            <q-icon size="1.5em" name="chevron_right" color="white"/>
+          </template>
+          <q-breadcrumbs-el  v-for="r in currentRouteNames"
+              :key="r.label" 
+              :label="r.label" 
+              :to="r.routName">
+          </q-breadcrumbs-el>
+        </q-breadcrumbs>
         </q-toolbar-title>
 
         <q-space/>
@@ -61,7 +72,7 @@
             <q-avatar size="56px" class="q-mb-sm">
               <img src="https://cdn.quasar.dev/img/boy-avatar.png">
             </q-avatar>
-            <div v-if="isAdmin" class="text-weight-bold">Admin</div>
+            <div v-if="isAdmin" class="text-weight-bold">Admin-{{client.displayName}}</div>
             <div v-else class="text-weight-bold">{{user.name}}</div>
             <div v-if="isAdmin">@{{client.logonId}}</div>
             <div v-else>@{{user.logonId}}</div>
@@ -154,6 +165,12 @@
             </q-item-section>
             <q-item-section>Web-Accounts</q-item-section>
           </q-item>
+          <q-item exact clickable v-ripple to="/drive">
+            <q-item-section avatar>
+              <q-icon :name="icons.drive" />
+            </q-item-section>
+            <q-item-section>Drive</q-item-section>
+          </q-item>
           <q-item v-if="isAdmin" exact clickable v-ripple to="/users">
             <q-item-section avatar>
               <q-icon :name="icons.users" />
@@ -220,7 +237,8 @@ import {
   fasProjectDiagram,
   fasCar,
   fasSpinner,
-  fasUser
+  fasUser,
+  fasFolder
 } from "@quasar/extras/fontawesome-v5";
 import {
   matCurrencyRupee,
@@ -253,6 +271,11 @@ export default {
         this.info("You have " + this.$store.getters['notification/count'] + " notifications")
     }
   },
+  computed: {
+    currentRouteNames(){
+      return this.$route.meta.breadcrumbs ? this.$route.meta.breadcrumbs : [];
+    }
+  },
   setup () {
   },
   data() {
@@ -278,7 +301,8 @@ export default {
         machine: fasCar,
         account: matAccountCircle,
         spin:fasSpinner,
-        users:fasUser
+        users:fasUser,
+        drive: fasFolder
       },
       quotes: [
         {

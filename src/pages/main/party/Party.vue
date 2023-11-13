@@ -1,21 +1,7 @@
 <template>
     <div>
-        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Add" 
-               size="sm"
-               glossy
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-         <q-btn class="q-mt-sm q-mr-sm text-capitalize"
-                outline
-                color="primary" 
-                icon="refresh" 
-                label="Refresh"
-                size="sm"
-                glossy
-                @click="getAllParties()"/>
-        <q-table
+        
+      <q-table
         class="my-sticky-header-table"
         title="All Party"
         dense
@@ -48,6 +34,23 @@
               <q-icon name="search" />
           </template>
           </q-input>
+        </template>
+        <template v-slot:top-left>
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+               color="primary"
+               label="Add" 
+               size="sm"
+               glossy
+               @click="openDialog('add')"
+               :icon="icons.plus"/>
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize"
+                outline
+                color="primary" 
+                icon="refresh" 
+                label="Refresh"
+                size="sm"
+                glossy
+                @click="getAllParties()"/>
         </template>
       </q-table>
 

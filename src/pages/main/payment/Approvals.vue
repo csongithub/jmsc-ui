@@ -342,6 +342,13 @@ export default {
       draft_pagination: { rowsPerPage: 25 },
        sum: 0,
       columns: [
+         {
+          name: "payment_id",
+          align: "left",
+          label: "Payment ID",
+          field: "payment_id",
+          sortable: true,
+        },
         {
           name: "party_nick_name",
           required: true,

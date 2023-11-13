@@ -1,23 +1,7 @@
 <template>
     <div>
-        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="Add User" 
-               size="sm"
-               glossy
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-         <q-btn class="q-mt-sm q-mr-sm text-capitalize"
-                outline
-                color="primary" 
-                icon="refresh" 
-                label="Refresh"
-                size="sm"
-                glossy
-                @click="getAllUsers()"/>
         <q-table
         class="my-sticky-header-table"
-        title="Users"
         dense
         bordered
         flat
@@ -29,14 +13,6 @@
         :filter="filter"
         v-model:selected="selected"
       >
-        <template v-slot:body-cell-agreement_value="props">
-          <q-td :props="props">
-            <div>
-            <q-icon :name="icons.rupee"/>
-                {{props.row.agreement_value.toLocaleString('en-IN')}}
-            </div>
-          </q-td>
-        </template>
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
             <div >
@@ -52,14 +28,33 @@
             outlined
             debounce="300"
             v-model="filter"
-            placeholder="Search Site"
+            placeholder="Search user"
           >
           <template v-slot:append>
               <q-icon name="search" />
           </template>
           </q-input>
         </template>
+        <template v-slot:top-left>
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+               color="primary"
+               label="Add User" 
+               size="sm"
+               glossy
+               @click="openDialog('add')"
+               :icon="icons.plus"/>
+         <q-btn class="q-mt-sm q-mr-sm text-capitalize"
+                outline
+                color="primary" 
+                icon="refresh" 
+                label="Refresh"
+                size="sm"
+                glossy
+                @click="getAllUsers()"/>
+        </template>
       </q-table>
+       
+
 
       <q-dialog
         v-model="open"
@@ -182,6 +177,7 @@ export default {
         {name: "displayName",  align: "left", label: "Display Name", field: "displayName", sortable: true},
         {name: "logonId",  align: "left", label: "Logon ID", field: "logonId", sortable: true},
         {name: "status",  align: "left", label: "Status", field: "status", sortable: true},
+        {name: "createdTimestamp",  align: "left", label: "Created", field: "createdTimestamp", sortable: true},
         {name: "actions", required: true, label: "Actions", field: "actions"}
       ],
       icons: {

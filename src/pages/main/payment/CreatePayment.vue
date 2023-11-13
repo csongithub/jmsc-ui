@@ -503,15 +503,15 @@ export default {
         },
       ],
       party_all_account_columns: [
-        // {
-        //   name: "partyName",
-        //   required: true,
-        //   label: "Party Name",
-        //   align: "left",
-        //   field: (row) => row.partyName,
-        //   format: (val) => `${val}`,
-        //   sortable: true,
-        // },
+        {
+          name: "partyName",
+          required: true,
+          label: "Party",
+          align: "left",
+          field: (row) => row.partyName,
+          format: (val) => `${val}`,
+          sortable: true,
+        },
         {
           name: "accountHolder",
           align: "left",

@@ -10,6 +10,7 @@ import { LocalStorage } from "quasar";
 // for each client)
 
 const api = axios.create({ baseURL: 'http://localhost:9001/jmsc/api/' })
+const downloadAPI = axios.create({ baseURL: 'http://localhost:9003/jmscfiledownload/api/' })
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
@@ -38,6 +39,19 @@ export default boot(({ app }) => {
     return config;
   });
 
+
+  downloadAPI.interceptors.request.use(function (config) {
+    const auth = LocalStorage.getItem('auth')
+    //console.log(JSON.stringify(token))
+    config.headers.Authorization =  'Bearer ' + auth.token
+    console.log(JSON.stringify(config))
+    console.log("axios.interceptors.request common header " + JSON.stringify(config))
+    return config;
+  });
+
+
+
+
   //
   // create a response interceptor so that for every call coming back
   // we will potentially stop a progress bar to show network communication is done
@@ -46,6 +60,11 @@ export default boot(({ app }) => {
   // should disappear.
   //
   api.interceptors.response.use(function (config) {
+    //console.log("axios.interceptors.response common header " + JSON.stringify(config))
+    return config;
+  });
+  
+  downloadAPI.interceptors.response.use(function (config) {
     //console.log("axios.interceptors.response common header " + JSON.stringify(config))
     return config;
   });

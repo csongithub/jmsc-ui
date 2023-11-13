@@ -161,7 +161,8 @@ export default {
   },
   methods: {
     uploadFile(files) {
-      PartyAccountService.uploadAccoutns(files)
+      PartyAccountService.uploadAccoutns
+      (files)
         .then(response => {
            this.success(response)
            this.filePath = response;

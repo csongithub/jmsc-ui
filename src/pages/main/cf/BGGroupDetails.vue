@@ -1,14 +1,8 @@
 <template>
 <div>
-  <div class="row bg-primary text-white text-bold">
-    <span class="text-subtitle2 q-ml-md">BG Group Details</span> <q-space/>
-    <q-btn flat size="sm" class="text-capitalize" :icon="icons.leftArrow" label="Back" @click="openBGGroup()">
+  <q-btn outline size="xs" class="text-capitalize" :icon="icons.leftArrow" label="Back" @click="openBGGroup()">
       <q-tooltip>Go Back to the BG Groups</q-tooltip>
-    </q-btn>
-  </div>
-  <div  class="row pointer q-mt-sm q-ml-md">
-    
-  </div>
+  </q-btn>
   <div class="q-ma-md">
     <div class="q-pa-md text-center">
       <div class="row">

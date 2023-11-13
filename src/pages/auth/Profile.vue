@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md">
     <q-card class="my-card">
-      <q-card-section v-if="isAdmin">
+      <q-card-section v-if="admin">
         <div class="text-primary text-h5 q-mb-lg">Basic Info</div>
         <div class="row q-mb-sm">
             <div class="col-2">Login ID</div>
@@ -41,7 +41,7 @@
         <br>
       </q-card-section>
       <q-separator/>
-      <q-card-actions v-if="isAdmin">
+      <q-card-actions v-if="admin">
         <q-btn class="text-capitalize text-weight-light" dense color="primary" v-if="!update" @click="update=!update">update</q-btn>
         <q-btn class="text-capitalize text-weight-light" dense color="primary" v-if="update" @click="updateBasicInfo">save</q-btn>
       </q-card-actions>
@@ -91,7 +91,7 @@
             </q-form>
           </q-card>
       </div>
-      <div v-if="isAdmin" class="col-4 q-ml-md admin-password">
+      <div v-if="admin" class="col-4 q-ml-md admin-password">
         <q-card class="my-card">
           <q-form @submit="updateAdminPassword" @reset="resetAdminPassword" class="">
             <q-card-section>
