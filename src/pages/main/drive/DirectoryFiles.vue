@@ -187,7 +187,7 @@
           <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
             {{ '' }}
             <q-space />
-            <q-btn class="text-capitalize" dense flat label="Download this image" @click="downloadImage()"/>
+            <q-btn class="text-capitalize text-grey" dense flat label="Download this image" @click="downloadImage()"/>
             <q-btn dense flat icon="close" v-close-popup>
               <q-tooltip>Close</q-tooltip>
             </q-btn>
