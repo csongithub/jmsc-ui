@@ -125,7 +125,7 @@
         </q-card>
       </q-dialog>
     <q-table
-        class="my-sticky-header-table"
+        class="my-files-table"
         title="Files"
         dense
         bordered
@@ -136,9 +136,10 @@
         :loading="loading"
         :pagination="file_pagination"
         selection="single"
+        v-model:selected="selected"
         :filter="filter"
       >
-        <template v-slot:body-selection="props">
+        <template v-slot:body-cell-file_icon="props">
           <q-btn class="pointer" :size="directory_size" :color="getColor(props.row)" flat :icon="getIcon(props.row)" @click="openDirectory(props.row)">
             <q-tooltip v-if="props.row.file_type === 'DIRECTORY'">Open this folder</q-tooltip>
             <q-tooltip v-else>View this file</q-tooltip>
@@ -153,11 +154,17 @@
             </q-btn>
         </template>
         <template v-slot:top-left v-if="system_path">
-          <q-btn size="md" color="primary" class="q-ma-non q-pa-none pointer" flat :icon="icons.newFolder" @click="openCreateFolderDialog()">
+          <q-btn size="sm" outline class="q-mr-xs pointer" label="Reload"  icon="refresh" @click="getAllfiles()">
+            <q-tooltip>reload this folder</q-tooltip>
+          </q-btn>
+          <q-btn size="sm" outline class="q-mr-xs pointer" label="ADD FOLDER"  :icon="icons.newFolder" @click="openCreateFolderDialog()">
             <q-tooltip>create folder</q-tooltip>
           </q-btn>
-          <q-btn size="md" color="primary" class="q-ma-sm q-pa-none pointer" flat :icon="icons.upload" @click="openFileUpload()">
+          <q-btn size="sm" outline class="q-mr-xs pointer" label="UPLOAD FILES" :icon="icons.upload" @click="openFileUpload()">
              <q-tooltip>upload file</q-tooltip>
+          </q-btn>
+          <q-btn v-if="selected.length > 0" size="sm" outline class="q-mr-xs pointer" label="RENAME" :icon="icons.rename" @click="openRenameFile()">
+             <q-tooltip>rename file</q-tooltip>
           </q-btn>
           <!-- <q-btn size="sm" color="primary"  label="crate folder" @click="openCreateFolderDialog()"/> -->
         </template>
@@ -198,7 +205,7 @@
           </q-card-section>
         </q-card>
       </q-dialog>
-      <q-dialog
+      <!-- <q-dialog
         v-model="viewPdf"
         persistent
         @hide="closePdfView"
@@ -216,6 +223,66 @@
           <div v-if="fileUrl !== null" class="q-pa-md q-gutter-sm" style="height: 600px;">
             <q-pdfviewer type="pdfjs" :src="fileUrl"/>
           </div>
+        </q-card>
+      </q-dialog> -->
+      <q-dialog
+        v-model="rename"
+        persistent
+        @hide="onHideRenameFile"
+        ref="renameFileRef"
+      >
+        <q-card style="width: 300px;">
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
+            {{ 'Rename File' }}
+            <q-space />
+            <q-btn dense flat icon="close" v-close-popup>
+              <q-tooltip>Close</q-tooltip>
+            </q-btn>
+          </q-bar>
+
+          <q-card-section>
+            <q-form @submit="renameFile" @reset="reset" class="q-gutter-md">
+              <div class="row">
+                <div class="col">{{'Name:' }}</div>
+                <div class="col text-blue">{{selected[0].file_name}}</div>
+              </div>
+              <div class="row">
+                <div class="col">{{'Description:'}}</div>
+                <div class="col text-blue">{{selected[0].description}}</div>
+              </div>
+              <q-input
+                dense
+                outlined
+                v-model="new_name"
+                label="New name"
+                full-width
+                lazy-rules
+                :rules="[val => (val && val.length > 0) || 'Enter file name']"
+              />
+              <q-input size="sm"
+                dense
+                outlined
+                v-model="new_description"
+                label="New description"
+                full-width
+                lazy-rules
+                :rules="[val => (val && val.length > 0) || 'Enter description']"
+              />
+
+              <div>
+                <q-space />
+                <q-btn
+                  dense
+                  glossy
+                  size="sm"
+                  label="change"
+                  type="submit"
+                  color="primary"
+                  class="text-capitalize q-px-sm float-right q-mb-sm"
+                />
+              </div>
+            </q-form>
+          </q-card-section>
         </q-card>
       </q-dialog>
 </div>
@@ -236,7 +303,8 @@ import {
   matPictureAsPdf,
   matFileCopy,
   matDelete,
-  matDownload
+  matDownload,
+  matEdit
 } from "@quasar/extras/material-icons";
 // const FileDownload = require('js-file-download');
 export default {
@@ -246,6 +314,7 @@ export default {
   },
   setup () {
     return {
+      selected: ref([]),
       icons: {
         leftArrow: matArrowBackIosNew,
         newFolder: matCreateNewFolder,
@@ -256,11 +325,12 @@ export default {
         pdf: matPictureAsPdf,
         other: matFileCopy,
         delete: matDelete,
-        download: matDownload
+        download: matDownload,
+        rename: matEdit
 
       },
-      selected: ref([]),
       columns: [
+        {name: "file_icon",  align: "left", label: "", field: "file_icon", sortable: false},
         {
           name: "file_name",
           required: true,
@@ -312,42 +382,55 @@ export default {
       fileUrl: null,
       viewImage: false,
       viewing_file_name:null,
-      viewPdf: false
+      // viewPdf: false,
+      rename: false,
+      new_name: '',
+      new_description: ''
       
     };
   },
   methods: {
-    // downloadPOC() {
-    //   console.log('Download Axios Client: ' + JSON.stringify(this.$downloadAPI))
-    //   return downloadAPI.get( '/v1/file/download/doc.jpg', {
-    //     headers: {},
-    //     responseType: 'arraybuffer'
-    //   }).then(response => {
-    //     let fileUrl = window.URL.createObjectURL(new Blob([response.data]))
-    //     let fileLink = document.createElement('a');
-    //     fileLink.href = fileUrl;
-    //     fileLink.setAttribute('download', 'import-excel-template.jpg');
-    //     document.body.appendChild(fileLink)
-    //     fileLink.click(); 
-    //     }).catch(err => {
-    //         console.log("Error in getting records: " + JSON.stringify(err));
-    //         return Promise.reject(err);
-    //     });
-    // },
+    openRenameFile() {
+      this.rename = true
+    },
+    onHideRenameFile() {
+      this.new_name = ''
+      this.new_description = ''
+    },
+    renameFile() {
+      let request = {
+        client_id: this.clientId,
+        directory_id: this.selected[0].directory_id,
+        file_id: this.selected[0].id,
+        name: this.new_name,
+        description: this.new_description
+      }
+      DriveService.renameFile(request)
+        .then(response => {
+          if(response)
+            this.rename = false
+          this.getAllfiles()
+        }).catch(err => {
+          this.fail(err.message)
+        });
+    },
     download(row, viewOnly){
       console.log('Download Axios Client: ' + JSON.stringify(this.$downloadAPI))
       return downloadAPI.get( '/v1/file/download/' + row.clientId + '/' + row.directory_id + '/' + row.id, {
         headers: {},
         responseType: 'arraybuffer'
       }).then(response => {
-        let fileUrl = window.URL.createObjectURL(new Blob([response.data]))
+        // var file = new Blob([response.data], {type: 'application/pdf'});
+        // var fileUrl = URL.createObjectURL(file);
+        let fileUrl = window.URL.createObjectURL(new Blob([response.data], {type: 'application/pdf'}))
         if(viewOnly){
           this.fileUrl = fileUrl
           this.viewing_file_name = row.file_name
           if(row.file_type === 'IMAGE') {
              this.viewImage = true
           } else if(row.file_type === 'PDF') {
-             this.viewPdf = true
+            //  this.viewPdf = true
+            window.open(fileUrl);
           }
           return
         }
@@ -481,9 +564,11 @@ export default {
         });
     },
     openDirectory(file){
-      if(file.file_type === 'DIRECTORY')
+      if(file.file_type === 'DIRECTORY') {
+        this.filter = ""
+        this.selected = []
         this.system_path = this.system_path + '/' + file.file_name
-      else {
+      } else {
         let view_only = true
         this.download(file, view_only)
       }
@@ -492,10 +577,10 @@ export default {
       this.viewImage = false
       this.fileUrl = null
     },
-    closePdfView(){
-      this.pdfView = false
-      this.fileUrl = null
-    },
+    // closePdfView(){
+    //   this.pdfView = false
+    //   this.fileUrl = null
+    // },
     back() {
       if(this.system_path.includes('/')){
         const lastIndex = this.system_path.lastIndexOf('/')
@@ -587,5 +672,18 @@ export default {
   'GRAD' 0,
   'opsz' 24
 }
-
+</style>
+<style lang="sass" >
+.my-files-table
+  /* height or max-height is important */
+  height: 500px
+  .q-table__top,
+  thead tr:first-child th
+    /* bg color is important for th; just specify one */
+    background-color: #00b4ff
+  thead tr th
+    position: sticky
+    z-index: 1
+  thead tr:first-child th
+    top: 0
 </style>

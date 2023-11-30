@@ -7,7 +7,6 @@ export default {
         return records;
       })
       .catch(err => {
-        console.log("Error in directory creation: " + JSON.stringify(err.response.data));
         return Promise.reject(err);
       });
   },
@@ -16,7 +15,6 @@ export default {
       let records = response.data;
       return records;
     }).catch(err => {
-      console.log("Error in getting records: " + JSON.stringify(err.response.data));
       return Promise.reject(err);
     });
   },
@@ -25,7 +23,6 @@ export default {
     let directory = response.data;
     return directory;
   }).catch(err => {
-    console.log("Error in getting directory: " + JSON.stringify(err.response.data));
     return Promise.reject(err);
   });
   },
@@ -44,7 +41,6 @@ export default {
       return records;
     })
     .catch(err => {
-      console.log("Error in folder creation: " + JSON.stringify(err.response.data));
       return Promise.reject(err);
     });
   },
@@ -67,26 +63,24 @@ export default {
         return response.data;
       })
       .catch(err => {
-        console.log("Error in getting offers: " + JSON.stringify(err));
         return Promise.reject(err);
       });
   },
-  // downloadFile(client_id, directory_id, file_id) {
-  //   return api.get( '/v1/drive/download_file/' + client_id +'/' + directory_id + '/' + file_id, {responseType: 'blob'}).then(response => {
-  //     return response;
-  //   })
-  //   .catch(err => {
-  //     console.log("Error in folder creation: " + JSON.stringify(err.response.data));
-  //     return Promise.reject(err);
-  //   });
-  // },
   deleteFile(client_id, directory_id, file_id) {
     return api.delete( '/v1/drive/delete_file/' + client_id +'/' + directory_id + '/' + file_id).then(response => {
       let responseCode =  response.data;
       return responseCode
     })
     .catch(err => {
-      console.log("Error in folder creation: " + JSON.stringify(err.response.data));
+      return Promise.reject(err);
+    });
+  },
+  renameFile(request) {
+    return api.post( '/v1/drive/rename_file/', request).then(response => {
+      let outcome = response.data;
+      return outcome;
+    })
+    .catch(err => {
       return Promise.reject(err);
     });
   },
