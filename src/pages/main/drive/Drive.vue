@@ -99,7 +99,7 @@
                 label="Description"
                 full-width
                 lazy-rules
-                :rules="[val => (val && val.length > 10) || 'Enter directory description']"
+                :rules="[val => (val && val.length > 10) || 'Enter directory description (Min 10 Chars)']"
               />
               <q-select
                     dense

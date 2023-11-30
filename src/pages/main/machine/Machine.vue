@@ -323,7 +323,7 @@ export default {
         {name: "registration_no",  align: "left", label: "Regd No", field: "registration_no", sortable: true},
         {name: "registration_date", align: "left", label: "Regd Date", field: "registration_date",sortable: true},
         {name: "chasis_no",  align: "left", label: "Chasis No", field: "chasis_no", sortable: true},
-        {name: "engine_no",  align: "left", label: "Engine No", field: "chasis_no", sortable: true},
+        {name: "engine_no",  align: "left", label: "Engine No", field: "engine_no", sortable: true},
         {name: "insurance_valid_up_to",  align: "left", label: "Insurance Up To", field: "insurance_valid_up_to", sortable: true},
         {name: "tax_valid_up_to",  align: "left", label: "Tax Up To", field: "tax_valid_up_to", sortable: true},
         {name: "permit_valid_up_to",  align: "left", label: "Permit Up To", field: "permit_valid_up_to", sortable: true},
