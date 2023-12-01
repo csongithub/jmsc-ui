@@ -1,11 +1,5 @@
 <template>
 <div>
-  <div class="row bg-greay text-bold">
-    <span class="text-subtitle2 text-blue" style="cursor:pointer">Drive://{{system_path}}</span> <q-space/>
-    <q-btn size="sm" class="text-capitalize" flat color="primary" :icon="icons.leftArrow" label="Back" @click="back()">
-      <q-tooltip>Go back</q-tooltip>
-    </q-btn>
-  </div>
     <q-dialog
         v-model="open"
         persistent
@@ -154,8 +148,10 @@
             </q-btn>
         </template>
         <template v-slot:top-left v-if="system_path">
-          <q-btn size="sm" outline class="q-mr-xs pointer" label="Reload"  icon="refresh" @click="getAllfiles()">
-            <q-tooltip>reload this folder</q-tooltip>
+          <span class="text-italic" style="cursor:pointer">Drive://{{system_path}}</span>
+          <q-space/>
+          <q-btn size="sm" outline class="q-mr-xs pointer" label="Back"  :icon="icons.leftArrow" @click="back()">
+            <q-tooltip>Go back</q-tooltip>
           </q-btn>
           <q-btn size="sm" outline class="q-mr-xs pointer" label="ADD FOLDER"  :icon="icons.newFolder" @click="openCreateFolderDialog()">
             <q-tooltip>create folder</q-tooltip>
@@ -165,6 +161,9 @@
           </q-btn>
           <q-btn v-if="selected.length > 0" size="sm" outline class="q-mr-xs pointer" label="RENAME" :icon="icons.rename" @click="openRenameFile()">
              <q-tooltip>rename file</q-tooltip>
+          </q-btn>
+          <q-btn size="sm" outline class="q-mr-xs pointer" label="Reload"  icon="refresh" @click="getAllfiles()">
+            <q-tooltip>reload this folder</q-tooltip>
           </q-btn>
           <!-- <q-btn size="sm" color="primary"  label="crate folder" @click="openCreateFolderDialog()"/> -->
         </template>
@@ -340,6 +339,7 @@ export default {
           format: val => `${val}`,
           sortable: true
         },
+        {name: "file_size",  align: "left", label: "Size", field: "file_size", sortable: false},
         {name: "description",  align: "left", label: "Description", field: "description", sortable: false},
         {name: "file_type",  align: "left", label: "Category", field: "file_type", sortable: true},
         {name: "created_by",  align: "left", label: "Uploaded By", field: "created_by", sortable: true},
@@ -391,6 +391,11 @@ export default {
   },
   methods: {
     openRenameFile() {
+      this.new_description = this.selected[0].description
+      if(this.selected[0].file_type === 'DIRECTORY')
+        this.new_name = this.selected[0].file_name
+      else
+        this.new_name = this.selected[0].file_name.substring(0,this.selected[0].file_name.lastIndexOf('.'))
       this.rename = true
     },
     onHideRenameFile() {
@@ -539,7 +544,7 @@ export default {
           this.open = false
           this.getAllfiles()
         }).catch(err => {
-          this.fail(err.message)
+          this.fail(this.getErrorMessage(err))
         });
     },
     openFileUpload(){
@@ -649,9 +654,9 @@ export default {
         if(file.img !== undefined)
           return 'IMAGE'
         else if (file.img === undefined) {
-          if(file.name.endsWith('.pdf'))
+          if(file.name.endsWith('.pdf') || file.name.endsWith('.PDF'))
             return 'PDF'
-          else if(file.name.endsWith('.zip'))
+          else if(file.name.endsWith('.zip') || file.name.endsWith('.ZIP'))
             return 'ZIP'
           else
             return 'OTHER' 
