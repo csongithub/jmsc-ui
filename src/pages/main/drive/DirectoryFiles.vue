@@ -595,15 +595,18 @@ export default {
       }
     },
     fileSelected(selectedFile){
-      let file = {
-        file :selectedFile[0],
-        name: selectedFile[0].name,
-        status: 'Selected',
-        img: selectedFile[0].__img,
-        key: selectedFile[0].__key,
-        size:selectedFile[0].__sizeLabel
+      for(let i = 0; i<selectedFile.length; i++) {
+        let file = {
+          file :selectedFile[i],
+          name: selectedFile[i].name,
+          status: 'Selected',
+          img: selectedFile[i].__img,
+          key: selectedFile[i].__key,
+          size:selectedFile[i].__sizeLabel
+        }
+        this.selectedFiles.push(file)
       }
-      this.selectedFiles.push(file)
+      
     },
     fileRejected(file){
       if(file[0].failedPropValidation === 'duplicate')
