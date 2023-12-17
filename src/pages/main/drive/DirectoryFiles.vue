@@ -129,7 +129,7 @@
         row-key="id"
         :loading="loading"
         :pagination="file_pagination"
-        selection="single"
+        selection="multiple"
         v-model:selected="selected"
         :filter="filter"
       >
@@ -156,13 +156,22 @@
           <q-btn size="sm" outline class="q-mr-xs pointer" label="ADD FOLDER"  :icon="icons.newFolder" @click="openCreateFolderDialog()">
             <q-tooltip>create folder</q-tooltip>
           </q-btn>
-          <q-btn size="sm" outline class="q-mr-xs pointer" label="UPLOAD FILES" :icon="icons.upload" @click="openFileUpload()">
+          <q-btn v-if="!move_starts" size="sm" outline class="q-mr-xs pointer" label="UPLOAD FILES" :icon="icons.upload" @click="openFileUpload()">
              <q-tooltip>upload file</q-tooltip>
           </q-btn>
-          <q-btn v-if="selected.length > 0" size="sm" outline class="q-mr-xs pointer" label="RENAME" :icon="icons.rename" @click="openRenameFile()">
+          <q-btn v-if="selected.length === 1 && !move_starts" size="sm" outline class="q-mr-xs pointer" label="RENAME" :icon="icons.rename" @click="openRenameFile()">
              <q-tooltip>rename file</q-tooltip>
           </q-btn>
-          <q-btn size="sm" outline class="q-mr-xs pointer" label="Reload"  icon="refresh" @click="getAllfiles()">
+          <q-btn v-if="!move_starts && selected.length > 0" size="sm" outline class="q-mr-xs pointer" label="MOVE" @click="moveFileStarts()">
+             <q-tooltip>move files</q-tooltip>
+          </q-btn>
+          <q-btn v-if="move_starts" size="sm" color="green"  class="q-mr-xs pointer" label="MOVE HERE" @click="moveFileEnds()">
+             <q-tooltip>files will be moved here</q-tooltip>
+          </q-btn>
+          <q-btn v-if="move_starts" size="sm" color="red"  class="q-mr-xs pointer" label="CANCEL MOVE" @click="cancelMoveFiles()">
+             <q-tooltip>cancel move files</q-tooltip>
+          </q-btn>
+          <q-btn v-if="!move_starts" size="sm" outline class="q-mr-xs pointer" label="Reload"  icon="refresh" @click="getAllfiles()">
             <q-tooltip>reload this folder</q-tooltip>
           </q-btn>
           <!-- <q-btn size="sm" color="primary"  label="crate folder" @click="openCreateFolderDialog()"/> -->
@@ -385,11 +394,47 @@ export default {
       // viewPdf: false,
       rename: false,
       new_name: '',
-      new_description: ''
+      new_description: '',
+      move_starts: false,
+      move_file_req: {},
+      current_path: null
       
     };
   },
   methods: {
+    moveFileStarts(){
+      this.move_starts = true
+      this.current_path = this.system_path
+      this.move_file_req.client_id = this.clientId
+      this.move_file_req.directory_id = this.directory_id
+      this.move_file_req.files = []
+      for(let i = 0; i<this.selected.length; i++) {
+        this.move_file_req.files.push(this.selected[i].id)
+      }
+    },
+    moveFileEnds(){
+      if(this.current_path === this.system_path) {
+        this.fail('Please select a different location')
+        return
+      }
+      this.move_file_req.new_path = this.system_path
+      this.selected = []
+     
+      DriveService.moveFiles(this.move_file_req)
+        .then(response => {
+          if(response)
+             this.move_starts = false
+            this.getAllfiles()
+        }).catch(err => {
+          this.cancelMoveFiles()
+          this.fail(err.message)
+        });
+      console.log(JSON.stringify(this.move_file_req))
+    },
+    cancelMoveFiles() {
+      this.selected = []
+      this.move_starts = false
+    },
     openRenameFile() {
       this.new_description = this.selected[0].description
       if(this.selected[0].file_type === 'DIRECTORY')
