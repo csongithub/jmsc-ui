@@ -96,7 +96,12 @@
                           outlined
                           debounce="300"
                           v-model="file.description"
-                          placeholder="File Desciption"/>
+                          placeholder="File Desciption">
+                          <template v-slot:append>
+                            <q-icon size="xs" v-if="file.description === undefined || file.description === ''" style="cursor:pointer" :name="icons.copy" @click="file.description = file.name.substring(0,file.name.lastIndexOf('.'))"/>
+                            <q-icon v-else style="cursor:pointer" name="close" @click="file.description = ''"/>
+                          </template>
+                        </q-input>
                       </q-item-label>
                       <q-item-label caption>
                         {{ file.size }}
@@ -312,8 +317,13 @@ import {
   matFileCopy,
   matDelete,
   matDownload,
-  matEdit
+  matEdit,
+  matCopyAll,
+  matCopyright,
+  matArrowDownward,
+  matCancel
 } from "@quasar/extras/material-icons";
+import { fasArrowDown, fasCopy, fasCross, fasEraser } from '@quasar/extras/fontawesome-v5';
 // const FileDownload = require('js-file-download');
 export default {
   name: 'File list',
@@ -334,7 +344,9 @@ export default {
         other: matFileCopy,
         delete: matDelete,
         download: matDownload,
-        rename: matEdit
+        rename: matEdit,
+        copy:fasArrowDown,
+        cross: matCancel
 
       },
       columns: [
@@ -633,6 +645,7 @@ export default {
     // },
     back() {
       if(this.system_path.includes('/')){
+        this.filter = ""
         const lastIndex = this.system_path.lastIndexOf('/')
         this.system_path = this.system_path.substring(0,lastIndex)
       } else {
