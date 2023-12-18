@@ -139,7 +139,7 @@
         :filter="filter"
       >
         <template v-slot:body-cell-file_icon="props">
-          <q-btn class="pointer" :size="directory_size" :color="getColor(props.row)" flat :icon="getIcon(props.row)" @click="openDirectory(props.row)">
+          <q-btn class="pointer" :color="getColor(props.row)" flat :icon="getIcon(props.row)" @click="openDirectory(props.row)">
             <q-tooltip v-if="props.row.file_type === 'DIRECTORY'">Open this folder</q-tooltip>
             <q-tooltip v-else>View this file</q-tooltip>
           </q-btn>
@@ -153,7 +153,17 @@
             </q-btn>
         </template>
         <template v-slot:top-left v-if="system_path">
-          <span class="text-italic" style="cursor:pointer">Drive://{{system_path}}</span>
+          <!-- <span class="text-italic" style="cursor:pointer">Drive://{{system_path}}</span> -->
+          <q-breadcrumbs class="q-mb-sm text-black"  gutter="none" active-color="primary">
+            <template v-slot:separator>
+              <q-icon name="chevron_right" size="1.5em" color="white"/>
+            </template>
+            <q-breadcrumbs-el class="text-bold text-italic"  v-for="(b,index) of breadcrumbs" style="cursor:pointer" 
+              v-bind:key="index" 
+              :label="b.name" 
+              @click="navigate(b, index)">
+            </q-breadcrumbs-el>
+          </q-breadcrumbs>
           <q-space/>
           <q-btn size="sm" outline class="q-mr-xs pointer" label="Back"  :icon="icons.leftArrow" @click="back()">
             <q-tooltip>Go back</q-tooltip>
@@ -318,9 +328,6 @@ import {
   matDelete,
   matDownload,
   matEdit,
-  matCopyAll,
-  matCopyright,
-  matArrowDownward,
   matCancel
 } from "@quasar/extras/material-icons";
 import { fasArrowDown, fasCopy, fasCross, fasEraser } from '@quasar/extras/fontawesome-v5';
@@ -374,6 +381,11 @@ export default {
   },
   watch: {
     system_path(val) {
+      if(!val.includes('/')){
+        this.breadcrumbs = []
+        this.breadcrumbs.push({name: 'Drive://' + val, path: val})
+      }
+      // window.alert(JSON.stringify(this.breadcrumbs))
       this.getAllfiles()
     }
   },
@@ -389,8 +401,9 @@ export default {
       clientId: this.getClientId(),
       admin: this.isAdmin(),
       user_name: this.getUser() !== null ? this.getUser().logonId : 'Admin',
-      file_pagination: { rowsPerPage: 15 },
+      file_pagination: { rowsPerPage: 50 },
       filter: "",
+      loading: false,
       directory_id: this.$route.params.directory_id,
       directory: null,
       system_path: '',
@@ -409,11 +422,16 @@ export default {
       new_description: '',
       move_starts: false,
       move_file_req: {},
-      current_path: null
+      current_path: null,
+      breadcrumbs: []
       
     };
   },
   methods: {
+    navigate(target, index){
+      this.breadcrumbs.splice(index+1, this.breadcrumbs.length-1)
+      this.system_path = target.path
+    },
     moveFileStarts(){
       this.move_starts = true
       this.current_path = this.system_path
@@ -612,6 +630,7 @@ export default {
       this.selectedFiles = []
     },
     getAllfiles(){
+      this.loading = true
       let getFilesRequest ={
         client_id: this.clientId,
         directory_id: this.directory_id,
@@ -620,16 +639,30 @@ export default {
       DriveService.getAllFiles(getFilesRequest)
         .then(response => {
            this.files = response
+           this.loading = false
         }).catch(err => {
           this.files = []
+          this.loading = false
           this.fail(err.message)
         });
     },
     openDirectory(file){
+      // window.alert(file.file_name + ':' + this.system_path)
       if(file.file_type === 'DIRECTORY') {
         this.filter = ""
         this.selected = []
         this.system_path = this.system_path + '/' + file.file_name
+        let found  = false
+        for(let index = 0; index <this.breadcrumbs.length; index++) {
+          if(this.breadcrumbs[index].name === file.file_name && this.breadcrumbs[index].path === this.system_path) {
+            found = true
+            break;
+          }
+        }
+        if(!found)
+          this.breadcrumbs.push({position:this.breadcrumbs.length,  name: file.file_name, path: this.system_path})
+
+        console.log('Breadcrumbs:' + JSON.stringify(this.breadcrumbs))
       } else {
         let view_only = true
         this.download(file, view_only)
@@ -648,6 +681,7 @@ export default {
         this.filter = ""
         const lastIndex = this.system_path.lastIndexOf('/')
         this.system_path = this.system_path.substring(0,lastIndex)
+        this.breadcrumbs.pop()
       } else {
         this.$router.push({ name: "drive"});
       }
