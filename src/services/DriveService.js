@@ -84,4 +84,13 @@ export default {
       return Promise.reject(err);
     });
   },
+  moveFiles(request) {
+    return api.post( '/v1/drive/move_files/', request).then(response => {
+      let outcome = response.data;
+      return outcome;
+    })
+    .catch(err => {
+      return Promise.reject(err);
+    });
+  },
 };

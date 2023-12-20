@@ -96,7 +96,12 @@
                           outlined
                           debounce="300"
                           v-model="file.description"
-                          placeholder="File Desciption"/>
+                          placeholder="File Desciption">
+                          <template v-slot:append>
+                            <q-icon size="xs" v-if="file.description === undefined || file.description === ''" style="cursor:pointer" :name="icons.copy" @click="file.description = file.name.substring(0,file.name.lastIndexOf('.'))"/>
+                            <q-icon v-else style="cursor:pointer" name="close" @click="file.description = ''"/>
+                          </template>
+                        </q-input>
                       </q-item-label>
                       <q-item-label caption>
                         {{ file.size }}
@@ -129,12 +134,12 @@
         row-key="id"
         :loading="loading"
         :pagination="file_pagination"
-        selection="single"
+        selection="multiple"
         v-model:selected="selected"
         :filter="filter"
       >
         <template v-slot:body-cell-file_icon="props">
-          <q-btn class="pointer" :size="directory_size" :color="getColor(props.row)" flat :icon="getIcon(props.row)" @click="openDirectory(props.row)">
+          <q-btn class="pointer" :color="getColor(props.row)" flat :icon="getIcon(props.row)" @click="openDirectory(props.row)">
             <q-tooltip v-if="props.row.file_type === 'DIRECTORY'">Open this folder</q-tooltip>
             <q-tooltip v-else>View this file</q-tooltip>
           </q-btn>
@@ -148,7 +153,17 @@
             </q-btn>
         </template>
         <template v-slot:top-left v-if="system_path">
-          <span class="text-italic" style="cursor:pointer">Drive://{{system_path}}</span>
+          <!-- <span class="text-italic" style="cursor:pointer">Drive://{{system_path}}</span> -->
+          <q-breadcrumbs class="q-mb-sm text-black"  gutter="none" active-color="primary">
+            <template v-slot:separator>
+              <q-icon name="chevron_right" size="1.5em" color="white"/>
+            </template>
+            <q-breadcrumbs-el class="text-bold text-italic"  v-for="(b,index) of breadcrumbs" style="cursor:pointer" 
+              v-bind:key="index" 
+              :label="b.name" 
+              @click="navigate(b, index)">
+            </q-breadcrumbs-el>
+          </q-breadcrumbs>
           <q-space/>
           <q-btn size="sm" outline class="q-mr-xs pointer" label="Back"  :icon="icons.leftArrow" @click="back()">
             <q-tooltip>Go back</q-tooltip>
@@ -156,13 +171,22 @@
           <q-btn size="sm" outline class="q-mr-xs pointer" label="ADD FOLDER"  :icon="icons.newFolder" @click="openCreateFolderDialog()">
             <q-tooltip>create folder</q-tooltip>
           </q-btn>
-          <q-btn size="sm" outline class="q-mr-xs pointer" label="UPLOAD FILES" :icon="icons.upload" @click="openFileUpload()">
+          <q-btn v-if="!move_starts" size="sm" outline class="q-mr-xs pointer" label="UPLOAD FILES" :icon="icons.upload" @click="openFileUpload()">
              <q-tooltip>upload file</q-tooltip>
           </q-btn>
-          <q-btn v-if="selected.length > 0" size="sm" outline class="q-mr-xs pointer" label="RENAME" :icon="icons.rename" @click="openRenameFile()">
+          <q-btn v-if="selected.length === 1 && !move_starts" size="sm" outline class="q-mr-xs pointer" label="RENAME" :icon="icons.rename" @click="openRenameFile()">
              <q-tooltip>rename file</q-tooltip>
           </q-btn>
-          <q-btn size="sm" outline class="q-mr-xs pointer" label="Reload"  icon="refresh" @click="getAllfiles()">
+          <q-btn v-if="!move_starts && selected.length > 0" size="sm" outline class="q-mr-xs pointer" label="MOVE" @click="moveFileStarts()">
+             <q-tooltip>move files</q-tooltip>
+          </q-btn>
+          <q-btn v-if="move_starts" size="sm" color="green"  class="q-mr-xs pointer" label="MOVE HERE" @click="moveFileEnds()">
+             <q-tooltip>files will be moved here</q-tooltip>
+          </q-btn>
+          <q-btn v-if="move_starts" size="sm" color="red"  class="q-mr-xs pointer" label="CANCEL MOVE" @click="cancelMoveFiles()">
+             <q-tooltip>cancel move files</q-tooltip>
+          </q-btn>
+          <q-btn v-if="!move_starts" size="sm" outline class="q-mr-xs pointer" label="Reload"  icon="refresh" @click="getAllfiles()">
             <q-tooltip>reload this folder</q-tooltip>
           </q-btn>
           <!-- <q-btn size="sm" color="primary"  label="crate folder" @click="openCreateFolderDialog()"/> -->
@@ -303,8 +327,10 @@ import {
   matFileCopy,
   matDelete,
   matDownload,
-  matEdit
+  matEdit,
+  matCancel
 } from "@quasar/extras/material-icons";
+import { fasArrowDown, fasCopy, fasCross, fasEraser } from '@quasar/extras/fontawesome-v5';
 // const FileDownload = require('js-file-download');
 export default {
   name: 'File list',
@@ -325,7 +351,9 @@ export default {
         other: matFileCopy,
         delete: matDelete,
         download: matDownload,
-        rename: matEdit
+        rename: matEdit,
+        copy:fasArrowDown,
+        cross: matCancel
 
       },
       columns: [
@@ -353,6 +381,11 @@ export default {
   },
   watch: {
     system_path(val) {
+      if(!val.includes('/')){
+        this.breadcrumbs = []
+        this.breadcrumbs.push({name: 'Drive://' + val, path: val})
+      }
+      // window.alert(JSON.stringify(this.breadcrumbs))
       this.getAllfiles()
     }
   },
@@ -368,8 +401,9 @@ export default {
       clientId: this.getClientId(),
       admin: this.isAdmin(),
       user_name: this.getUser() !== null ? this.getUser().logonId : 'Admin',
-      file_pagination: { rowsPerPage: 15 },
+      file_pagination: { rowsPerPage: 50 },
       filter: "",
+      loading: false,
       directory_id: this.$route.params.directory_id,
       directory: null,
       system_path: '',
@@ -385,11 +419,52 @@ export default {
       // viewPdf: false,
       rename: false,
       new_name: '',
-      new_description: ''
+      new_description: '',
+      move_starts: false,
+      move_file_req: {},
+      current_path: null,
+      breadcrumbs: []
       
     };
   },
   methods: {
+    navigate(target, index){
+      this.breadcrumbs.splice(index+1, this.breadcrumbs.length-1)
+      this.system_path = target.path
+    },
+    moveFileStarts(){
+      this.move_starts = true
+      this.current_path = this.system_path
+      this.move_file_req.client_id = this.clientId
+      this.move_file_req.directory_id = this.directory_id
+      this.move_file_req.files = []
+      for(let i = 0; i<this.selected.length; i++) {
+        this.move_file_req.files.push(this.selected[i].id)
+      }
+    },
+    moveFileEnds(){
+      if(this.current_path === this.system_path) {
+        this.fail('Please select a different location')
+        return
+      }
+      this.move_file_req.new_path = this.system_path
+      this.selected = []
+     
+      DriveService.moveFiles(this.move_file_req)
+        .then(response => {
+          if(response)
+             this.move_starts = false
+            this.getAllfiles()
+        }).catch(err => {
+          this.cancelMoveFiles()
+          this.fail(err.message)
+        });
+      console.log(JSON.stringify(this.move_file_req))
+    },
+    cancelMoveFiles() {
+      this.selected = []
+      this.move_starts = false
+    },
     openRenameFile() {
       this.new_description = this.selected[0].description
       if(this.selected[0].file_type === 'DIRECTORY')
@@ -555,6 +630,7 @@ export default {
       this.selectedFiles = []
     },
     getAllfiles(){
+      this.loading = true
       let getFilesRequest ={
         client_id: this.clientId,
         directory_id: this.directory_id,
@@ -563,16 +639,30 @@ export default {
       DriveService.getAllFiles(getFilesRequest)
         .then(response => {
            this.files = response
+           this.loading = false
         }).catch(err => {
           this.files = []
+          this.loading = false
           this.fail(err.message)
         });
     },
     openDirectory(file){
+      // window.alert(file.file_name + ':' + this.system_path)
       if(file.file_type === 'DIRECTORY') {
         this.filter = ""
         this.selected = []
         this.system_path = this.system_path + '/' + file.file_name
+        let found  = false
+        for(let index = 0; index <this.breadcrumbs.length; index++) {
+          if(this.breadcrumbs[index].name === file.file_name && this.breadcrumbs[index].path === this.system_path) {
+            found = true
+            break;
+          }
+        }
+        if(!found)
+          this.breadcrumbs.push({position:this.breadcrumbs.length,  name: file.file_name, path: this.system_path})
+
+        console.log('Breadcrumbs:' + JSON.stringify(this.breadcrumbs))
       } else {
         let view_only = true
         this.download(file, view_only)
@@ -588,22 +678,27 @@ export default {
     // },
     back() {
       if(this.system_path.includes('/')){
+        this.filter = ""
         const lastIndex = this.system_path.lastIndexOf('/')
         this.system_path = this.system_path.substring(0,lastIndex)
+        this.breadcrumbs.pop()
       } else {
         this.$router.push({ name: "drive"});
       }
     },
     fileSelected(selectedFile){
-      let file = {
-        file :selectedFile[0],
-        name: selectedFile[0].name,
-        status: 'Selected',
-        img: selectedFile[0].__img,
-        key: selectedFile[0].__key,
-        size:selectedFile[0].__sizeLabel
+      for(let i = 0; i<selectedFile.length; i++) {
+        let file = {
+          file :selectedFile[i],
+          name: selectedFile[i].name,
+          status: 'Selected',
+          img: selectedFile[i].__img,
+          key: selectedFile[i].__key,
+          size:selectedFile[i].__sizeLabel
+        }
+        this.selectedFiles.push(file)
       }
-      this.selectedFiles.push(file)
+      
     },
     fileRejected(file){
       if(file[0].failedPropValidation === 'duplicate')
