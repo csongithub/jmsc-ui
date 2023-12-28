@@ -36,12 +36,14 @@
         />
       </template>
       <template v-slot:top-right>
+        <span v-if="showLabel && range.from !== undefined">Payments Between:<b> {{range.from + ' to ' + range.to}}</b></span>
+        <span v-else-if="showLabel">Payments On : <b>{{range}}</b></span>
         <q-btn
           class=""
           color="primary"
           flat
           :icon="icons.range"
-          @click="selectRange = !selectRange"
+          @click="showDateSelector()"
         >
           <q-tooltip :delay="500"
             >Select Payments Date or Payments Between dates</q-tooltip
@@ -192,7 +194,7 @@
               class="text-capitalize"
               color="primary"
               flat
-              @click="cancelRange"
+              @click="hideDateSelector"
               >cancel</q-btn
             >
             <q-btn
@@ -240,7 +242,8 @@ export default {
   components: {
     Payment,
   },
-  watch: {},
+  watch: {
+  },
   created() {},
   mounted() {
     this.getAllDrafts();
@@ -322,14 +325,26 @@ export default {
       filter_draft: "",
       selectRange: false,
       range: ref({ from: "", to: "" }),
+      showLabel: false
     };
   },
   methods: {
-    cancelRange() {
-      this.selectRange = false;
+    hideRangeLabel() {
       this.range = { from: "", to: "" };
+      this.showLabel = false
+    },
+    showDateSelector(){
+      this.beforeShowDateSelector()
+      this.selectRange = true
+    },
+    beforeShowDateSelector() {
+      this.hideRangeLabel()
+    },
+    hideDateSelector(){
+      this.selectRange = false
     },
     getForSelectedRange() {
+      this.showLabel = true
       let range = {};
       if (this.range.from !== undefined && this.range.to !== undefined) {
         range = {
@@ -342,21 +357,20 @@ export default {
           to: this.range,
         };
       }
-
       let req = {
         range: range,
       };
-      // window.alert(JSON.stringify(req))
       PaymentService2.paymentsBetweenDates(this.client_id, "APPROVED", req)
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
           this.drafts = response;
-          this.cancelRange();
         })
         .catch((err) => {});
+        this.hideDateSelector()
     },
     getAllDrafts() {
       this.loading = true;
+      this.hideRangeLabel()
       PaymentService2.getAllDrafts(this.client_id, "APPROVED")
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);

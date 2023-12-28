@@ -37,12 +37,12 @@ export default {
             return Promise.reject(err);
         });
     },
-    approvePayment(client_id, payment_id) {
-        return api.put( '/v2/payment/approve/' +  client_id + '/' + payment_id).then(response => {
+    approvePayments(req) {
+        return api.put( '/v2/payment/approve_payments', req).then(response => {
             let responseCode = response.data;
             return responseCode;
         }).catch(err => {
-            console.log("Error while getting payment: " + JSON.stringify(err));
+            console.log("Error while approving payments: " + JSON.stringify(err));
             return Promise.reject(err);
         });
     },

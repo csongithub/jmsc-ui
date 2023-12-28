@@ -66,12 +66,14 @@
                   {{getAmountInWords('sum')}}
               </q-tooltip>
           </q-bar>
+        <span v-if="showLabel && range.from !== undefined">Payments Between:<b> {{range.from + ' to ' + range.to}}</b></span>
+        <span v-else-if="showLabel">Payments On : <b>{{range}}</b></span>
         <q-btn
           class=""
           color="primary"
           flat
           :icon="icons.range"
-          @click="selectRange = !selectRange"
+          @click="showDateSelector()"
         >
           <q-tooltip :delay="500"
             >Select Payments Date or Payments Between dates</q-tooltip
@@ -253,7 +255,7 @@
               class="text-capitalize"
               color="primary"
               flat
-              @click="cancelRange"
+              @click="hideDateSelector"
               >cancel</q-btn
             >
             <q-btn
@@ -429,6 +431,7 @@ export default {
       payments: [],
       selectRange: false,
       range: ref({ from: "", to: "" }),
+      showLabel: false
     };
   },
   methods: {
@@ -440,11 +443,22 @@ export default {
 
       return this.in_words;
     },
-    cancelRange() {
-      this.selectRange = false;
+    hideRangeLabel() {
       this.range = { from: "", to: "" };
+      this.showLabel = false
+    },
+    showDateSelector(){
+      this.beforeShowDateSelector()
+      this.selectRange = true
+    },
+    beforeShowDateSelector() {
+      this.hideRangeLabel()
+    },
+    hideDateSelector(){
+      this.selectRange = false
     },
     getForSelectedRange() {
+      this.showLabel = true
       this.sum = 0
       let range = {};
       if (this.range.from !== undefined && this.range.to !== undefined) {
@@ -470,9 +484,9 @@ export default {
           for(let d of this.drafts) {
             this.sum = this.sum + d.amount
           }
-          this.cancelRange();
         })
         .catch((err) => {});
+        this.hideDateSelector()
     },
     openPrint() {
       this.payments.splice(0, this.payments.length);
@@ -579,54 +593,41 @@ export default {
       this.openAuthorization = val;
     },
     postApproval(draft) {
-      console.log('Draft' + JSON.stringify(draft));
+      // console.log('Draft' + JSON.stringify(draft));
       if (this.approval_mode === "single") {
-        this.approveSingle(draft);
+        this.approvePayments(draft, true);
       } else if (this.approval_mode === "all") {
-        this.approveAll();
+        this.approvePayments(null, false);
       }
     },
-    approveAll() {
-      let approval_begins = false
+    approvePayments(payment, is_single_approve) {
       let self = this
-      for (let payment of this.drafts) {
-        PaymentService2.approvePayment(this.client_id, payment.payment_id)
+      let payments = []
+      if(is_single_approve) {
+        payments.push(payment.payment_id)
+      } else {
+        for (let d of this.drafts) {
+          payments.push(d.payment_id)
+        }
+      }
+      let req = {
+        client_id: this.client_id,
+        payments: payments
+      }
+      PaymentService2.approvePayments(req)
           .then((response) => {
             if (response === 0) {
               self.getAllDrafts();
-              self.success("All payments has been approved");
-              // if(self.isNotNullOrUndefined(payment.to_account_id)) {
-              //   self.linkPartyAccount(payment.party_id, payment.to_account_id)
-              // }
+              if(is_single_approve) {
+                self.success("Payment has been approved");
+              } else {
+                self.success("All payments has been approved");
+              }
             }
           })
           .catch((err) => {
             self.fail(this.getErrorMessage(err));
           });
-      }
-      //Update Party linkage account
-      for (let draft of this.drafts) {
-          if(self.isNotNullOrUndefined(draft.to_account_id)) {
-          self.linkPartyAccount(draft.party_id, draft.to_account_id)
-        }
-      }
-    },
-    approveSingle(draft) {
-      let self = this
-      PaymentService2.approvePayment(this.client_id, draft.payment_id)
-        .then((response) => {
-          if (response === 0) {
-            self.getAllDrafts();
-            self.success("Payment has been approved");
-            //Check if the payment is account payment and link to ther party
-            if(this.isNotNullOrUndefined(draft.to_account_id)) {
-              self.linkPartyAccount(draft.party_id, draft.to_account_id)
-            }
-          }
-        })
-        .catch((err) => {
-          self.fail(self.getErrorMessage(err));
-        });
     },
     deleteDraft(draft) {
       console.log(JSON.stringify(draft));
@@ -702,6 +703,7 @@ export default {
       this.sum = 0
       this.selected_list = [];
       this.loading = true;
+      this.hideRangeLabel()
       PaymentService2.getAllDrafts(this.client_id, "APPROVAL_REQUIRED")
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
