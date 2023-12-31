@@ -685,7 +685,7 @@ export default {
     getPartyLinkedAccounts() {
       if(this.isNullOrUndefined(this.selected_party) || this.selected_party.length === 0)
         return
-      PaymentService2.getPartyLinkedAccounts(this.client_id, this.selected_party[0].id)
+      PartyService.getPartyLinkedAccounts(this.client_id, this.selected_party[0].id)
         .then((response) => {
           this.party_linked_accounts.splice(0, this.party_all_accounts.length);
           this.party_linked_accounts = response;

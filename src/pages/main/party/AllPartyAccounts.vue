@@ -1,35 +1,27 @@
 <template>
     <div>
         <PartyAccount/>
-        <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+        <!-- <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
                color="primary"
                label="Add" 
                size="sm"
                glossy  
                @click="openDialog('add')"
-               :icon="icons.plus"/>
-         <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-                outline
-                color="primary" 
-                size="sm"
-                label="Refresh"
-                icon="refresh"
-                glossy
-                @click="getPartyAccounts()"/>
+               :icon="icons.plus"/> -->
         <q-table
-        class="my-sticky-header-table q-mt-sm"
-        title="Party Accounts"
-        dense
-        bordered
-        flat
-        :rows="accounts"
-        :columns="columns"
-        row-key="partyName"
-        :loading="loading"
-        :pagination="myPagination"
-        :filter="filter"
-        v-model:selected="selected"
-      >
+          class="my-sticky-header-table"
+          title="Party Accounts"
+          dense
+          bordered
+          flat
+          :rows="accounts"
+          :columns="columns"
+          row-key="partyName"
+          :loading="loading"
+          :pagination="myPagination"
+          :filter="filter"
+          v-model:selected="selected"
+        >
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
             <div>
@@ -51,6 +43,16 @@
               <q-icon name="search" />
           </template>
           </q-input>
+        </template>
+        <template v-slot:top-left>
+          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
+                outline
+                color="primary" 
+                size="sm"
+                label="Refresh"
+                icon="refresh"
+                glossy
+                @click="getPartyAccounts()"/>
         </template>
       </q-table>
 
@@ -261,7 +263,7 @@
 
 <script>
 import PartyAccountService from "../../../services/PartyAccountService"
-import PartyAccount from "../party/PartyAccounts.vue"
+import PartyAccount from "./PartyAccounts.vue"
 import { commonMixin } from "../../../mixin/common"
 import { fasPlus, fasEdit, fasTrash, fasEye} from "@quasar/extras/fontawesome-v5";
 import { ref } from 'vue'
@@ -272,6 +274,15 @@ export default {
     return {
       selected: ref([]),
       columns: [
+        {
+          name: "id",
+          required: true,
+          label: "ID",
+          align: "left",
+          field: row => row.id,
+          format: val => `${val}`,
+          sortable: true
+        },
         {
           name: "partyName",
           required: true,

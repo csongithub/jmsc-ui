@@ -30,5 +30,14 @@ export default {
       console.log("Error in getting records: " + JSON.stringify(err.response.data));
       return Promise.reject(err);
     });
-  }
+  },
+  getPartyLinkedAccounts(client_id, party_id) {
+    return api.get( '/v1/party/bank_accounts/' +  client_id + '/' + party_id).then(response => {
+        let responseCode = response.data;
+        return responseCode;
+    }).catch(err => {
+        console.log("Error while getting party linked accounts: " + JSON.stringify(err));
+        return Promise.reject(err);
+    });
+},
 };

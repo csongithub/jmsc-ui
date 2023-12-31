@@ -12,8 +12,8 @@
           narrow-indicator
         >
           <q-route-tab
-           name="manage" label="Manage"
-           to="/manage_party_accounts"
+           name="all" label="All"
+           to="/all_party_accounts"
            exact
           />
           <q-route-tab
@@ -41,7 +41,7 @@ export default {
   },
   data() {
     return {
-      tab: ref('manage')
+      tab:'all'
     };
   },
   methods: {

@@ -690,7 +690,7 @@ export default {
         });
     },
     linkPartyAccount(party_id, account_id){
-      PaymentService2.linkPartyAccount(this.client_id, party_id, account_id)
+      PartyAccountService.linkPartyAccount(this.client_id, party_id, account_id)
         .then((response) => {
           if (response === 0) {
           }

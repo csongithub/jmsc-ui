@@ -101,12 +101,6 @@
               </q-item-section>
               <q-item-section>Accounts</q-item-section>
             </q-item>
-            <q-item exact clickable v-ripple to="/party_accounts" class="q-ml-md">
-              <q-item-section avatar>
-                <q-icon :name="icons.creditors" />
-              </q-item-section>
-              <q-item-section>Party Accounts</q-item-section>
-            </q-item>
             <q-item exact clickable v-ripple to="/payment" class="q-ml-md">
               <q-item-section avatar>
                 <q-icon :name="icons.plan" />
@@ -132,7 +126,26 @@
               <q-item-section>Loans</q-item-section>
             </q-item>
           </q-expansion-item>
-          
+          <q-expansion-item
+            dense
+            dense-toggle
+            expand-separator
+            :icon="icons.creditors"
+            label="Party"
+          >
+            <q-item exact clickable v-ripple to="/party" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.creditors" />
+              </q-item-section>
+              <q-item-section>Manage Party</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/party_accounts" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon name="book" />
+              </q-item-section>
+              <q-item-section>Party Accounts</q-item-section>
+            </q-item>
+          </q-expansion-item>
           <q-separator></q-separator>
           <q-item exact clickable v-ripple to="/bidding">
             <q-item-section avatar>
@@ -146,12 +159,7 @@
             </q-item-section>
             <q-item-section>Site</q-item-section>
           </q-item>
-          <q-item exact clickable v-ripple to="/party">
-            <q-item-section avatar>
-              <q-icon :name="icons.creditors" />
-            </q-item-section>
-            <q-item-section>Party</q-item-section>
-          </q-item>
+          
           <q-item exact clickable v-ripple to="/machine">
             <q-item-section avatar>
               <q-icon :name="icons.machine" />
