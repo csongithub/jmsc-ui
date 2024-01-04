@@ -148,5 +148,18 @@ export default {
             words_string = words_string.split("  ").join(" ");
         }
         return words_string;
-    }
+    },
+    getPaymentByCriteria(client_id, status, req) {
+        const params = new URLSearchParams({
+            client_id: client_id,
+            status: status
+          }).toString();
+        return api.put('/v2/payment/payments_by_criteria?' + params, req).then(response => {
+            let records = response.data;
+            return records;
+        }).catch(err => {
+            console.log("Error in getting records: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
 };

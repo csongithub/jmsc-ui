@@ -34,10 +34,34 @@
           glossy
           @click="getAllDrafts()"
         />
+        <div class="row q-mt-sm bg-grey" v-if="filter_criteria.show">
+          <q-icon :name="icons.filter" color="primary"/>
+          <div class="col q-mr-sm" v-if="filter_criteria.from_account">
+            <span >{{'From A/C: ' + filter_criteria.from_account}}</span>
+          </div>
+          <div class="col q-mr-sm" v-if="filter_criteria.to_account">
+            <span >{{'To A/C: ' + filter_criteria.to_account}}</span>
+          </div>
+          <div class="col" v-if="filter_criteria.party_name">
+            <span >{{'Party Name/Nick Name: ' + filter_criteria.party_name}}</span>
+          </div>
+        </div>
+        
       </template>
       <template v-slot:top-right>
         <span v-if="showLabel && range.from !== undefined">Payments Between:<b> {{range.from + ' to ' + range.to}}</b></span>
         <span v-else-if="showLabel">Payments On : <b>{{range}}</b></span>
+        <q-btn
+          class=""
+          color="primary"
+          flat
+          :icon="icons.filter"
+          @click="openFilterWindow()"
+        >
+          <q-tooltip :delay="500"
+            >Apply Filters</q-tooltip
+          >
+        </q-btn>
         <q-btn
           class=""
           color="primary"
@@ -207,6 +231,77 @@
           </q-card-actions>
         </q-card>
       </q-dialog>
+      <q-dialog v-model="filter_window" persistent ref="filterRef">
+        <q-card flat bordered style="width: 400px; max-width: 80vw"> 
+          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
+          {{ "Apply Filters" }}
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip>Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+          <q-card-section>
+            <div class="row q-mb-sm">
+              <div class="col">
+                <q-input dense outlined v-model="filter_criteria.from_account"
+                  label="From Acccount"
+                  placeholder="Enter from account number"
+                  full-width
+                />
+              </div>
+            </div>
+            <div class="row q-mb-sm">
+              <div class="col">
+                <q-input dense outlined v-model="filter_criteria.to_account"
+                  label="To Acccount"
+                  placeholder="Enter to account number"
+                  full-width
+                />
+              </div>
+            </div>
+            <div class="row q-mb-sm">
+              <div class="col">
+                <q-input dense outlined v-model="filter_criteria.party_name"
+                  label="Party Name / Nick Name"
+                  placeholder="Enter party name or nick name"
+                  full-width
+                />
+              </div>
+            </div>
+            <!-- <div class="row q-mb-sm">
+              <div class="col q-mr-sm">
+               <q-input dense outlined v-model="filter_criteria.range.from"
+                  label="From Date"
+                  placeholder="DD/MM/YYYY"
+                  full-width
+                />
+              </div>
+              <div class="col">
+                 <q-input dense outlined v-model="filter_criteria.range.to"
+                  label="To Date"
+                  placeholder="DD/MM/YYYY"
+                  full-width
+                />
+              </div>
+            </div> -->
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-btn
+              class="text-capitalize"
+              color="primary"
+              flat
+              label="Clear"
+              @click="clearFilter"/>
+            <q-btn
+              class="text-capitalize"
+              color="primary"
+              flat
+              label="Apply Filter"
+              @click="getFilterResult"/>
+            
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </div>
   </div>
 </template>
@@ -222,6 +317,7 @@ import {
   matExpandMore,
   matExpandLess,
   matDateRange,
+  matFilterAlt,
 } from "@quasar/extras/material-icons";
 import { ref } from "vue";
 export default {
@@ -236,7 +332,8 @@ export default {
         expendMore: matExpandMore,
         expendLess: matExpandLess,
         range: matDateRange,
-      },
+        filter: matFilterAlt
+      }
     };
   },
   components: {
@@ -251,7 +348,7 @@ export default {
   data() {
     return {
       client_id: this.getClientId(),
-      draft_pagination: { rowsPerPage: 20 },
+      draft_pagination: { rowsPerPage: 100 },
       columns: [
         {
           name: "payment_id",
@@ -325,10 +422,40 @@ export default {
       filter_draft: "",
       selectRange: false,
       range: ref({ from: "", to: "" }),
-      showLabel: false
+      showLabel: false,
+      filter_window: false,
+      filter_criteria: this.newFiletr()
     };
   },
   methods: {
+    clearFilter() {
+      this.filter_criteria = this.newFiletr()
+    },
+    getFilterResult() {
+      PaymentService2.getPaymentByCriteria(this.client_id, "APPROVED", this.filter_criteria)
+        .then((response) => {
+          this.drafts.splice(0, this.drafts.length);
+          this.drafts = response;
+          this.filter_criteria.show = true
+        })
+        .catch((err) => {});
+    },
+    newFiletr() {
+      return {
+        show: false,
+        from_account: null,
+        to_account: null,
+        party_name: null,
+        range: {
+          from: null,
+          to: null
+        }
+      }
+    },
+    openFilterWindow() {
+      this.filter_criteria.show = false
+      this.filter_window = true
+    },
     hideRangeLabel() {
       this.range = { from: "", to: "" };
       this.showLabel = false
@@ -344,6 +471,7 @@ export default {
       this.selectRange = false
     },
     getForSelectedRange() {
+      this.clearFilter()
       this.showLabel = true
       let range = {};
       if (this.range.from !== undefined && this.range.to !== undefined) {
@@ -369,6 +497,7 @@ export default {
         this.hideDateSelector()
     },
     getAllDrafts() {
+      this.clearFilter()
       this.loading = true;
       this.hideRangeLabel()
       PaymentService2.getAllDrafts(this.client_id, "APPROVED")
