@@ -65,4 +65,31 @@ export default {
         return Promise.reject(err);
     });
   },
+  linkPartyAccount(client_id, party_id, account_id) {
+    return api.put( '/v1/party/bankaccount/linke_party_account/' +  client_id + '/' + party_id + '/' + account_id).then(response => {
+        let responseCode = response.data;
+        return responseCode;
+    }).catch(err => {
+        console.log("Error while updating party account linkage: " + JSON.stringify(err));
+        return Promise.reject(err);
+    });
+  },
+  removeAccount(client_id, party_id, account_id) {
+    return api.put( '/v1/party/bankaccount/de_linke_party_account/' +  client_id + '/' + party_id + '/' + account_id).then(response => {
+        let responseCode = response.data;
+        return responseCode;
+    }).catch(err => {
+        console.log("Error while updating party account linkage: " + JSON.stringify(err));
+        return Promise.reject(err);
+    });
+  },
+  bankByIFSC(ifsc_code) {
+    return api.get( '/v1/party/bankaccount/bank_by_ifsc/' +  ifsc_code ).then(response => {
+        let bank = response.data;
+        return bank;
+    }).catch(err => {
+        console.log("Error while updating party account linkage: " + JSON.stringify(err));
+        return Promise.reject(err);
+    });
+  },
 };

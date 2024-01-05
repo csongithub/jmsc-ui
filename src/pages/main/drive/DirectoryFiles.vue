@@ -330,7 +330,7 @@ import {
   matEdit,
   matCancel
 } from "@quasar/extras/material-icons";
-import { fasArrowDown, fasCopy, fasCross, fasEraser } from '@quasar/extras/fontawesome-v5';
+import { fasArrowDown } from '@quasar/extras/fontawesome-v5';
 // const FileDownload = require('js-file-download');
 export default {
   name: 'File list',

@@ -34,13 +34,13 @@ const routes = [
         }
       },
       { 
-        name: 'managePartyAccounts', path: '/manage_party_accounts', component: () => import('src/pages/main/party/ManagePartyAccounts.vue'),
+        name: 'managePartyAccounts', path: '/all_party_accounts', component: () => import('src/pages/main/party/AllPartyAccounts.vue'),
         meta: {
           moduleName: 'Banking',
           breadcrumbs: [
             {label: 'Banking', routName: ''},
             {label: 'Party Accounts', routName: 'party_accounts'},
-            {label: 'Manage Part Accounts', routName: 'manage_party_accounts'}
+            {label: 'All Party Accounts', routName: 'manage_party_accounts'}
           ]
         }
       },

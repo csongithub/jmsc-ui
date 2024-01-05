@@ -744,6 +744,11 @@ export default {
     //   this.saveDraft('APPROVAL_REQUIRED')
     // },
     saveDraft(mode) {
+
+      if(this.payment_date === null || this.payment_date === '') {
+        this.fail('Please enter payment date')
+        return;
+      }
       let payment = {
         id: this.tempDraft.id,
         client_id: this.client_id,

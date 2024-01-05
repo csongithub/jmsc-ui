@@ -37,12 +37,12 @@ export default {
             return Promise.reject(err);
         });
     },
-    approvePayment(client_id, payment_id) {
-        return api.put( '/v2/payment/approve/' +  client_id + '/' + payment_id).then(response => {
+    approvePayments(req) {
+        return api.put( '/v2/payment/approve_payments', req).then(response => {
             let responseCode = response.data;
             return responseCode;
         }).catch(err => {
-            console.log("Error while getting payment: " + JSON.stringify(err));
+            console.log("Error while approving payments: " + JSON.stringify(err));
             return Promise.reject(err);
         });
     },
@@ -52,24 +52,6 @@ export default {
             return responseCode;
         }).catch(err => {
             console.log("Error while getting payment: " + JSON.stringify(err));
-            return Promise.reject(err);
-        });
-    },
-    linkPartyAccount(client_id, party_id, account_id) {
-        return api.put( '/v2/payment/linke_party_account/' +  client_id + '/' + party_id + '/' + account_id).then(response => {
-            let responseCode = response.data;
-            return responseCode;
-        }).catch(err => {
-            console.log("Error while updating party account linkage: " + JSON.stringify(err));
-            return Promise.reject(err);
-        });
-    },
-    getPartyLinkedAccounts(client_id, party_id) {
-        return api.get( '/v2/payment/party_linked_accounts/' +  client_id + '/' + party_id).then(response => {
-            let responseCode = response.data;
-            return responseCode;
-        }).catch(err => {
-            console.log("Error while getting party linked accounts: " + JSON.stringify(err));
             return Promise.reject(err);
         });
     },
@@ -166,5 +148,18 @@ export default {
             words_string = words_string.split("  ").join(" ");
         }
         return words_string;
-    }
+    },
+    getPaymentByCriteria(client_id, status, req) {
+        const params = new URLSearchParams({
+            client_id: client_id,
+            status: status
+          }).toString();
+        return api.put('/v2/payment/payments_by_criteria?' + params, req).then(response => {
+            let records = response.data;
+            return records;
+        }).catch(err => {
+            console.log("Error in getting records: " + JSON.stringify(err));
+            return Promise.reject(err);
+        });
+    },
 };
