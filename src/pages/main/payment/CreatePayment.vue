@@ -141,24 +141,9 @@
                   <div class="col-1 text-bold q-mr-sm">Legal Name</div>
                   <div class="col">{{ selected_party[0].name }}</div>
                 </div>
-                <span class="text-primary text-bold">Select Account</span>
-                <q-tabs
-                  v-model="party_account_tab"
-                  dense
-                  align="left"
-                  class="bg-primary text-white shadow-2"
-                  :breakpoint="0"
-                  inline-label
-                  no-caps
-                >
-                  <q-tab name="existing" label="Existing Account" />
-                  <q-tab name="new" label="New Account" />
-                </q-tabs>
-                <q-tab-panels v-model="party_account_tab" animated>
-                  <q-tab-panel name="existing">
-                    <q-table
+                <q-table
                       class="my-sticky-header-table"
-                      title="Select From Existing Accounts"
+                      title="Select Bank Account"
                       dense
                       bordered
                       flat
@@ -184,39 +169,6 @@
                         </q-input>
                       </template>
                     </q-table>
-                  </q-tab-panel>
-
-                  <q-tab-panel name="new">
-                    <q-table
-                      class="my-sticky-header-table"
-                      title="Select From All Accounts"
-                      dense
-                      bordered
-                      flat
-                      :rows="party_all_accounts"
-                      :columns="party_all_account_columns"
-                      row-key="accountNumber"
-                      :filter="party_all_acc_filter"
-                      selection="single"
-                      v-model:selected="selected_party_account"
-                    >
-                      <template v-slot:top-right>
-                        <q-input
-                          borderless
-                          dense
-                          outlined
-                          debounce="300"
-                          v-model="party_all_acc_filter"
-                          placeholder="Search Account"
-                        >
-                          <template v-slot:append>
-                            <q-icon name="search" />
-                          </template>
-                        </q-input>
-                      </template>
-                    </q-table>
-                  </q-tab-panel>
-                </q-tab-panels>
               </div>
               <div v-else>
                 <q-table
@@ -718,13 +670,6 @@ export default {
     },
 
     savePayment(mode) {
-      let payment = {
-        client_id: this.client_id,
-        payment: null,
-        payment_summary: null,
-        payment_date: this.payment_date,
-      };
-
       if (
         this.isNullOrUndefined(this.payment_amount) ||
         this.payment_amount === null ||
@@ -734,13 +679,22 @@ export default {
         return;
       }
 
+      if(this.payment_date === null || this.payment_date === '') {
+        this.fail('Please enter payment date')
+        return;
+      }
+      let payment = {
+        client_id: this.client_id,
+        payment: null,
+        payment_summary: null,
+        payment_date: this.payment_date,
+      };
+
+      
+
       if (mode === "DRAFT") {
         payment.status = "DRAFT";
       } else if (mode === "APPROVAL_REQUIRED") {
-        if (this.isNullOrUndefined(this.payment_date)) {
-          this.fail("Please select payment date");
-          return;
-        }
         if (this.isNullOrUndefined(this.payment_reason)) {
           this.fail("Please select paymet reason");
           return;
