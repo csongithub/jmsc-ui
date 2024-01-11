@@ -15,6 +15,9 @@
       selection="single"
       v-model:selected="selected_draft"
     >
+      <template v-slot:loading>
+        <q-inner-loading v-if="loading" showing color="primary" label="Loading..." size="sm"/>
+      </template>
       <template v-slot:header="props">
         <q-tr :props="props">
           <q-th auto-width />
@@ -362,7 +365,7 @@
           </q-card-actions>
         </q-card>
       </q-dialog>
-    </div>
+  </div>
   <div>
     <q-dialog v-model="open" persistent @hide="onHide" ref="createPaymentRef">
       <q-card flat bordered style="width: 1000px; max-width: 80vw">
