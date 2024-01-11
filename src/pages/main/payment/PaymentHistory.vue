@@ -15,6 +15,9 @@
       selection="single"
       v-model:selected="selected_draft"
     >
+      <template v-slot:loading>
+        <q-inner-loading v-if="loading" showing color="primary" label="Loading..." size="sm"/>
+      </template>
       <template v-slot:header="props">
         <q-tr :props="props">
           <q-th auto-width />
@@ -116,6 +119,29 @@
                 {{ col.value }}
               </span>
             </span>
+            <div v-else class="pointer">
+              <q-btn-dropdown v-if="admin"
+                dense
+                size="md"
+                flat
+                v-model="menu"
+                class="text-capitalize text-caption"
+                label="Actions"
+              >
+                <q-list dense>
+                   <!-- <q-item clickable dense flat v-close-popup @click="sendForApproval(props.row)">
+                     <q-icon name="arrow_forward" class="text-green q-mr-sm" size="sm"/>
+                     <span  class="text-weight-light">Send for Approval</span>
+                  </q-item> -->
+                  
+                  <q-item clickable v-close-popup @click="deleteDraft(props.row)">
+                    <q-icon name="clear" class="text-red q-mr-sm" size="sm"/>
+                     <span  class="text-weight-light">Delete</span>
+                  </q-item>
+                </q-list>
+                
+              </q-btn-dropdown>
+            </div>
           </q-td>
         </q-tr>
         <q-tr v-show="props.expand" :props="props">
@@ -303,7 +329,9 @@
         </q-card>
       </q-dialog>
     </div>
+    
   </div>
+  
 </template>
 
 <script>
@@ -348,7 +376,8 @@ export default {
   data() {
     return {
       client_id: this.getClientId(),
-      draft_pagination: { rowsPerPage: 100 },
+      admin: this.isAdmin(),
+      draft_pagination: { rowsPerPage: 50 },
       columns: [
         {
           name: "payment_id",
@@ -416,6 +445,14 @@ export default {
           field: "payment_date",
           sortable: true,
         },
+        {
+          name: "actions",
+          label: "",
+          required: true,
+          align: "center",
+          field: "actions",
+          format: (val) => `${val}`,
+        },
       ],
       drafts: [],
       loading: false,
@@ -428,6 +465,36 @@ export default {
     };
   },
   methods: {
+    deleteDraft(draft) {
+      console.log(JSON.stringify(draft));
+      this.$q
+        .dialog({
+          title: "Are You Sure?",
+          message: "This will delete the paymemt permanently.",
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          PaymentService2.deletePayment(
+            this.client_id,
+            draft.payment_id,
+            "APPROVED"
+          )
+            .then((response) => {
+              if (response === 0) {
+                this.getAllDrafts();
+                this.success("Payment has been deleted");
+              }
+            })
+            .catch((err) => {
+              this.loading = false;
+              this.fail(this.getErrorMessage(err));
+            });
+        })
+        .onOk(() => {})
+        .onCancel(() => {})
+        .onDismiss(() => {});
+    },
     clearFilter() {
       this.filter_criteria = this.newFiletr()
     },

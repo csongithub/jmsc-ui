@@ -15,6 +15,9 @@
       selection="multiple"
       v-model:selected="selected_draft"
     >
+      <template v-slot:loading>
+        <q-inner-loading v-if="loading" showing color="primary" label="Loading..." size="sm"/>
+      </template>
       <template v-slot:header="props">
         <q-tr :props="props">
           <q-th auto-width />
@@ -129,27 +132,6 @@
                 </q-list>
                 
               </q-btn-dropdown>
-
-              <!-- <q-btn
-                class="q-pa-xs"
-                size="xs"
-                color="primary"
-                flat
-                :icon="icons.edit"
-                @click="updateDraft(props.row)"
-              >
-                <q-tooltip delay="400">Update Draft</q-tooltip>
-              </q-btn>
-              <q-btn
-                class="q-pa-xs"
-                size="xs"
-                color="red"
-                flat
-                :icon="icons.delete"
-                @click="deleteDraft(props.row)"
-              >
-                <q-tooltip delay="400">Delete Draft</q-tooltip>
-              </q-btn> -->
             </div>
           </q-td>
         </q-tr>

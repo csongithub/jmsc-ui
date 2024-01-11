@@ -138,6 +138,9 @@
         v-model:selected="selected"
         :filter="filter"
       >
+        <template v-slot:loading>
+          <q-inner-loading v-if="loading" showing color="primary" label="Loading..." size="sm"/>
+        </template>
         <template v-slot:body-cell-file_icon="props">
           <q-btn class="pointer" :color="getColor(props.row)" flat :icon="getIcon(props.row)" @click="openDirectory(props.row)">
             <q-tooltip v-if="props.row.file_type === 'DIRECTORY'">Open this folder</q-tooltip>
