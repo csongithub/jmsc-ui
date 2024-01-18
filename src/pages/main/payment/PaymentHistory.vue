@@ -14,6 +14,7 @@
       :filter="filter_draft"
       selection="single"
       v-model:selected="selected_draft"
+      wrap-cells
     >
       <template v-slot:loading>
         <q-inner-loading v-if="loading" showing color="primary" label="Loading..." size="sm"/>

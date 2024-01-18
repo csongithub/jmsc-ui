@@ -458,18 +458,20 @@ export default {
         {
           name: "partyName",
           required: true,
-          label: "Party",
+          label: "Account Nick Name",
           align: "left",
           field: (row) => row.partyName,
           format: (val) => `${val}`,
           sortable: true,
+          style: row => ('width: 10px')
         },
         {
           name: "accountHolder",
           align: "left",
-          label: "Account Holder",
+          label: "Account Holder Name",
           field: "accountHolder",
           sortable: true,
+          style: 'width: 10px'
         },
         {
           name: "accountNumber",

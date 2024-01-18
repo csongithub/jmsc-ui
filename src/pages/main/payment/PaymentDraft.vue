@@ -14,6 +14,7 @@
       :filter="filter_draft"
       selection="multiple"
       v-model:selected="selected_draft"
+      wrap-cells
     >
       <template v-slot:loading>
         <q-inner-loading v-if="loading" showing color="primary" label="Loading..." size="sm"/>
@@ -76,9 +77,9 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td auto-width>
+          <q-td style="width: 90px">
             <q-btn
-              size="sm"
+              size="xs"
               color="primary"
               round
               dense
