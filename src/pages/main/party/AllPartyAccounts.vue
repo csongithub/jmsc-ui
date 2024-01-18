@@ -21,6 +21,7 @@
           :pagination="myPagination"
           :filter="filter"
           v-model:selected="selected"
+          wrap-cells
         >
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
@@ -286,11 +287,12 @@ export default {
         {
           name: "partyName",
           required: true,
-          label: "Party Name",
+          label: "Account Nick Name",
           align: "left",
           field: row => row.partyName,
           format: val => `${val}`,
-          sortable: true
+          sortable: true,
+          headerClasses: 'my-special-class'
         },
         {name: "accountHolder",  align: "left", label: "Account Holder", field: "accountHolder", sortable: true},
         {name: "accountNumber",  align: "left", label: "Account Number", field: "accountNumber", sortable: true},
@@ -404,3 +406,13 @@ export default {
   }
 };
 </script>
+
+<style lang="css" scoped>
+.my-special-class {
+    max-width: 100%;
+    color: black;
+}
+
+  
+
+</style>
