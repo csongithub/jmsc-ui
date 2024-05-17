@@ -36,7 +36,17 @@
           label="Print Selected"
           size="sm"
           glossy
-          @click="openPrint"
+          @click="openPrint('CHALLAN')"
+        />
+        <q-btn
+          v-if="print_list.length === 1"
+          class="q-mt-sm q-mr-sm text-capitalize"
+          color="primary"
+          icon="print"
+          label="Print Cheque"
+          size="sm"
+          glossy
+          @click="openPrint('CHEQUE')"
         />
         <q-btn
           class="q-mt-sm q-mr-sm text-capitalize"
@@ -391,6 +401,16 @@
           </IndianBankRTGS>
         </q-card>
       </q-dialog>
+      <q-dialog v-model="openCheque" persistent @hide="onHide" ref="createPaymentRef">
+        <q-card flat bordered style="width: 1000px; max-width: 80vw">
+          <Cheque
+            v-if="print_list.length === 1"
+            :payments="payments"
+            @clsoe="close"
+          >
+          </Cheque>
+        </q-card>
+      </q-dialog>
     </div>
   </div>
 </template>
@@ -404,6 +424,7 @@ import PaymentService2 from "../../../services/PaymentService2";
 import BankAccountService from "../../../services/BankAccountService";
 import PartyAccountService from "../../../services/PartyAccountService";
 import IndianBankRTGS from "../payment/templates/IndianBankRTGSNew.vue";
+import Cheque from "../payment/templates/Cheque.vue";
 import {
   matCurrencyRupee,
   matEdit,
@@ -433,6 +454,7 @@ export default {
   components: {
     Payment,
     IndianBankRTGS,
+    Cheque
   },
   watch: {
     payment_reason(val) {
@@ -554,6 +576,7 @@ export default {
       print_list: [],
       open: false,
       payments: [],
+      openCheque: false
     };
   },
   methods: {
@@ -565,7 +588,7 @@ export default {
 
       return this.in_words;
     },
-    openPrint() {
+    openPrint(val) {
       this.payments.splice(0, this.payments.length);
       for (let p of this.print_list) {
         let payment = {};
@@ -585,13 +608,17 @@ export default {
 
         this.payments.push(payment);
       }
-      this.open = true;
+      if(val === 'CHALLAN')
+        this.open = true;
+      else
+        this.openCheque = true
     },
     close() {
       this.onHide();
     },
     onHide() {
       this.open = false;
+      this.openCheque = false
     },
     addToPrint(props) {
       if(props.row.mode === 'Cash') {

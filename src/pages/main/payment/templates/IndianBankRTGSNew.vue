@@ -29,7 +29,7 @@
           height="5%"
           style="max-width: 30%"/>
       </div>
-      <div class="row justify-center param"> <b><p>Challan for remittance through RTGS/NEFT</p></b></div>
+      <div class="row justify-center param"> <b><p>ok</p></b></div>
       <br>
       <div class="row">
         <div class="col param" v-if="branch"><b>Branch: {{payment.from_branch}}</b></div>
