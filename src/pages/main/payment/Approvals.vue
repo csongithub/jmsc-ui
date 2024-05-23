@@ -1,6 +1,9 @@
 <template>
   <div>
     <Payment />
+    {{isAdmin}}
+    <br/>
+    {{permissions.approvePayments}}
     <q-table
       class="my-sticky-header-table"
       dense
@@ -28,7 +31,7 @@
         </q-tr>
       </template>
       <template v-slot:top-left>
-        <q-btn
+        <q-btn v-if="isAdmin || permissions.approvePayments"
           class="q-mt-sm q-mr-sm text-capitalize"
           color="primary"
           label="Approve All"
@@ -161,7 +164,7 @@
                 label="Actions"
               >
                 <q-list dense>
-                  <q-item clickable dense flat v-close-popup @click="adminApproval(props.row, 'single')">
+                  <q-item v-if="isAdmin || permissions.approvePayments" clickable dense flat v-close-popup @click="adminApproval(props.row, 'single')">
                      <q-icon name="check" class="text-green q-mr-sm" size="sm"/>
                      <span  class="text-weight-light">Approve Payment</span>
                   </q-item>
@@ -533,7 +536,10 @@ export default {
       range: ref({ from: "", to: "" }),
       showLabel: false,
       filter_window: false,
-      filter_criteria: this.newFiletr()
+      filter_criteria: this.newFiletr(),
+      isAdmin: this.isAdmin(),
+      permissions: this.getPermissions(),
+      askPasswordForAdmin: false
     };
   },
   methods: {
@@ -695,13 +701,32 @@ export default {
     },
     adminApproval(draft, approval_mode) {
       this.approval_mode = approval_mode;
-      this.openAuth(
-        "Approve",
-        "Please enter the admin password",
-        true,
-        draft,
-        "Approve"
-      );
+      if(this.askPasswordForAdmin) {
+        this.openAuth(
+          "Approve",
+          "Please enter the admin password",
+          true,
+          draft,
+          "Approve"
+        );
+      } else {
+        this.approveWithoutPassword(draft)
+      }
+    },
+    approveWithoutPassword(draft) {
+      this.$q
+        .dialog({
+          title: "Are You Sure?",
+          message: "The payment will move to history.",
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          this.postApproval(draft)
+        })
+        .onOk(() => {})
+        .onCancel(() => {})
+        .onDismiss(() => {});
     },
     reject(draft, approval_mode) {
       this.approval_mode = approval_mode;

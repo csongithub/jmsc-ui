@@ -71,8 +71,30 @@
               <q-tooltip>Close</q-tooltip>
             </q-btn>
           </q-bar>
-
-          <q-card-section>
+          <q-tabs
+            v-model="tab"
+            dense
+            class="bg-primary text-white shadow-2"
+            narrow-indicator
+            align="left"
+            :breakpoint="0"
+            inline-label
+            no-caps
+          >
+            <q-tab name="user"  label="User">
+            </q-tab>
+            <q-tab name="permissions" label="User Permissions"/>
+          </q-tabs>
+          <q-tab-panels
+            v-model="tab"
+            animated
+            swipeable
+            vertical
+            transition-prev="jump-up"
+            transition-next="jump-up"
+          >
+          <q-tab-panel name="user">
+            <q-card-section>
             <q-form @submit="addUser" @reset="reset" class="q-gutter-md">
               <q-input
                 dense
@@ -147,6 +169,132 @@
               </div>
             </q-form>
           </q-card-section>
+          </q-tab-panel>
+          <q-tab-panel name="permissions">
+            <q-form @submit="updateUserPermission" class="q-gutter-md" v-if="user.id">
+            <div class="row q-ma-md">
+              <div class="col">
+                *Can Login
+              </div>
+              <div class="col">
+                <q-btn-toggle size="sm"
+                  v-model="permissions.canLogin"
+                  class="my-custom-toggle"
+                  no-caps
+                  rounded
+                  unelevated
+                  toggle-color="green"
+                  color="white"
+                  text-color="primary"
+                  :options="[
+                    {label: 'Yes', value: true},
+                    {label: 'No', value: false}
+                  ]"
+                />
+              </div>
+            </div>
+            <div class="row q-ma-md">
+              <div class="col">
+                Can Add Users
+              </div>
+              <div class="col">
+                <q-btn-toggle size="sm"
+                  v-model="permissions.addUsers"
+                  class="my-custom-toggle"
+                  no-caps
+                  rounded
+                  unelevated
+                  toggle-color="green"
+                  color="white"
+                  text-color="primary"
+                  :options="[
+                    {label: 'Yes', value: true},
+                    {label: 'No', value: false}
+                  ]"
+                />
+              </div>
+            </div>
+            <div class="row q-ma-md">
+              <div class="col">
+                Can Create Payments
+              </div>
+              <div class="col">
+                <q-btn-toggle size="sm"
+                  v-model="permissions.createPayments"
+                  class="my-custom-toggle"
+                  no-caps
+                  rounded
+                  unelevated
+                  toggle-color="green"
+                  color="white"
+                  text-color="primary"
+                  :options="[
+                    {label: 'Yes', value: true},
+                    {label: 'No', value: false}
+                  ]"
+                />
+              </div>
+            </div>
+            <div class="row q-ma-md">
+              <div class="col">
+                Can Approve Payments
+              </div>
+              <div class="col">
+                <q-btn-toggle size="sm"
+                  v-model="permissions.approvePayments"
+                  class="my-custom-toggle"
+                  no-caps
+                  rounded
+                  unelevated
+                  toggle-color="green"
+                  color="white"
+                  text-color="primary"
+                  :options="[
+                    {label: 'Yes', value: true},
+                    {label: 'No', value: false}
+                  ]"
+                />
+              </div>
+            </div>
+            <div class="row q-ma-md">
+              <div class="col">
+                Can Delete Payments from History
+              </div>
+              <div class="col">
+                <q-btn-toggle size="sm"
+                  v-model="permissions.deletePayments"
+                  class="my-custom-toggle"
+                  no-caps
+                  rounded
+                  unelevated
+                  toggle-color="green"
+                  color="white"
+                  text-color="primary"
+                  :options="[
+                    {label: 'Yes', value: true},
+                    {label: 'No', value: false}
+                  ]"
+                />
+              </div>
+            </div>
+            <div >
+                <q-space />
+                <q-btn
+                  dense
+                  glossy
+                  size="sm"
+                  label="Update User Permissions"
+                  type="submit"
+                  color="primary"
+                  class="text-capitalize q-px-md q-mt-lg"
+                />
+              </div>
+            </q-form>
+            <div v-else class="text-center">
+              Please add user first.
+            </div>
+          </q-tab-panel>
+          </q-tab-panels>
         </q-card>
       </q-dialog>
     </div>
@@ -154,6 +302,7 @@
 
 <script>
 import UserService from "../../../services/UserService"
+import UserPermissions from "../../../services/UserPermissions"
 import { commonMixin } from "../../../mixin/common"
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 import { matDelete} from "@quasar/extras/material-icons";
@@ -164,6 +313,7 @@ export default {
   setup () {
     return {
       selected: ref([]),
+      tab: ref('user'),
       columns: [
         {
           name: "name",
@@ -204,10 +354,20 @@ export default {
       open: false,
       mode: "add",
       dialog_label: "New User",
-      statusList: ['ACTIVE', 'BLOCKED']
+      statusList: ['ACTIVE', 'BLOCKED'],
+      permissions: this.defaultPermission()
     };
   },
   methods: {
+    defaultPermission(){
+      return {
+        canLogin: false,
+        addUsers: false,
+        createPayments:false,
+        approvePayments: false,
+        deletePayments: false
+      }
+    },
     newUser() {
       return {
         id: null,
@@ -235,14 +395,38 @@ export default {
       UserService.create(this.user)
         .then(response => {
           if(this.mode === 'add') {
+            this.user=response
             this.users.unshift(response)
             this.success("User create Successfully")
           } else if(this.mode === 'edit'){
              this.success("User Updated Successfully")
           }
-          this.$refs.newUserRef.hide();
+          // this.$refs.newUserRef.hide();
       }).catch(err => {
         this.loading = false;
+        this.fail(this.getErrorMessage(err))
+      });
+    },
+    updateUserPermission() {
+      let userPermissionsDTO = {
+        id: null, //Id is set in backed
+        clientId: this.client_id,
+        userId: this.user.id,
+        permissions: this.permissions
+      }
+      UserPermissions.createOrUpdate(userPermissionsDTO)
+        .then(response => {
+          if(response)
+            this.success("User Permissions Updated Successfully")
+      }).catch(err => {
+        this.fail(this.getErrorMessage(err))
+      });
+    },
+    getUserPermission(){
+      UserPermissions.getPermissions(this.client_id, this.user.id)
+        .then(response => {
+          this.permissions = response
+      }).catch(err => {
         this.fail(this.getErrorMessage(err))
       });
     },
@@ -251,6 +435,8 @@ export default {
       this.dialog_label = "Update User";
       this.mode = 'edit'
       this.open = true;
+
+      this.getUserPermission()
     },
     deleteUser(row) {
       this.$q
@@ -291,6 +477,8 @@ export default {
     onHide() {
       this.reset();
       this.mode='add'
+      this.tab = "user"
+      this.permissions = this.defaultPermission()
     },
     reset() {
       this.user = this.newUser();
