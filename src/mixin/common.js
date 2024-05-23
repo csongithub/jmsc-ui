@@ -46,6 +46,14 @@ export const commonMixin = {
         return null
       }
     },
+    getPermissions(){
+      let auth = LocalStorage.getItem("auth");
+      if(auth && auth.permissions) {
+        return auth.permissions
+      } else {
+        return {}
+      }
+    },
     isAdmin(){
       let auth = LocalStorage.getItem("auth");
       if(auth && auth.admin)

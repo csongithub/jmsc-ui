@@ -150,7 +150,8 @@ export default {
         user: this.loginResponse.userDTO !== null ? this.loginResponse.userDTO : null,
         token: this.loginResponse.token,
         admin: this.loginResponse.admin,
-        newlogin: true
+        newlogin: true,
+        permissions: this.loginResponse.permissions
       }
 
       LocalStorage.set('auth', auth);
