@@ -237,7 +237,7 @@
             </div>
             <div class="row q-ma-md">
               <div class="col">
-                Can Approve Payments
+                *Can Approve Payments
               </div>
               <div class="col">
                 <q-btn-toggle size="sm"

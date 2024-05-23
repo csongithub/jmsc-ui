@@ -1,9 +1,6 @@
 <template>
   <div>
     <Payment />
-    {{isAdmin}}
-    <br/>
-    {{permissions.approvePayments}}
     <q-table
       class="my-sticky-header-table"
       dense
