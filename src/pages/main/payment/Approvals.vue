@@ -9,6 +9,7 @@
       :rows="drafts"
       :columns="columns"
       row-key="payment_id"
+      :visible-columns="visibleColumns"
       :loading="loading"
       :pagination="draft_pagination"
       :filter="filter_draft"
@@ -106,7 +107,7 @@
             >Select Payments Date or Payments Between dates</q-tooltip
           >
         </q-btn>
-        <q-input
+        <q-input class="q-mr-sm"
           borderless
           dense
           outlined
@@ -118,6 +119,20 @@
             <q-icon name="search" />
           </template>
         </q-input>
+        <q-select
+            v-model="visibleColumns"
+            multiple
+            outlined
+            dense
+            options-dense
+            :display-value="$q.lang.table.columns"
+            emit-value
+            map-options
+            :options="columns"
+            option-value="name"
+            options-cover
+            style="min-width: 150px"
+          />
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
@@ -141,18 +156,22 @@
               checked-icon="check"
             />
           </q-td>
-          <q-td v-for="col in props.cols" :key="col.name" :props="props">
-            <span v-if="col.value !== 'undefined'">
-              <span v-if="col.currency">
+          <q-td key="payment_id" :props="props">{{props.row.payment_id}}</q-td>
+          <q-td key="party_nick_name" :props="props">{{props.row.party_nick_name}}</q-td>
+          <q-td key="party_name" :props="props">{{props.row.party_nick_name}}</q-td>
+          <q-td key="account_holder" :props="props">{{props.row.account_holder}}</q-td>
+           <q-td key="account_number" :props="props">{{props.row.account_number}}</q-td>
+          <q-td key="amount" :props="props"> 
                 <q-icon :name="icons.rupee" />
-                {{ col.value.toLocaleString("en-IN") + ".00" }}
-              </span>
-              <span v-else>
-                {{ col.value }}
-              </span>
-            </span>
-            <div v-else class="pointer">
-              <q-btn-dropdown
+                {{ props.row.amount.toLocaleString("en-IN") + ".00" }}
+          </q-td>
+          <q-td key="reason" :props="props">{{props.row.reason}}</q-td>
+          <q-td key="reason_name" :props="props">{{props.row.reason_name}}</q-td>
+          <q-td key="mode" :props="props">{{props.row.mode}}</q-td>
+          <q-td key="transaction_ref" :props="props">{{props.row.transaction_ref}}</q-td>
+          <q-td key="payment_date" :props="props">{{props.row.payment_date}}</q-td>
+          <q-td key="actions">
+            <q-btn-dropdown
                 dense
                 size="md"
                 flat
@@ -178,7 +197,6 @@
                 </q-list>
                 
               </q-btn-dropdown>
-            </div>
           </q-td>
         </q-tr>
         <q-tr v-show="props.expand" :props="props">
@@ -263,8 +281,8 @@
                 <div class="row">
                   <div class="text-bold">Payment Description:</div>
                 </div>
-                <div class="row wrap">
-                  <div class="col-1 wrap">{{ props.row.remark }}</div>
+                <div class="row">
+                  <div class="col">{{ props.row.remark }}</div>
                 </div>
               </q-card-section>
             </q-card>
@@ -420,6 +438,7 @@ export default {
         range: matDateRange,
         filter: matFilterAlt
       },
+      visibleColumns: ref(['party_nick_name', 'account_holder', 'amount', 'mode', 'transaction_ref', 'payment_date']),
     };
   },
   components: {
@@ -466,6 +485,22 @@ export default {
           label: "Party Legal Name",
           field: row => this.getPartyNames(row.party_id,'name'),
           sortable: true,
+        },
+        {
+          name: "account_holder",
+          align: "left",
+          label: "Bank Account",
+          field: "account_holder",
+          sortable: true,
+          currency: false,
+        },
+        {
+          name: "account_number",
+          align: "left",
+          label: "Account Number",
+          field: "account_number",
+          sortable: true,
+          currency: false,
         },
         {
           name: "amount",

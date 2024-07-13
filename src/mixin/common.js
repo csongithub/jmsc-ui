@@ -1,28 +1,54 @@
 import { date } from "quasar";
 import { LocalStorage } from "quasar";
-
+import EnumService from "../services/EnumerationService";
 export const commonMixin = {
   data() {
     return {
-      cacheChanged: false
+      cacheChanged: false,
     };
   },
   methods: {
-    updatePartyCache(party){
-      return this.$store.dispatch('party/updateParty', {party: party})
+    disableByPermission(permission) {
+      if (this.isAdmin()) return false;
+      else return !permission;
     },
-    getPartyNames(party_id, name_type){
-      let party = this.$store.getters['party/getParty'](party_id)
-      if(!party) {
-        party = this.$store.dispatch('party/getAllParty', {client_id: this.getClientId(), party_id: party_id})
+    hideByPersmission(permission) {
+      if (this.isAdmin()) return false;
+      else return !permission;
+    },
+    showByPermission(permission) {
+      if (this.isAdmin()) return true;
+      else return permission;
+    },
+    getEnumValues(enum_name) {
+      EnumService.getOptions(enum_name)
+        .then((response) => {
+          var options = response;
+          // window.alert(JSON.stringify(options))
+          return options;
+        })
+        .catch((err) => {
+          console.log(
+            "Error while updating party account linkage: " + JSON.stringify(err)
+          );
+        });
+    },
+    updatePartyCache(party) {
+      return this.$store.dispatch("party/updateParty", { party: party });
+    },
+    getPartyNames(party_id, name_type) {
+      let party = this.$store.getters["party/getParty"](party_id);
+      if (!party) {
+        party = this.$store.dispatch("party/getAllParty", {
+          client_id: this.getClientId(),
+          party_id: party_id,
+        });
       }
-      if(name_type === 'name')
-        return party.name
-      else if(name_type === 'nick_name')
-        return party.nick_name
+      if (name_type === "name") return party.name;
+      else if (name_type === "nick_name") return party.nick_name;
     },
-    updateNotificationCache(client_id){
-      this.$store.dispatch('notification/all', {client_id: client_id})
+    updateNotificationCache(client_id) {
+      this.$store.dispatch("notification/all", { client_id: client_id });
     },
     openLoginLayout() {
       this.$router.push({ name: "login" });
@@ -32,128 +58,122 @@ export const commonMixin = {
     },
     getClient() {
       let auth = LocalStorage.getItem("auth");
-      if(auth && auth.client) {
-        return auth.client
+      if (auth && auth.client) {
+        return auth.client;
       } else {
-        return null
+        return null;
       }
     },
     getUser() {
       let auth = LocalStorage.getItem("auth");
-      if(auth && auth.user) {
-        return auth.user
+      if (auth && auth.user) {
+        return auth.user;
       } else {
-        return null
+        return null;
       }
     },
-    getPermissions(){
+    getPermissions() {
       let auth = LocalStorage.getItem("auth");
-      if(auth && auth.permissions) {
-        return auth.permissions
+      if (auth && auth.permissions) {
+        return auth.permissions;
       } else {
-        return {}
+        return {};
       }
     },
-    isAdmin(){
+    isAdmin() {
       let auth = LocalStorage.getItem("auth");
-      if(auth && auth.admin)
-        return true
-      else
-        return false
+      if (auth && auth.admin) return true;
+      else return false;
     },
-    getClientId(){
-      let client = this.getClient()
-      if(client !== null){
-        return client.id
-      } 
+    getClientId() {
+      let client = this.getClient();
+      if (client !== null) {
+        return client.id;
+      }
     },
-    getLogonId(){
-      let client = this.getClient()
-      if(client !== null){
-        return client.logonId
-      } 
+    getLogonId() {
+      let client = this.getClient();
+      if (client !== null) {
+        return client.logonId;
+      }
     },
-    getToken(){
+    getToken() {
       let auth = LocalStorage.getItem("auth");
-      if(auth)
-        return auth.token
-      else
-        return ""
+      if (auth) return auth.token;
+      else return "";
     },
     getTodaysDate() {
-      var today = new Date()
-      let year = today.getFullYear()
-      let date = today.getDate()
-      let month = today.getMonth() + 1
+      var today = new Date();
+      let year = today.getFullYear();
+      let date = today.getDate();
+      let month = today.getMonth() + 1;
 
-      if(date/10 < 1) {
-        date = '0'+ date
+      if (date / 10 < 1) {
+        date = "0" + date;
       }
 
-      if(month/10 < 1) {
-        month = '0' + month
+      if (month / 10 < 1) {
+        month = "0" + month;
       }
-      return (date + '-' + month + '-' + year)
+      return date + "-" + month + "-" + year;
     },
-    isNullOrUndefined(obj){
-      if(obj === null || obj === undefined)
-        return true
-      else
-        return false
+    isNullOrUndefined(obj) {
+      if (obj === null || obj === undefined) return true;
+      else return false;
     },
-    isNotNullOrUndefined(obj){
-      return !this.isNullOrUndefined(obj)
+    isNotNullOrUndefined(obj) {
+      return !this.isNullOrUndefined(obj);
     },
-    getErrorMessage(err){
-      return err.response.data.message
+    getErrorMessage(err) {
+      return err.response.data.message;
     },
     notify(message) {
       this.$q.notify({
         message: message,
         multiLine: true,
-        color: "primary"
+        color: "primary",
       });
     },
     info(message) {
       this.$q.notify({
         message: message,
         multiLine: true,
-        color: "info"
+        color: "info",
       });
     },
     warn(message) {
       this.$q.notify({
         message: message,
         multiLine: true,
-        color: "warning"
+        color: "warning",
       });
     },
     success(message) {
       this.$q.notify({
         message: message,
         caption: "",
-        color: "primary"
+        color: "primary",
       });
     },
     fail(message) {
       this.$q.notify({
         message: message,
         caption: "",
-        type: "negative"
+        type: "negative",
       });
     },
     warning(message) {
       this.$q.notify({
         message: message,
         caption: "",
-        type: "warning"
+        type: "warning",
       });
     },
     info(message) {
       this.$q.notify({
         message: message,
         caption: "",
-        type: "info"
+        type: "info",
         //position: "top-right"
       });
     },
@@ -161,12 +181,12 @@ export const commonMixin = {
       console.log("sortby: " + col);
       this.sortparam = col;
       if (this.order === 1) {
-        list.sort(function(a, b) {
+        list.sort(function (a, b) {
           return a[col] > b[col];
         });
         this.order = 0;
       } else {
-        list.sort(function(a, b) {
+        list.sort(function (a, b) {
           return a[col] < b[col];
         });
         this.order = 1;
@@ -176,11 +196,11 @@ export const commonMixin = {
       console.log("sortby: " + col);
       this.sortparam = col;
       if (order === "asc") {
-        list.sort(function(a, b) {
+        list.sort(function (a, b) {
           return a[col] > b[col];
         });
       } else if (order === "desc") {
-        list.sort(function(a, b) {
+        list.sort(function (a, b) {
           return a[col] < b[col];
         });
       }
@@ -200,8 +220,8 @@ export const commonMixin = {
     formateDate(input_date, format) {
       var output_date = date.formatDate(input_date, format);
       return output_date;
-    }
+    },
   },
   computed: {},
-  watch: {}
+  watch: {},
 };

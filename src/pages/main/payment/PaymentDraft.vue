@@ -9,6 +9,7 @@
       :rows="drafts"
       :columns="columns"
       row-key="payment_id"
+      :visible-columns="visibleColumns"
       :loading="loading"
       :pagination="draft_pagination"
       :filter="filter_draft"
@@ -62,7 +63,7 @@
                   {{getAmountInWords('sum')}}
               </q-tooltip>
           </q-bar>
-        <q-input
+        <q-input class="q-mr-sm"
           borderless
           dense
           outlined
@@ -74,6 +75,20 @@
             <q-icon name="search" />
           </template>
         </q-input>
+        <q-select
+            v-model="visibleColumns"
+            multiple
+            outlined
+            dense
+            options-dense
+            :display-value="$q.lang.table.columns"
+            emit-value
+            map-options
+            :options="columns"
+            option-value="name"
+            options-cover
+            style="min-width: 150px"
+          />
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
@@ -97,43 +112,23 @@
               checked-icon="check"
             />
           </q-td>
-          <q-td v-for="col in props.cols" :key="col.name" :props="props">
-            <span v-if="col.value !== 'undefined'">
-              <span v-if="col.currency">
+           <q-td key="payment_id" :props="props">{{props.row.payment_id}}</q-td>
+          <q-td key="party_nick_name" :props="props">{{props.row.party_nick_name}}</q-td>
+          <q-td key="party_name" :props="props">{{props.row.party_nick_name}}</q-td>
+          <q-td key="account_holder" :props="props">{{props.row.account_holder}}</q-td>
+           <q-td key="account_number" :props="props">{{props.row.account_number}}</q-td>
+          <q-td key="amount" :props="props"> 
                 <q-icon :name="icons.rupee" />
-                 {{ col.value.toLocaleString("en-IN") + ".00"}}
-              </span>
-              <span v-else>
-                {{ col.value}}
-              </span>
-            </span>
-            <div v-else class="pointer">
-              <q-btn-dropdown
-                dense
-                size="md"
-                flat
-                v-model="menu"
-                class="text-capitalize text-caption"
-                label="Actions"
-              >
-                <q-list dense>
-                   <!-- <q-item clickable dense flat v-close-popup @click="sendForApproval(props.row)">
-                     <q-icon name="arrow_forward" class="text-green q-mr-sm" size="sm"/>
-                     <span  class="text-weight-light">Send for Approval</span>
-                  </q-item> -->
-                  <q-item clickable dense flat v-close-popup @click="updateDraft(props.row)">
-                     <q-icon name="mode"  class="text-green q-mr-sm" size="sm"/>
-                     <span  class="text-weight-light">Edit Draft</span>
-                  </q-item>
-                  <q-separator/>
-                  <q-item clickable v-close-popup @click="deleteDraft(props.row)">
-                    <q-icon name="clear" class="text-red q-mr-sm" size="sm"/>
-                     <span  class="text-weight-light">Delete Draft</span>
-                  </q-item>
-                </q-list>
-                
-              </q-btn-dropdown>
-            </div>
+                {{ props.row.amount.toLocaleString("en-IN") + ".00" }}
+          </q-td>
+          <q-td key="reason" :props="props">{{props.row.reason}}</q-td>
+          <q-td key="reason_name" :props="props">{{props.row.reason_name}}</q-td>
+          <q-td key="mode" :props="props">{{props.row.mode}}</q-td>
+          <q-td key="transaction_ref" :props="props">{{props.row.transaction_ref}}</q-td>
+          <q-td key="payment_date" :props="props">{{props.row.payment_date}}</q-td>
+          <q-td key="actions">
+              <q-icon class="pointer q-mr-xs" color="green"  name="mode" @click="updateDraft(props.row)"/>
+              <q-icon class="pointer" color="red" :name="icons.delete" @click="deleteDraft(props.row)"/>
           </q-td>
         </q-tr>
         <q-tr v-show="props.expand" :props="props">
@@ -142,7 +137,10 @@
               <q-card-section
                 v-if="isNotNullOrUndefined(props.row.from_account)"
               >
-                <div class="row bg-grey text-white text-light q-mb-sm" style="max-width: 90px;">
+                <div
+                  class="row bg-grey text-white text-light q-mb-sm"
+                  style="max-width: 90px"
+                >
                   Debit Account
                 </div>
                 <div class="row">
@@ -168,7 +166,10 @@
               </q-card-section>
               <q-separator />
               <q-card-section v-if="isNotNullOrUndefined(props.row.to_account)">
-                <div class="row bg-grey text-white text-light q-mb-sm" style="max-width: 90px;">
+                <div
+                  class="row bg-grey text-white text-light q-mb-sm"
+                  style="max-width: 90px"
+                >
                   Credit Account
                 </div>
                 <div class="row">
@@ -212,15 +213,15 @@
                 <div class="row">
                   <div class="text-bold">Payment Description:</div>
                 </div>
-                <div class="row wrap">
-                  <div class="col-1 wrap">{{ props.row.remark }}</div>
+                <div class="row">
+                  <div class="col">{{ props.row.remark }}</div>
                 </div>
               </q-card-section>
             </q-card>
           </q-td>
         </q-tr>
       </template>
-    </q-table>
+    </q-table> 
 
     <q-dialog
       v-model="update_draft"
@@ -428,6 +429,7 @@ export default {
         expendMore: matExpandMore,
         expendLess: matExpandLess,
       },
+      visibleColumns: ref(['party_nick_name', 'account_holder', 'amount', 'reason', 'reason_name', 'mode', 'transaction_ref', 'payment_date']),
     };
   },
   components: {
@@ -458,6 +460,13 @@ export default {
       draft_pagination: { rowsPerPage: 25 },
       sum: 0,
       columns: [
+         {
+          name: "payment_id",
+          align: "left",
+          label: "Payment ID",
+          field: "payment_id",
+          sortable: true,
+        },
         {
           name: "party_nick_name",
           required: true,
@@ -473,6 +482,22 @@ export default {
           label: "Party Legal Name",
           field: row => this.getPartyNames(row.party_id,'name'),
           sortable: true,
+        },
+        {
+          name: "account_holder",
+          align: "left",
+          label: "Bank Account",
+          field: "account_holder",
+          sortable: true,
+          currency: false,
+        },
+        {
+          name: "account_number",
+          align: "left",
+          label: "Account Number",
+          field: "account_number",
+          sortable: true,
+          currency: false,
         },
         {
           name: "amount",

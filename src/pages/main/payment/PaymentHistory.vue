@@ -9,6 +9,7 @@
       :rows="drafts"
       :columns="columns"
       row-key="payment_id"
+      :visible-columns="visibleColumns"
       :loading="loading"
       :pagination="draft_pagination"
       :filter="filter_draft"
@@ -38,6 +39,7 @@
           glossy
           @click="getAllDrafts()"
         />
+       
         <div class="row q-mt-sm bg-grey" v-if="filter_criteria.show">
           <q-icon :name="icons.filter" color="primary"/>
           <div class="col q-mr-sm" v-if="filter_criteria.from_account">
@@ -77,7 +79,7 @@
             >Select Payments Date or Payments Between dates</q-tooltip
           >
         </q-btn>
-        <q-input
+        <q-input class="q-mr-sm"
           borderless
           dense
           outlined
@@ -89,6 +91,20 @@
             <q-icon name="search" />
           </template>
         </q-input>
+        <q-select
+            v-model="visibleColumns"
+            multiple
+            outlined
+            dense
+            options-dense
+            :display-value="$q.lang.table.columns"
+            emit-value
+            map-options
+            :options="columns"
+            option-value="name"
+            options-cover
+            style="min-width: 150px"
+        />
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
@@ -110,39 +126,22 @@
               >
             </q-btn>
           </q-td>
-          <q-td v-for="col in props.cols" :key="col.name" :props="props">
-            <span v-if="col.value !== 'undefined'">
-              <span v-if="col.currency">
+          <q-td key="payment_id" :props="props">{{props.row.payment_id}}</q-td>
+          <q-td key="party_nick_name" :props="props">{{props.row.party_nick_name}}</q-td>
+          <q-td key="party_name" :props="props">{{props.row.party_nick_name}}</q-td>
+          <q-td key="account_holder" :props="props">{{props.row.account_holder}}</q-td>
+           <q-td key="account_number" :props="props">{{props.row.account_number}}</q-td>
+          <q-td key="amount" :props="props"> 
                 <q-icon :name="icons.rupee" />
-                {{ col.value.toLocaleString("en-IN") + ".00" }}
-              </span>
-              <span v-else>
-                {{ col.value }}
-              </span>
-            </span>
-            <div v-else class="pointer">
-              <q-btn-dropdown v-if="admin"
-                dense
-                size="md"
-                flat
-                v-model="menu"
-                class="text-capitalize text-caption"
-                label="Actions"
-              >
-                <q-list dense>
-                   <!-- <q-item clickable dense flat v-close-popup @click="sendForApproval(props.row)">
-                     <q-icon name="arrow_forward" class="text-green q-mr-sm" size="sm"/>
-                     <span  class="text-weight-light">Send for Approval</span>
-                  </q-item> -->
-                  
-                  <q-item clickable v-close-popup @click="deleteDraft(props.row)">
-                    <q-icon name="clear" class="text-red q-mr-sm" size="sm"/>
-                     <span  class="text-weight-light">Delete</span>
-                  </q-item>
-                </q-list>
-                
-              </q-btn-dropdown>
-            </div>
+                {{ props.row.amount.toLocaleString("en-IN") + ".00" }}
+          </q-td>
+          <q-td key="reason" :props="props">{{props.row.reason}}</q-td>
+          <q-td key="reason_name" :props="props">{{props.row.reason_name}}</q-td>
+          <q-td key="mode" :props="props">{{props.row.mode}}</q-td>
+          <q-td key="transaction_ref" :props="props">{{props.row.transaction_ref}}</q-td>
+          <q-td key="payment_date" :props="props">{{props.row.payment_date}}</q-td>
+          <q-td key="actions" v-if="admin">
+             <q-icon class="q-ma-sm q-pa-none pointer" color="red" :name="icons.delete" @click="deleteDraft(props.row)"/>
           </q-td>
         </q-tr>
         <q-tr v-show="props.expand" :props="props">
@@ -227,8 +226,8 @@
                 <div class="row">
                   <div class="text-bold">Payment Description:</div>
                 </div>
-                <div class="row wrap">
-                  <div class="col-1 wrap">{{ props.row.remark }}</div>
+                <div class="row">
+                  <div class="col">{{ props.row.remark }}</div>
                 </div>
               </q-card-section>
             </q-card>
@@ -347,6 +346,7 @@ import {
   matExpandLess,
   matDateRange,
   matFilterAlt,
+  matDelete,
 } from "@quasar/extras/material-icons";
 import { ref } from "vue";
 export default {
@@ -354,6 +354,9 @@ export default {
   mixins: [commonMixin],
   setup() {
     return {
+      show_payment_id: ref(false),
+      show_reason: ref(true),
+      show_payment_for: ref(true),
       selected_draft: ref([]),
       step: ref(1),
       icons: {
@@ -361,8 +364,10 @@ export default {
         expendMore: matExpandMore,
         expendLess: matExpandLess,
         range: matDateRange,
-        filter: matFilterAlt
-      }
+        filter: matFilterAlt,
+        delete: matDelete
+      },
+      visibleColumns: ref(['party_nick_name', 'account_holder', 'amount', 'mode', 'transaction_ref', 'payment_date']),
     };
   },
   components: {
@@ -381,11 +386,11 @@ export default {
       draft_pagination: { rowsPerPage: 50 },
       columns: [
         {
-          name: "payment_id",
-          align: "left",
-          label: "ID",
-          field: "payment_id",
-          sortable: true,
+           name: "payment_id",
+           align: "left",
+           label: "ID",
+           field: "payment_id",
+           sortable: true,
         },
         {
           name: "party_nick_name",
@@ -404,6 +409,22 @@ export default {
           sortable: true,
         },
         {
+          name: "account_holder",
+          align: "left",
+          label: "Bank Account",
+          field: "account_holder",
+          sortable: true,
+          currency: false,
+        },
+        {
+          name: "account_number",
+          align: "left",
+          label: "Account Number",
+          field: "account_number",
+          sortable: true,
+          currency: false,
+        },
+        {
           name: "amount",
           align: "left",
           label: "Amount",
@@ -411,7 +432,7 @@ export default {
           sortable: true,
           currency: true,
         },
-        {
+         {
           name: "reason",
           align: "left",
           label: "Reason",
@@ -442,7 +463,7 @@ export default {
         {
           name: "payment_date",
           align: "left",
-          label: "Payment Date",
+          label: "Date",
           field: "payment_date",
           sortable: true,
         },
@@ -453,7 +474,7 @@ export default {
           align: "center",
           field: "actions",
           format: (val) => `${val}`,
-        },
+        }
       ],
       drafts: [],
       loading: false,
