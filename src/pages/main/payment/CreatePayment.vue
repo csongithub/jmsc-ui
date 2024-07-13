@@ -6,6 +6,7 @@
         <div class="row">
           <div class="col-3">
             <q-select
+              :disable="disable"
               label="Select From Account"
               behavior="menu"
               dense
@@ -21,10 +22,17 @@
             <q-btn class="text-bold" color="primary" label="OR" flat />
           </div>
           <div class="col-1 q-ml-lg" v-if="from_Account !== null">
-            <q-btn class="text-bold" outline color="primary" label="Reset" @click="resetMode"/>
+            <q-btn
+              class="text-bold"
+              outline
+              color="primary"
+              label="Reset"
+              @click="resetMode"
+            />
           </div>
           <div class="col-2" v-if="from_Account === null">
             <q-btn
+              :disable="disable"
               class="text-capitalize text-weight-light"
               color="primary"
               label="Pay in Cash"
@@ -54,7 +62,9 @@
         </div>
       </q-card-section>
     </q-card>
-
+    <div class="text-red" v-if="disable">
+      You don't have permissions to create payments
+    </div>
     <q-table
       v-if="from_Account !== null"
       class="my-sticky-header-table"
@@ -76,7 +86,7 @@
         >
       </template>
       <template v-slot:top-right>
-         <q-btn
+        <q-btn
           class="text-capitalize text-weight-light q-mr-sm"
           color="primary"
           label="reload"
@@ -142,33 +152,33 @@
                   <div class="col">{{ selected_party[0].name }}</div>
                 </div>
                 <q-table
-                      class="my-sticky-header-table"
-                      title="Select Bank Account"
+                  class="my-sticky-header-table"
+                  title="Select Bank Account"
+                  dense
+                  bordered
+                  flat
+                  :rows="party_linked_accounts"
+                  :columns="party_all_account_columns"
+                  row-key="accountNumber"
+                  :filter="party_all_acc_filter"
+                  selection="single"
+                  v-model:selected="selected_party_account"
+                >
+                  <template v-slot:top-right>
+                    <q-input
+                      borderless
                       dense
-                      bordered
-                      flat
-                      :rows="party_linked_accounts"
-                      :columns="party_all_account_columns"
-                      row-key="accountNumber"
-                      :filter="party_all_acc_filter"
-                      selection="single"
-                      v-model:selected="selected_party_account"
+                      outlined
+                      debounce="300"
+                      v-model="party_all_acc_filter"
+                      placeholder="Search Account"
                     >
-                      <template v-slot:top-right>
-                        <q-input
-                          borderless
-                          dense
-                          outlined
-                          debounce="300"
-                          v-model="party_all_acc_filter"
-                          placeholder="Search Account"
-                        >
-                          <template v-slot:append>
-                            <q-icon name="search" />
-                          </template>
-                        </q-input>
+                      <template v-slot:append>
+                        <q-icon name="search" />
                       </template>
-                    </q-table>
+                    </q-input>
+                  </template>
+                </q-table>
               </div>
               <div v-else>
                 <q-table
@@ -237,7 +247,11 @@
                     outlined
                     v-model="payment_date"
                     :rules="['DD-MM-YYYY']"
-                    :label="payment_mode === 'Cash' ? 'Payment Date' : 'Transaction Date'"
+                    :label="
+                      payment_mode === 'Cash'
+                        ? 'Payment Date'
+                        : 'Transaction Date'
+                    "
                     :placeholder="'dd-mm-yyyy'"
                   >
                     <template v-slot:append>
@@ -277,7 +291,8 @@
                   </q-select>
                 </div>
                 <div class="col-3">
-                  <q-input :readonly="payment_mode === 'Cash' ? true : false"
+                  <q-input
+                    :readonly="payment_mode === 'Cash' ? true : false"
                     dense
                     outlined
                     v-model="transaction_ref"
@@ -349,7 +364,10 @@
                   @click="savePayment('DRAFT')"
                 />
                 <q-btn
-                  v-if="(payment_mode === 'Cash' && selected_party.length > 0) || selected_party_account.length > 0"
+                  v-if="
+                    (payment_mode === 'Cash' && selected_party.length > 0) ||
+                    selected_party_account.length > 0
+                  "
                   class="text-capitalize text-weight-light q-mr-sm"
                   @click="
                     step === 2
@@ -463,7 +481,7 @@ export default {
           field: (row) => row.partyName,
           format: (val) => `${val}`,
           sortable: true,
-          style: row => ('width: 10px')
+          style: (row) => "width: 10px",
         },
         {
           name: "accountHolder",
@@ -471,7 +489,7 @@ export default {
           label: "Account Holder Name",
           field: "accountHolder",
           sortable: true,
-          style: 'width: 10px'
+          style: "width: 10px",
         },
         {
           name: "accountNumber",
@@ -558,13 +576,14 @@ export default {
       payment_remark: null,
       payment_date: null,
       payment_amount: 0,
+      disable: this.disableByPermission(this.getPermissions().createPayments),
     };
   },
   methods: {
     resetMode() {
-      this.from_Account = null
-      this.selected_party = ref([])
-      this.selected_party_account = ref([])
+      this.from_Account = null;
+      this.selected_party = ref([]);
+      this.selected_party_account = ref([]);
     },
     getAmountInWords() {
       if (this.payment_amount > 0)
@@ -575,8 +594,8 @@ export default {
       return this.amount_inwords;
     },
     onStart() {
-      this.payment_date = this.getTodaysDate()
-      this.getPartyAllAccounts();
+      this.payment_date = this.getTodaysDate();
+      // this.getPartyAllAccounts();
       this.getPartyLinkedAccounts();
       this.getAllSites();
       this.getAllMachines();
@@ -602,7 +621,7 @@ export default {
     },
     getAllParties() {
       this.loading = true;
-      PartyService.all(this.client_id)
+      PartyService.allByStatus(this.client_id, "ACTIVE")
         .then((response) => {
           this.parties.splice(0, this.parties.length);
           this.parties = response;
@@ -623,26 +642,37 @@ export default {
           this.fail("Error in loading active accounts");
         });
     },
-    getPartyAllAccounts() {
-      this.loading = true;
-      PartyAccountService.getPartyAccounts(this.client_id)
-        .then((response) => {
-          this.party_all_accounts.splice(0, this.party_all_accounts.length);
-          this.party_all_accounts = response;
-          this.loading = false;
-        })
-        .catch((err) => {
-          this.loading = false;
-          this.fail("Error in loading party accounts");
-        });
-    },
+    // getPartyAllAccounts() {
+    //   this.loading = true;
+    //   PartyAccountService.getPartyAccounts(this.client_id)
+    //     .then((response) => {
+    //       this.party_all_accounts.splice(0, this.party_all_accounts.length);
+    //       this.party_all_accounts = response.filter(ac => ac.status === 'ACTIVE');
+    //       this.loading = false;
+    //     })
+    //     .catch((err) => {
+    //       this.loading = false;
+    //       this.fail("Error in loading party accounts");
+    //     });
+    // },
     getPartyLinkedAccounts() {
-      if(this.isNullOrUndefined(this.selected_party) || this.selected_party.length === 0)
-        return
-      PartyService.getPartyLinkedAccounts(this.client_id, this.selected_party[0].id)
+      if (
+        this.isNullOrUndefined(this.selected_party) ||
+        this.selected_party.length === 0
+      )
+        return;
+      PartyService.getPartyLinkedAccounts(
+        this.client_id,
+        this.selected_party[0].id
+      )
         .then((response) => {
-          this.party_linked_accounts.splice(0, this.party_all_accounts.length);
-          this.party_linked_accounts = response;
+          this.party_linked_accounts.splice(
+            0,
+            this.party_linked_accounts.length
+          );
+          this.party_linked_accounts = response.filter(
+            (ac) => ac.status === "ACTIVE"
+          );
         })
         .catch((err) => {
           this.fail("Error in loading party linked accounts");
@@ -681,8 +711,8 @@ export default {
         return;
       }
 
-      if(this.payment_date === null || this.payment_date === '') {
-        this.fail('Please enter payment date')
+      if (this.payment_date === null || this.payment_date === "") {
+        this.fail("Please enter payment date");
         return;
       }
       let payment = {
@@ -691,8 +721,6 @@ export default {
         payment_summary: null,
         payment_date: this.payment_date,
       };
-
-      
 
       if (mode === "DRAFT") {
         payment.status = "DRAFT";
@@ -705,7 +733,10 @@ export default {
           this.fail("Please select paymet mode");
           return;
         }
-        if (this.isNullOrUndefined(this.transaction_ref) && this.payment_mode !== 'Cash') {
+        if (
+          this.isNullOrUndefined(this.transaction_ref) &&
+          this.payment_mode !== "Cash"
+        ) {
           this.fail("Please enter cheque no/transaction reference number");
           return;
         }
@@ -741,7 +772,8 @@ export default {
         party_id: this.selected_party[0].id,
         party_name: this.selected_party[0].name,
         party_nick_name: this.selected_party[0].nick_name,
-        from_account_id: this.from_Account !== null ? this.from_Account.id : null,
+        from_account_id:
+          this.from_Account !== null ? this.from_Account.id : null,
         to_account_id:
           this.selected_party_account[0] != null
             ? this.selected_party_account[0].id

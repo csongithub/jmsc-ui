@@ -92,4 +92,13 @@ export default {
         return Promise.reject(err);
     });
   },
+  updateStatus(client_id, account_id, status) {
+    return api.put( '/v1/party/bankaccount/update_status/' +  client_id + '/' + account_id + '/' + status).then(response => {
+        let responseCode = response.data;
+        return responseCode;
+    }).catch(err => {
+        console.log("Error while getting payment: " + JSON.stringify(err));
+        return Promise.reject(err);
+    });
+},
 };
