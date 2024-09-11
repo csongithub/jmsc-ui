@@ -18,7 +18,13 @@
       wrap-cells
     >
       <template v-slot:loading>
-        <q-inner-loading v-if="loading" showing color="primary" label="Loading..." size="sm"/>
+        <q-inner-loading
+          v-if="loading"
+          showing
+          color="primary"
+          label="Loading..."
+          size="sm"
+        />
       </template>
       <template v-slot:header="props">
         <q-tr :props="props">
@@ -29,57 +35,64 @@
         </q-tr>
       </template>
       <template v-slot:top-left>
-        <q-btn
-          class="q-mt-sm q-mr-sm text-capitalize"
-          outline
-          color="primary"
-          icon="refresh"
-          label="Refresh"
-          size="sm"
-          glossy
-          @click="getAllDrafts()"
-        />
-       
-        <div class="row q-mt-sm bg-grey" v-if="filter_criteria.show">
-          <q-icon :name="icons.filter" color="primary"/>
-          <div class="col q-mr-sm" v-if="filter_criteria.from_account">
-            <span >{{'From A/C: ' + filter_criteria.from_account}}</span>
-          </div>
-          <div class="col q-mr-sm" v-if="filter_criteria.to_account">
-            <span >{{'To A/C: ' + filter_criteria.to_account}}</span>
-          </div>
-          <div class="col" v-if="filter_criteria.party_name">
-            <span >{{'Party Name/Nick Name: ' + filter_criteria.party_name}}</span>
-          </div>
+        <div class="row" v-if="!filterSubmit">
+          <q-select
+            dense
+            outlined
+            v-model="selectedFY"
+            :options="financialYearList"
+            label="Select FY"
+          />
+          <q-btn
+            color="primary"
+            flat
+            :icon="icons.filter"
+            @click="openFilterPanel()"
+          >
+            <q-tooltip :delay="500">Apply Filters</q-tooltip>
+          </q-btn>
         </div>
-        
+        <div class="row" v-if="filterSubmit">
+          <label>
+            <q-chip
+              removable
+              size="sm"
+              v-for="(chip, index) in chipsLabels"
+              :key="index"
+              color="primary"
+              text-color="white"
+              @remove="removeSelectedFilter(chip)"
+            >
+              {{ chip }}</q-chip
+            >
+          </label>
+          <q-btn
+            color="red"
+            label="X"
+            size="sm"
+            dense
+            round
+            flat
+            class="text-capitalize"
+            @click="removeFilterAndGetDefaultResults"
+          >
+            <q-tooltip :delay="500">Clear all filters</q-tooltip></q-btn
+          >
+          <q-btn
+            color="primary"
+            size="sm"
+            flat
+            dense
+            :icon="icons.filter"
+            @click="openFilterPanel()"
+          >
+            <q-tooltip :delay="500">Add more filters</q-tooltip>
+          </q-btn>
+        </div>
       </template>
       <template v-slot:top-right>
-        <span v-if="showLabel && range.from !== undefined">Payments Between:<b> {{range.from + ' to ' + range.to}}</b></span>
-        <span v-else-if="showLabel">Payments On : <b>{{range}}</b></span>
-        <q-btn
-          class=""
-          color="primary"
-          flat
-          :icon="icons.filter"
-          @click="openFilterWindow()"
-        >
-          <q-tooltip :delay="500"
-            >Apply Filters</q-tooltip
-          >
-        </q-btn>
-        <q-btn
-          class=""
-          color="primary"
-          flat
-          :icon="icons.range"
-          @click="showDateSelector()"
-        >
-          <q-tooltip :delay="500"
-            >Select Payments Date or Payments Between dates</q-tooltip
-          >
-        </q-btn>
-        <q-input class="q-mr-sm"
+        <q-input
+          class="q-mr-sm"
           borderless
           dense
           outlined
@@ -92,18 +105,18 @@
           </template>
         </q-input>
         <q-select
-            v-model="visibleColumns"
-            multiple
-            outlined
-            dense
-            options-dense
-            :display-value="$q.lang.table.columns"
-            emit-value
-            map-options
-            :options="columns"
-            option-value="name"
-            options-cover
-            style="min-width: 150px"
+          v-model="visibleColumns"
+          multiple
+          outlined
+          dense
+          options-dense
+          :display-value="$q.lang.table.columns"
+          emit-value
+          map-options
+          :options="columns"
+          option-value="name"
+          options-cover
+          style="min-width: 150px"
         />
       </template>
       <template v-slot:body="props">
@@ -126,22 +139,43 @@
               >
             </q-btn>
           </q-td>
-          <q-td key="payment_id" :props="props">{{props.row.payment_id}}</q-td>
-          <q-td key="party_nick_name" :props="props">{{props.row.party_nick_name}}</q-td>
-          <q-td key="party_name" :props="props">{{props.row.party_nick_name}}</q-td>
-          <q-td key="account_holder" :props="props">{{props.row.account_holder}}</q-td>
-           <q-td key="account_number" :props="props">{{props.row.account_number}}</q-td>
-          <q-td key="amount" :props="props"> 
-                <q-icon :name="icons.rupee" />
-                {{ props.row.amount.toLocaleString("en-IN") + ".00" }}
+          <q-td key="payment_id" :props="props">{{
+            props.row.payment_id
+          }}</q-td>
+          <q-td key="party_nick_name" :props="props">{{
+            props.row.party_nick_name
+          }}</q-td>
+          <q-td key="party_name" :props="props">{{
+            props.row.party_nick_name
+          }}</q-td>
+          <q-td key="account_holder" :props="props">{{
+            props.row.account_holder
+          }}</q-td>
+          <q-td key="account_number" :props="props">{{
+            props.row.account_number
+          }}</q-td>
+          <q-td key="amount" :props="props">
+            <q-icon :name="icons.rupee" />
+            {{ props.row.amount.toLocaleString("en-IN") + ".00" }}
           </q-td>
-          <q-td key="reason" :props="props">{{props.row.reason}}</q-td>
-          <q-td key="reason_name" :props="props">{{props.row.reason_name}}</q-td>
-          <q-td key="mode" :props="props">{{props.row.mode}}</q-td>
-          <q-td key="transaction_ref" :props="props">{{props.row.transaction_ref}}</q-td>
-          <q-td key="payment_date" :props="props">{{props.row.payment_date}}</q-td>
+          <q-td key="reason" :props="props">{{ props.row.reason }}</q-td>
+          <q-td key="reason_name" :props="props">{{
+            props.row.reason_name
+          }}</q-td>
+          <q-td key="mode" :props="props">{{ props.row.mode }}</q-td>
+          <q-td key="transaction_ref" :props="props">{{
+            props.row.transaction_ref
+          }}</q-td>
+          <q-td key="payment_date" :props="props">{{
+            props.row.payment_date
+          }}</q-td>
           <q-td key="actions" v-if="admin">
-             <q-icon class="q-ma-sm q-pa-none pointer" color="red" :name="icons.delete" @click="deleteDraft(props.row)"/>
+            <q-icon
+              class="q-ma-sm q-pa-none pointer"
+              color="red"
+              :name="icons.delete"
+              @click="deleteDraft(props.row)"
+            />
           </q-td>
         </q-tr>
         <q-tr v-show="props.expand" :props="props">
@@ -236,40 +270,52 @@
       </template>
     </q-table>
     <div>
-      <q-dialog v-model="selectRange" persistent ref="selectDateRef">
-        <q-card flat bordered>
-          <q-date v-model="range" range today-btn />
-          <q-card-actions align="right">
-            <q-btn
-              class="text-capitalize"
-              color="primary"
-              flat
-              @click="hideDateSelector"
-              >cancel</q-btn
-            >
-            <q-btn
-              class="text-capitalize"
-              color="primary"
-              flat
-              @click="getForSelectedRange"
-              >ok</q-btn
-            >
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
-      <q-dialog v-model="filter_window" persistent ref="filterRef">
-        <q-card flat bordered style="width: 400px; max-width: 80vw"> 
-          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
-          {{ "Apply Filters" }}
-          <q-space />
-          <q-btn dense flat icon="close" v-close-popup>
-            <q-tooltip>Close</q-tooltip>
-          </q-btn>
-        </q-bar>
+      <q-dialog
+        v-model="drawFilterPanel"
+        persistent
+        ref="filterPanelRef"
+        position="right"
+        size="lg"
+      >
+        <q-card flat bordered style="min-width: 30vw">
+          <q-bar
+            class="bg-primary glossy text-white text-weight-light text-subtitle2"
+          >
+            {{ "Apply Filters" }}
+            <q-space />
+            <q-btn dense flat icon="close" v-close-popup>
+              <q-tooltip>Close</q-tooltip>
+            </q-btn>
+          </q-bar>
           <q-card-section>
+            <div class="row">
+              <div class="col">
+                <q-radio
+                  class="q-mr-md"
+                  dense
+                  v-model="filetrOption"
+                  val="general"
+                  label="General"
+                />
+              </div>
+              <div class="col">
+                <q-radio
+                  class="q-mr-md"
+                  dense
+                  v-model="filetrOption"
+                  val="date"
+                  label="By Date or Range"
+                />
+              </div>
+            </div>
+          </q-card-section>
+          <q-card-section v-if="filetrOption === 'general'">
             <div class="row q-mb-sm">
               <div class="col">
-                <q-input dense outlined v-model="filter_criteria.from_account"
+                <q-input
+                  dense
+                  outlined
+                  v-model="filter_criteria.from_account"
                   label="From Acccount"
                   placeholder="Enter from account number"
                   full-width
@@ -278,7 +324,10 @@
             </div>
             <div class="row q-mb-sm">
               <div class="col">
-                <q-input dense outlined v-model="filter_criteria.to_account"
+                <q-input
+                  dense
+                  outlined
+                  v-model="filter_criteria.to_account"
                   label="To Acccount"
                   placeholder="Enter to account number"
                   full-width
@@ -287,29 +336,19 @@
             </div>
             <div class="row q-mb-sm">
               <div class="col">
-                <q-input dense outlined v-model="filter_criteria.party_name"
+                <q-input
+                  dense
+                  outlined
+                  v-model="filter_criteria.party_name"
                   label="Party Name / Nick Name"
                   placeholder="Enter party name or nick name"
                   full-width
                 />
               </div>
             </div>
-            <!-- <div class="row q-mb-sm">
-              <div class="col q-mr-sm">
-               <q-input dense outlined v-model="filter_criteria.range.from"
-                  label="From Date"
-                  placeholder="DD/MM/YYYY"
-                  full-width
-                />
-              </div>
-              <div class="col">
-                 <q-input dense outlined v-model="filter_criteria.range.to"
-                  label="To Date"
-                  placeholder="DD/MM/YYYY"
-                  full-width
-                />
-              </div>
-            </div> -->
+          </q-card-section>
+          <q-card-section v-else>
+            <q-date v-model="range" range landscape />
           </q-card-section>
           <q-card-actions align="right">
             <q-btn
@@ -317,21 +356,20 @@
               color="primary"
               flat
               label="Clear"
-              @click="clearFilter"/>
+              @click="clearAllFilters"
+            />
             <q-btn
               class="text-capitalize"
               color="primary"
               flat
               label="Apply Filter"
-              @click="getFilterResult"/>
-            
+              @click="getFilterResults"
+            />
           </q-card-actions>
         </q-card>
       </q-dialog>
     </div>
-    
   </div>
-  
 </template>
 
 <script>
@@ -365,19 +403,31 @@ export default {
         expendLess: matExpandLess,
         range: matDateRange,
         filter: matFilterAlt,
-        delete: matDelete
+        delete: matDelete,
       },
-      visibleColumns: ref(['party_nick_name', 'account_holder', 'amount', 'mode', 'transaction_ref', 'payment_date']),
+      visibleColumns: ref([
+        "party_nick_name",
+        "account_holder",
+        "amount",
+        "mode",
+        "transaction_ref",
+        "payment_date",
+      ]),
     };
   },
   components: {
     Payment,
   },
-  watch: {
-  },
+  watch: {},
   created() {},
   mounted() {
-    this.getAllDrafts();
+    this.prepareFYList();
+  },
+  watch: {
+    selectedFY(fy) {
+      this.setFY(fy);
+      this.getAllDrafts(fy);
+    },
   },
   data() {
     return {
@@ -386,18 +436,18 @@ export default {
       draft_pagination: { rowsPerPage: 50 },
       columns: [
         {
-           name: "payment_id",
-           align: "left",
-           label: "ID",
-           field: "payment_id",
-           sortable: true,
+          name: "payment_id",
+          align: "left",
+          label: "ID",
+          field: "payment_id",
+          sortable: true,
         },
         {
           name: "party_nick_name",
           required: true,
           label: "Party",
           align: "left",
-          field: row => this.getPartyNames(row.party_id,'nick_name'),
+          field: (row) => this.getPartyNames(row.party_id, "nick_name"),
           format: (val) => `${val}`,
           sortable: true,
         },
@@ -405,7 +455,7 @@ export default {
           name: "party_name",
           align: "left",
           label: "Party Legal Name",
-          field: row => this.getPartyNames(row.party_id,'name'),
+          field: (row) => this.getPartyNames(row.party_id, "name"),
           sortable: true,
         },
         {
@@ -432,7 +482,7 @@ export default {
           sortable: true,
           currency: true,
         },
-         {
+        {
           name: "reason",
           align: "left",
           label: "Reason",
@@ -474,7 +524,7 @@ export default {
           align: "center",
           field: "actions",
           format: (val) => `${val}`,
-        }
+        },
       ],
       drafts: [],
       loading: false,
@@ -483,10 +533,47 @@ export default {
       range: ref({ from: "", to: "" }),
       showLabel: false,
       filter_window: false,
-      filter_criteria: this.newFiletr()
+      filter_criteria: this.newFiletr(),
+      selectedFY: null,
+      financialYearList: [],
+      drawFilterPanel: false,
+      filetrOption: "general",
+      filterSubmit: false,
+      chipsLabels: [],
     };
   },
   methods: {
+    openFilterPanel() {
+      this.drawFilterPanel = true;
+    },
+    closeFilterPanel() {
+      this.drawFilterPanel = false;
+    },
+    getCurrentFinancialYear() {
+      var fiscalyear = "";
+      var today = new Date();
+      if (today.getMonth() + 1 <= 3) {
+        fiscalyear = today.getFullYear() - 1 + "-" + today.getFullYear();
+      } else {
+        fiscalyear = today.getFullYear() + "-" + (today.getFullYear() + 1);
+      }
+      return fiscalyear;
+    },
+    prepareFYList() {
+      let currentFY = this.getCurrentFinancialYear();
+
+      let currentFYStart = Number(currentFY.split("-")[0]);
+      let currentFYEnd = Number(currentFY.split("-")[1]);
+
+      this.financialYearList = [];
+      this.financialYearList.push(currentFY);
+      for (let i = 1; i <= 5; i++) {
+        var fy = currentFYStart - i + "-" + (currentFYEnd - i);
+        this.financialYearList.unshift(fy);
+      }
+      this.selectedFY = this.getFY() != null ? this.getFY() : currentFY;
+      this.setFY(this.selectedFY);
+    },
     deleteDraft(draft) {
       console.log(JSON.stringify(draft));
       this.$q
@@ -504,7 +591,7 @@ export default {
           )
             .then((response) => {
               if (response === 0) {
-                this.getAllDrafts();
+                this.getAllDrafts(this.selectedFY);
                 this.success("Payment has been deleted");
               }
             })
@@ -517,17 +604,88 @@ export default {
         .onCancel(() => {})
         .onDismiss(() => {});
     },
-    clearFilter() {
-      this.filter_criteria = this.newFiletr()
+    clearGeneralFilters() {
+      this.filter_criteria = this.newFiletr();
+    },
+
+    buildChipsLabel() {
+      this.chipsLabels = [];
+      if (
+        !this.isNullOrUndefined(this.filter_criteria.from_account) &&
+        this.filter_criteria.from_account !== ""
+      ) {
+        this.chipsLabels.push(
+          "from account:" + this.filter_criteria.from_account
+        );
+      }
+      if (
+        !this.isNullOrUndefined(this.filter_criteria.to_account) &&
+        this.filter_criteria.to_account !== ""
+      ) {
+        this.chipsLabels.push("to account:" + this.filter_criteria.to_account);
+      }
+      if (
+        !this.isNullOrUndefined(this.filter_criteria.party_name) &&
+        this.filter_criteria.party_name !== ""
+      ) {
+        this.chipsLabels.push("party name:" + this.filter_criteria.party_name);
+      }
     },
     getFilterResult() {
-      PaymentService2.getPaymentByCriteria(this.client_id, "APPROVED", this.filter_criteria)
+      this.clearFilterRange();
+
+      this.buildChipsLabel();
+      PaymentService2.getPaymentByCriteria(
+        this.client_id,
+        "APPROVED",
+        this.filter_criteria
+      )
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
           this.drafts = response;
-          this.filter_criteria.show = true
+          this.filter_criteria.show = true;
         })
         .catch((err) => {});
+    },
+    getFilterResults() {
+      this.filterSubmit = true;
+      if (this.filetrOption === "general") {
+        this.getFilterResult();
+      } else if (this.filetrOption === "date") {
+        this.getForSelectedRange();
+      }
+    },
+    removeSelectedFilter(chip) {
+      if (this.filetrOption === "date") {
+        this.removeFilterAndGetDefaultResults();
+      } else if (this.filetrOption === "general") {
+        if (chip.startsWith("from account")) {
+          this.filter_criteria.from_account = null;
+        }
+        if (chip.startsWith("to account")) {
+          this.filter_criteria.to_account = null;
+        }
+        if (chip.startsWith("party name")) {
+          this.filter_criteria.party_name = null;
+        }
+        if (
+          this.filter_criteria.from_account === null &&
+          this.filter_criteria.to_account === null &&
+          this.filter_criteria.party_name === null
+        ) {
+          this.removeFilterAndGetDefaultResults();
+        } else {
+          this.getFilterResult();
+        }
+      }
+    },
+    removeFilterAndGetDefaultResults() {
+      this.filterSubmit = false;
+      this.getAllDrafts(this.selectedFY);
+    },
+    clearAllFilters() {
+      this.clearFilterRange();
+      this.clearGeneralFilters();
     },
     newFiletr() {
       return {
@@ -537,42 +695,45 @@ export default {
         party_name: null,
         range: {
           from: null,
-          to: null
-        }
-      }
+          to: null,
+        },
+      };
     },
     openFilterWindow() {
-      this.filter_criteria.show = false
-      this.filter_window = true
+      this.filter_criteria.show = false;
+      this.filter_window = true;
     },
     hideRangeLabel() {
       this.range = { from: "", to: "" };
-      this.showLabel = false
+      // this.showLabel = false;
     },
-    showDateSelector(){
-      this.beforeShowDateSelector()
-      this.selectRange = true
+    showDateSelector() {
+      this.beforeShowDateSelector();
+      this.selectRange = true;
     },
     beforeShowDateSelector() {
-      this.hideRangeLabel()
+      this.hideRangeLabel();
     },
-    hideDateSelector(){
-      this.selectRange = false
+    clearFilterRange() {
+      this.range = { from: "", to: "" };
     },
     getForSelectedRange() {
-      this.clearFilter()
-      this.showLabel = true
+      this.clearGeneralFilters();
+      this.chipsLabels = [];
+      this.showLabel = true;
       let range = {};
       if (this.range.from !== undefined && this.range.to !== undefined) {
         range = {
           from: this.range.from,
           to: this.range.to,
         };
+        this.chipsLabels.push(range.from + " to " + range.to);
       } else {
         range = {
           from: this.range,
           to: this.range,
         };
+        this.chipsLabels.push(range.from);
       }
       let req = {
         range: range,
@@ -583,22 +744,30 @@ export default {
           this.drafts = response;
         })
         .catch((err) => {});
-        this.hideDateSelector()
     },
-    getAllDrafts() {
-      this.clearFilter()
+    getAllDrafts(fy) {
+      this.clearGeneralFilters();
+      this.clearFilterRange();
       this.loading = true;
-      this.hideRangeLabel()
-      PaymentService2.getAllDrafts(this.client_id, "APPROVED")
+      this.showLabel = false;
+
+      const yearFrom = fy.split("-")[0];
+      const yearTo = fy.split("-")[1];
+
+      let req = {
+        range: {
+          from: yearFrom + "/04/01",
+          to: yearTo + "/03/31",
+        },
+      };
+
+      PaymentService2.paymentsBetweenDates(this.client_id, "APPROVED", req)
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
           this.drafts = response;
           this.loading = false;
         })
-        .catch((err) => {
-          this.loading = false;
-          this.fail(this.getErrorMessage(err));
-        });
+        .catch((err) => {});
     },
     expandDraft(props) {
       console.log(JSON.stringify(props.row));

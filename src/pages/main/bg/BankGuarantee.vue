@@ -31,7 +31,7 @@
           size="sm"
           glossy
           @click="openDialog('add', null)"
-          :icon="icons.plus"
+          :icon="icons.add"
         />
         <q-btn
           class="q-mt-sm q-mr-sm text-capitalize"
@@ -86,8 +86,8 @@
         <q-tr :props="props">
           <q-td auto-width>
             <q-btn
-              size="sm"
               color="primary"
+              outline
               round
               dense
               flat
@@ -136,7 +136,54 @@
         </q-tr>
         <q-tr v-show="props.expand" :props="props">
           <q-td colspan="100%">
-            {{ "Upload Document Here" }}
+            <div class="row" v-if="!props.row.fileAttached">
+              <div class="col-3">
+                <q-input
+                  @update:model-value="
+                    (val) => {
+                      props.row.file = val[0];
+                    }
+                  "
+                  dense
+                  type="file"
+                />
+              </div>
+              <div class="col-2 q-ml-md" v-if="props.row.file !== null">
+                <q-btn
+                  class="text-capitalize"
+                  dense
+                  :loading="props.row.uploadingFile"
+                  color="primary"
+                  text-color="white"
+                  @click="uploadBankGuarantee(props.row)"
+                  icon="cloud_upload"
+                  label="upload"
+                />
+              </div>
+            </div>
+            <div class="row" v-else>
+              <div class="col q-ml-lg">
+                <span class="text-bold">{{ "File: " }}</span>
+                <span
+                  class="text-blue"
+                  style="cursor: pointer"
+                  @click="downloadFile(props.row)"
+                  >{{ props.row.fileName }}</span
+                >
+
+                <q-btn
+                  class="q-ml-sm"
+                  dense
+                  flat
+                  size="sm"
+                  color="primary"
+                  @click="downloadFile(props.row)"
+                  icon="cloud_download"
+                >
+                  <q-tooltip delay="100">Download this file</q-tooltip>
+                </q-btn>
+              </div>
+            </div>
           </q-td>
         </q-tr>
       </template>
@@ -434,13 +481,13 @@ import { ref } from "vue";
 import EnumService from "../../../services/EnumerationService";
 import GeneralService from "../../../services/GeneralService";
 import BankGuaranteeService from "../../../services/BankGuaranteeService";
+import FileUploadDownloadService from "../../../services/FileUploadDownloadService";
+import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 import {
-  fasPlus,
-  fasEdit,
-  fasPlusSquare,
-  fasMinusSquare,
-} from "@quasar/extras/fontawesome-v5";
-import { matCurrencyRupee } from "@quasar/extras/material-icons";
+  matCurrencyRupee,
+  matExpandCircleDown,
+  matExpandLess,
+} from "@quasar/extras/material-icons";
 import { commonMixin } from "../../../mixin/common";
 
 export default {
@@ -448,6 +495,7 @@ export default {
   mixins: [commonMixin],
   setup() {
     return {
+      file: ref(null),
       visibleColumns: ref([
         "creation_type",
         "type",
@@ -569,10 +617,10 @@ export default {
       ],
       icons: {
         rupee: matCurrencyRupee,
-        plus: fasPlus,
+        add: fasPlus,
         edit: fasEdit,
-        expand: fasPlusSquare,
-        collaps: fasMinusSquare,
+        expand: matExpandCircleDown,
+        collaps: matExpandLess,
       },
     };
   },
@@ -591,6 +639,7 @@ export default {
       myPagination: { rowsPerPage: 10 },
       bg_filter: "",
       loading: false,
+      uploadingFile: false,
       bankGuarantees: [],
       bg: this.newGuarantee(),
       open: false,
@@ -604,6 +653,36 @@ export default {
     };
   },
   methods: {
+    uploadBankGuarantee(bg) {
+      bg.uploadingFile = true;
+      FileUploadDownloadService.uploadFile(
+        bg.file,
+        this.clientId,
+        "BANK_GUARANTEE",
+        bg.id
+      )
+        .then((response) => {
+          console.log(response);
+          bg.uploadingFile = false;
+        })
+        .catch((err) => {
+          this.fail(err.message);
+        });
+    },
+    downloadFile(bg) {
+      FileUploadDownloadService.downloadFile(
+        this.clientId,
+        "BANK_GUARANTEE",
+        bg.id,
+        bg.fileName
+      )
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((err) => {
+          this.fail(err.message);
+        });
+    },
     newGuarantee() {
       return {
         clientId: this.clientId,
@@ -624,6 +703,9 @@ export default {
         chargedFromAccount: "",
         fileAttached: false,
         status: "ACTIVE",
+        file: null,
+        fileName: null,
+        contentType: null,
       };
     },
     getAll() {

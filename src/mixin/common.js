@@ -64,6 +64,17 @@ export const commonMixin = {
         return null;
       }
     },
+    setFY(selectedFY) {
+      let pref = {
+        selectedFY: selectedFY,
+      };
+      LocalStorage.set("pref", pref);
+    },
+    getFY() {
+      let pref = LocalStorage.getItem("pref");
+      if (pref && pref.selectedFY) return pref.selectedFY;
+      else return null;
+    },
     getUser() {
       let auth = LocalStorage.getItem("auth");
       if (auth && auth.user) {
