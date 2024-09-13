@@ -13,6 +13,7 @@
       :loading="loading"
       :pagination="myPagination"
       :filter="bg_filter"
+      wrap-cells
     >
       <template v-slot:loading>
         <q-inner-loading
@@ -112,20 +113,20 @@
           }}</q-td>
           <q-td key="work_name" :props="props">{{ props.row.workName }}</q-td>
           <q-td key="bank" :props="props">{{ props.row.bank }}</q-td>
-          <q-td
-            key="security"
-            :props="props"
-            :style="
-              props.row.security === 'BG_LIMIT' ? 'color: red' : 'color:green'
-            "
-            >{{ props.row.security }}</q-td
-          >
+          <q-td key="security" :props="props">{{ props.row.security }}</q-td>
           <q-td key="charge" :props="props">{{ props.row.charge }}</q-td>
           <q-td key="charged_on" :props="props">{{ props.row.chargedOn }}</q-td>
           <q-td key="charged_from_account" :props="props">{{
             props.row.chargedFromAccount
           }}</q-td>
-          <q-td key="status" :props="props">{{ props.row.status }}</q-td>
+          <q-td
+            key="status"
+            :style="
+              props.row.status === 'ACTIVE' ? 'color: green' : 'color:red'
+            "
+            :props="props"
+            >{{ props.row.status }}</q-td
+          >
           <q-td key="actions" v-if="admin">
             <q-icon
               class="q-ma-sm q-pa-none pointer"
