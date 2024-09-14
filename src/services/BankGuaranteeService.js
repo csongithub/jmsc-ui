@@ -31,4 +31,16 @@ export default {
         return Promise.reject(err);
       });
   },
+  deleteBankGuarantee(client_id, bg_id) {
+    return api
+      .delete("/v1/bank_guarantee/delete/" + client_id + "/" + bg_id)
+      .then((response) => {
+        let responseCode = response.data;
+        return responseCode;
+      })
+      .catch((err) => {
+        console.log("Error while deleting the BG: " + JSON.stringify(err));
+        return Promise.reject(err);
+      });
+  },
 };

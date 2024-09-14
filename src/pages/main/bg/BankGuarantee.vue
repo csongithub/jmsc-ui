@@ -97,10 +97,13 @@
             >
             </q-btn>
           </q-td>
-          <q-td key="creation_type" :props="props">{{
+          <!-- <q-td key="creation_type" :props="props">{{
             props.row.creationType
+          }}</q-td> -->
+          <q-td key="bg_type" :props="props">{{
+            props.row.type +
+            (props.row.creationType === "NEW" ? " (N)" : " (E)")
           }}</q-td>
-          <q-td key="type" :props="props">{{ props.row.type }}</q-td>
           <q-td key="bg_number" :props="props">{{ props.row.bgNumber }}</q-td>
           <q-td key="bg_amount" :props="props"
             ><q-icon :name="icons.rupee" />
@@ -127,9 +130,16 @@
             :props="props"
             >{{ props.row.status }}</q-td
           >
-          <q-td key="actions" v-if="admin">
+          <q-td key="actions">
             <q-icon
+              v-if="admin"
               class="q-ma-sm q-pa-none pointer"
+              color="red"
+              :name="icons.delete"
+              @click="deleteBankGuarantee(props.row)"
+            />
+            <q-icon
+              class="q-ma-none q-pa-none pointer"
               :name="icons.edit"
               @click="openDialog('edit', props.row)"
             />
@@ -447,9 +457,20 @@
                 />
               </div>
             </div>
+            <div class="row" v-if="bg.id !== null && bg.status === 'ACTIVE'">
+              <div class="col">
+                <q-checkbox
+                  class="text-red"
+                  size="sm"
+                  label="Mark this BG as closed."
+                  v-model="mark_bg_close"
+                ></q-checkbox>
+              </div>
+            </div>
             <div>
               <q-space />
               <q-btn
+                :disable="bg.status !== 'ACTIVE'"
                 dense
                 glossy
                 size="sm"
@@ -488,6 +509,7 @@ import {
   matCurrencyRupee,
   matExpandCircleDown,
   matExpandLess,
+  matDelete,
 } from "@quasar/extras/material-icons";
 import { commonMixin } from "../../../mixin/common";
 
@@ -498,44 +520,27 @@ export default {
     return {
       file: ref(null),
       visibleColumns: ref([
-        "creation_type",
-        "type",
+        "bg_type",
         "bg_number",
         "bg_amount",
         "valid_from",
         "valid_to",
-        "in_favour_of",
-        "work_name",
         "bank",
-        "security",
         "status",
       ]),
       columns: [
         {
-          name: "creation_type",
-          required: true,
-          label: "Root",
+          name: "bg_type",
           align: "left",
-          field: "creationType",
-          format: (val) => `${val}`,
-          sortable: true,
-        },
-        {
-          name: "type",
-          required: true,
           label: "Type",
-          align: "left",
           field: "type",
-          format: (val) => `${val}`,
           sortable: true,
         },
         {
           name: "bg_number",
-          required: true,
-          label: "BG Number",
           align: "left",
-          field: (row) => row.bgNumber,
-          format: (val) => `${val}`,
+          label: "BG No",
+          field: "bgNumber",
           sortable: true,
         },
         {
@@ -622,6 +627,7 @@ export default {
         edit: fasEdit,
         expand: matExpandCircleDown,
         collaps: matExpandLess,
+        delete: matDelete,
       },
     };
   },
@@ -651,6 +657,7 @@ export default {
       statusOptions: [],
       securityOptions: [],
       banks: [],
+      mark_bg_close: false,
     };
   },
   methods: {
@@ -724,6 +731,9 @@ export default {
     },
     saveBankGuarantee() {
       this.bg.clientId = this.clientId;
+      if (this.mark_bg_close) {
+        this.bg.status = "CLOSED";
+      }
       BankGuaranteeService.creatGuarantee(this.bg)
         .then((response) => {
           if (this.mode === "add") {
@@ -738,6 +748,31 @@ export default {
         .catch((err) => {
           this.fail(this.getErrorMessage(err));
         });
+    },
+    deleteBankGuarantee(row) {
+      this.$q
+        .dialog({
+          title: "Are You Sure?",
+          message: "This will delete the bg permanently.",
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          BankGuaranteeService.deleteBankGuarantee(this.clientId, row.id)
+            .then((response) => {
+              if (response === 0) {
+                this.getAll();
+                this.success("BG has been deleted");
+              }
+            })
+            .catch((err) => {
+              this.loading = false;
+              this.fail(this.getErrorMessage(err));
+            });
+        })
+        .onOk(() => {})
+        .onCancel(() => {})
+        .onDismiss(() => {});
     },
 
     beforeShow() {},
@@ -757,6 +792,7 @@ export default {
     },
     reset() {
       this.bg = this.newGuarantee();
+      this.mark_bg_close = false;
     },
     getAllEnums() {
       EnumService.getOptions("EBankGuaranteeCreationType")
