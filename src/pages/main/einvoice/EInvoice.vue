@@ -1,0 +1,871 @@
+<template>
+  <div class="row q-mt-sm">
+    <div class="col-3">
+      <q-select
+        :disable="showReset"
+        label="Select GST"
+        behavior="menu"
+        dense
+        outlined
+        v-model="selectedGst"
+        :options="gstList"
+        option-label="displayName"
+        option-value="id"
+      >
+      </q-select>
+    </div>
+    <div class="col-2 q-ml-sm">
+      <q-select
+        :disable="selectedGst === null || showReset"
+        label="Select FY"
+        behavior="menu"
+        dense
+        outlined
+        v-model="selectedFY"
+        :options="fyList"
+        option-label="displayName"
+        option-value="id"
+      >
+      </q-select>
+    </div>
+    <div class="col-2 q-ml-sm">
+      <q-select
+        :disable="selectedGst === null || selectedFY === null || showReset"
+        label="Select Month"
+        behavior="menu"
+        dense
+        outlined
+        v-model="selectedMonth"
+        :options="months"
+        option-label="displayName"
+        option-value="id"
+      >
+      </q-select>
+    </div>
+    <div class="col-2 q-ml-sm" v-if="!showReset">
+      <q-btn
+        :disable="
+          selectedGst === null ||
+          selectedFY === null ||
+          selectedMonth === null ||
+          showReset
+        "
+        class="text-capitalize text-weight-light"
+        color="primary"
+        label="Get E-invoice"
+        @click="getEInvoice()"
+      />
+    </div>
+    <div class="col-1 q-ml-sm" v-if="showReset">
+      <q-btn
+        class="text-capitalize text-weight-light"
+        color="primary"
+        label="Reset"
+        @click="resetSelection()"
+      />
+    </div>
+  </div>
+
+  <div>
+    <q-table
+      class="my-sticky-header-table"
+      title="e-Invoice List"
+      dense
+      bordered
+      flat
+      :rows="einvoiceList"
+      :columns="columns"
+      :visible-columns="visibleColumns"
+      row-key="id"
+      :loading="loading"
+      :pagination="myPagination"
+      :filter="einvoice_filter"
+      wrap-cells
+    >
+      <template v-slot:loading>
+        <q-inner-loading
+          v-if="loading"
+          showing
+          color="primary"
+          label="Loading..."
+          size="sm"
+        />
+      </template>
+      <template v-slot:top-left>
+        <q-btn
+          v-if="showReset"
+          class="q-mt-sm q-mr-sm text-capitalize"
+          color="primary"
+          label="Add"
+          size="sm"
+          glossy
+          @click="openDialog('add', null)"
+          :icon="icons.add"
+        />
+      </template>
+      <template v-slot:top-right>
+        <q-input
+          class="q-mr-sm"
+          borderless
+          dense
+          outlined
+          debounce="300"
+          v-model="einvoice_filter"
+          placeholder="Search e-Invoice"
+        >
+          <template v-slot:append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+        <q-space />
+        <q-select
+          v-model="visibleColumns"
+          multiple
+          outlined
+          dense
+          options-dense
+          :display-value="$q.lang.table.columns"
+          emit-value
+          map-options
+          :options="columns"
+          option-value="name"
+          options-cover
+          style="min-width: 150px"
+        />
+      </template>
+      <template v-slot:header="props">
+        <q-tr :props="props">
+          <q-th auto-width />
+          <q-th v-for="col in props.cols" :key="col.name" :props="props">
+            {{ col.label }}
+          </q-th>
+        </q-tr>
+      </template>
+      <template v-slot:body="props">
+        <q-tr :props="props">
+          <q-td auto-width>
+            <q-btn
+              color="primary"
+              outline
+              round
+              dense
+              flat
+              @click="props.expand = !props.expand"
+              :icon="props.expand ? icons.collaps : icons.expand"
+            >
+            </q-btn>
+          </q-td>
+
+          <q-td key="bill_date" :props="props">{{ props.row.billDate }}</q-td>
+          <q-td key="payment_date" :props="props">{{
+            props.row.paymentDate
+          }}</q-td>
+          <q-td key="cheque_amount" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.chequeAmount.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td key="gross_amount" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.grossAmount.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td key="gst_rate" :props="props">{{
+            props.row.gstRate + "%"
+          }}</q-td>
+          <q-td key="taxable_amount" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.taxableAmount.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td key="cgst" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.cgst.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td key="sgst" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.sgst.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td key="total_gst_to_pay" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.totalGstToPay.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td key="gst_deducted_at_source" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.gstDeductedAtSource.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td class="text-red" key="final_gst_to_pay" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.finalGstToPay.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td key="source_division_name" :props="props">{{
+            props.row.sourceDivisionName
+          }}</q-td>
+          <q-td key="project_name" :props="props">{{
+            props.row.projectName
+          }}</q-td>
+          <q-td key="description" :props="props">{{
+            props.row.description
+          }}</q-td>
+          <q-td key="actions">
+            <q-icon
+              v-if="admin"
+              class="q-ma-sm q-pa-none pointer"
+              color="red"
+              :name="icons.delete"
+              @click="deleteEInvoice(props.row)"
+            />
+            <q-icon
+              class="q-ma-none q-pa-none pointer"
+              :name="icons.edit"
+              @click="openDialog('edit', props.row)"
+            />
+          </q-td>
+        </q-tr>
+        <q-tr v-show="props.expand" :props="props">
+          <q-td colspan="100%">
+            <div class="row">this is expand area</div>
+          </q-td>
+        </q-tr>
+      </template>
+    </q-table>
+    <div v-if="einvoiceList.length === 0 && showReset" class="text-red q-mt-lg">
+      No e-Invoice found for selected GST, FY, and Month
+    </div>
+    <q-dialog
+      position="right"
+      v-model="open"
+      persistent
+      @before-show="beforeShow"
+      @hide="onHide"
+      ref="neweInvocieRef"
+      size="sm"
+    >
+      <q-card style="width: 250px; max-width: 40vw">
+        <q-bar
+          class="bg-primary glossy text-white text-weight-light text-subtitle2"
+        >
+          {{ "New eInvoice" }}
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip>Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+        <q-card-section>
+          <q-form
+            @submit="createInvoice"
+            @reset="resetInvocie"
+            class="q-gutter-md"
+          >
+            <div class="row">
+              <div class="col">
+                <q-select
+                  :disable="invoice.gstRate !== null"
+                  dense
+                  outlined
+                  v-model="invoice.gstRate"
+                  :options="gstRates"
+                  label="GST Rate (%)"
+                  lazy-rules
+                  :rules="[(val) => (val && val > 0) || 'Enter GST Rate']"
+                >
+                </q-select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <q-input
+                  :disable="invoice.gstRate === null"
+                  dense
+                  outlined
+                  v-model="invoice.billDate"
+                  :rules="['DD-MM-YYYY']"
+                  label="Bill Date"
+                  placeholder="dd-mm-yyyy"
+                >
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy
+                        ref="qDateProxy"
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date
+                          v-model="invoice.billDate"
+                          mask="DD-MM-YYYY"
+                          minimal
+                        />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <q-input
+                  :disable="invoice.gstRate === null"
+                  dense
+                  outlined
+                  v-model="invoice.paymentDate"
+                  :rules="['DD-MM-YYYY']"
+                  label="Payment Date"
+                  placeholder="dd-mm-yyyy"
+                >
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy
+                        ref="qDateProxy"
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date
+                          v-model="invoice.paymentDate"
+                          mask="DD-MM-YYYY"
+                          minimal
+                        />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <q-input
+                  :disable="invoice.gstRate === null"
+                  type="number"
+                  dense
+                  outlined
+                  v-model="invoice.chequeAmount"
+                  label="Cheque Amount"
+                  full-width
+                  lazy-rules
+                  :rules="[(val) => (val && val > 0) || 'Enter Cheque Amount']"
+                >
+                  <template v-slot:prepend>
+                    <q-icon :name="icons.rupee" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <q-input
+                  :disable="invoice.gstRate === null"
+                  @keydown.tab.prevent="calculate($event.target.value)"
+                  @keydown.enter.prevent="calculate($event.target.value)"
+                  @blur="calculate($event.target.value)"
+                  type="number"
+                  dense
+                  outlined
+                  v-model="invoice.grossAmount"
+                  label="Gross Amount"
+                  full-width
+                  lazy-rules
+                  :rules="[(val) => (val && val > 0) || 'Enter Gross Amount']"
+                >
+                  <template v-slot:prepend>
+                    <q-icon :name="icons.rupee" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <q-input
+                  :disable="true"
+                  type="number"
+                  dense
+                  outlined
+                  v-model="invoice.taxableAmount"
+                  label="Taxable Amount"
+                >
+                  <template v-slot:prepend>
+                    <q-icon :name="icons.rupee" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <q-input
+                  :disable="true"
+                  type="number"
+                  dense
+                  outlined
+                  v-model="invoice.totalGstToPay"
+                  label="Total GST to Pay"
+                  full-width
+                >
+                  <template v-slot:prepend>
+                    <q-icon :name="icons.rupee" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <q-input
+                  :disable="true"
+                  type="number"
+                  dense
+                  outlined
+                  v-model="invoice.gstDeductedAtSource"
+                  label="GST Deducted at Source"
+                  full-width
+                >
+                  <template v-slot:prepend>
+                    <q-icon :name="icons.rupee" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <q-input
+                  :disable="true"
+                  type="number"
+                  dense
+                  outlined
+                  v-model="invoice.finalGstToPay"
+                  label="Final GST to Pay"
+                  full-width
+                >
+                  <template v-slot:prepend>
+                    <q-icon :name="icons.rupee" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <div class="col">
+                  <q-select
+                    dense
+                    outlined
+                    v-model="invoice.sourceDivisionName"
+                    :options="divisions"
+                    label="Select Division"
+                    lazy-rules
+                    :rules="[
+                      (val) =>
+                        (val && val.length > 0) || 'Please Division Name',
+                    ]"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <q-select
+                  dense
+                  outlined
+                  v-model="invoice.projectName"
+                  :options="projects"
+                  label="Select Project"
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'Please Project Name',
+                  ]"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <q-input
+                  dense
+                  outlined
+                  v-model="invoice.description"
+                  label="Remark"
+                  full-width
+                  lazy-rules
+                  :rules="[(val) => (val && val.length > 0) || 'Enter Remark']"
+                />
+              </div>
+            </div>
+            <div>
+              <q-space />
+              <q-btn
+                dense
+                glossy
+                size="sm"
+                :label="mode === 'add' ? 'Create' : 'Update'"
+                type="submit"
+                color="primary"
+                class="text-capitalize q-px-md"
+              />
+
+              <q-btn
+                v-if="mode === 'add'"
+                dense
+                glossy
+                size="sm"
+                label="Reset"
+                type="reset"
+                class="text-capitalize q-px-md q-mx-sm"
+              />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+    <!-- {{ JSON.stringify(invoice) }} -->
+  </div>
+</template>
+
+<script>
+import { ref } from "vue";
+
+import EnumService from "../../../services/EnumerationService";
+import GeneralService from "../../../services/GeneralService";
+import EInvoiceServcie from "../../../services/EInvoiceServcie";
+import { commonMixin } from "../../../mixin/common";
+import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
+import {
+  matCurrencyRupee,
+  matExpandCircleDown,
+  matExpandLess,
+  matDelete,
+} from "@quasar/extras/material-icons";
+export default {
+  name: "eInvoice",
+  mixins: [commonMixin],
+  setup() {
+    return {
+      visibleColumns: ref([
+        "payment_date",
+        "cheque_amount",
+        "gross_amount",
+        "taxable_amount",
+        "gst_rate",
+        "total_gst_to_pay",
+        "gst_deducted_at_source",
+        "final_gst_to_pay",
+        "source_division_name",
+      ]),
+      columns: [
+        {
+          name: "bill_date",
+          align: "left",
+          label: "Bill Date",
+          field: "billDate",
+          sortable: true,
+        },
+        {
+          name: "payment_date",
+          align: "left",
+          label: "Payment Date",
+          field: "paymentDate",
+          sortable: true,
+        },
+        {
+          name: "cheque_amount",
+          align: "left",
+          label: "Cheque",
+          field: "chequeAmount",
+          sortable: true,
+        },
+        {
+          name: "gross_amount",
+          align: "left",
+          label: "Gorss",
+          field: "grossAmount",
+          sortable: true,
+        },
+        {
+          name: "gst_rate",
+          align: "left",
+          label: "GST Rate",
+          field: "gstRate",
+          sortable: true,
+        },
+        {
+          name: "taxable_amount",
+          align: "left",
+          label: "Taxable",
+          field: "taxableAmount",
+          sortable: true,
+        },
+
+        {
+          name: "cgst",
+          align: "left",
+          label: "CGST",
+          field: "cgst",
+          sortable: true,
+        },
+        {
+          name: "sgst",
+          align: "left",
+          label: "SGST",
+          field: "sgst",
+          sortable: true,
+        },
+        {
+          name: "total_gst_to_pay",
+          align: "left",
+          label: "Total GST",
+          field: "totalGstToPay",
+          sortable: true,
+        },
+        {
+          name: "gst_deducted_at_source",
+          align: "left",
+          label: "GST Deducted at Source",
+          field: "gstDeductedAtSource",
+          sortable: true,
+        },
+        {
+          name: "final_gst_to_pay",
+          align: "left",
+          label: "Final GST to Pay",
+          field: "finalGstToPay",
+          sortable: true,
+        },
+        {
+          name: "source_division_name",
+          align: "left",
+          label: "Source Division",
+          field: "sourceDivisionName",
+          sortable: true,
+        },
+        {
+          name: "project_name",
+          align: "left",
+          label: "Work Name",
+          field: "projectName",
+          sortable: true,
+        },
+        {
+          name: "description",
+          align: "left",
+          label: "Remark",
+          field: "description",
+          sortable: true,
+        },
+      ],
+      icons: {
+        rupee: matCurrencyRupee,
+        add: fasPlus,
+        edit: fasEdit,
+        expand: matExpandCircleDown,
+        collaps: matExpandLess,
+        delete: matDelete,
+      },
+    };
+  },
+  watch: {},
+  created() {},
+  mounted() {},
+  components: {},
+  data() {
+    return {
+      clientId: this.getClientId(),
+      admin: this.isAdmin(),
+      myPagination: { rowsPerPage: 10 },
+      einvoiceList: [],
+      einvoice_filter: "",
+      loading: false,
+      fyList: this.getFYList(),
+      selectedFY: null,
+      months: this.getMonths(),
+      selectedMonth: null,
+      gstList: this.getGSTList(),
+      selectedGst: null,
+      showReset: false,
+      open: false,
+      invoice: {},
+      gstRates: [12, 18],
+      projects: this.getProjects(),
+      divisions: this.getDivisions(),
+    };
+  },
+  methods: {
+    newInvoice() {
+      return {
+        clientId: this.clientId,
+        id: null,
+        gstState: this.selectedGst,
+        fy: this.selectedFY,
+        month: this.selectedMonth,
+        billDate: null,
+        paymentDate: null,
+        chequeAmount: null,
+        grossAmount: null,
+        taxableAmount: null,
+        gstRate: null,
+        cgst: null,
+        sgst: null,
+        totalGstToPay: null,
+        gstDeductedAtSource: null,
+        finalGstToPay: null,
+        sourceDivisionName: "",
+        projectName: "",
+        description: "",
+      };
+    },
+    onHide() {
+      this.resetInvocie();
+    },
+    resetInvocie() {
+      this.invoice = this.newInvoice();
+    },
+    createInvoice() {
+      EInvoiceServcie.createOrUpdate(this.invoice)
+        .then((response) => {
+          if (this.mode === "add") {
+            this.success("e-Invoice Created Successfully");
+          } else if (this.mode === "edit") {
+            this.success("e-Invoice Updated Successfully");
+          }
+          this.getAll();
+          this.open = false;
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
+    },
+    getAll() {
+      EInvoiceServcie.getAllForMonths(
+        this.clientId,
+        this.selectedGst,
+        this.selectedFY,
+        this.selectedMonth
+      )
+        .then((response) => {
+          this.einvoiceList = [];
+          this.einvoiceList = response;
+          console.log("All: " + JSON.stringify(this.einvoiceList));
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
+    },
+    deleteEInvoice(row) {
+      this.$q
+        .dialog({
+          title: "Are You Sure?",
+          message: "This will delete the e-Invoice permanently.",
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          EInvoiceServcie.deleteEInvoice(this.clientId, row.id)
+            .then((response) => {
+              if (response === 0) {
+                this.getAll();
+                this.success("e-Invoice has been deleted");
+              }
+            })
+            .catch((err) => {
+              this.loading = false;
+              this.fail(this.getErrorMessage(err));
+            });
+        })
+        .onOk(() => {})
+        .onCancel(() => {})
+        .onDismiss(() => {});
+    },
+    calculate(value) {
+      var grossValue = Number(value);
+      var taxable = 0;
+      var gst = 0;
+      if (this.invoice.gstRate === 18) {
+        taxable = Number(grossValue / 1.18).toFixed(2);
+        gst = Number(taxable * 0.18).toFixed(2);
+      } else if (this.invoice.gstRate === 12) {
+        taxable = Number(grossValue / 1.12).toFixed(2);
+        gst = Number(taxable * 0.12).toFixed(2);
+      }
+      this.invoice.taxableAmount = taxable;
+      this.invoice.cgst = Number(gst / 2).toFixed(2);
+      this.invoice.sgst = Number(gst / 2).toFixed(2);
+      this.invoice.totalGstToPay = gst;
+      this.invoice.gstDeductedAtSource = Number(grossValue * 0.02).toFixed(2);
+      this.invoice.finalGstToPay = Number(
+        this.invoice.totalGstToPay - this.invoice.gstDeductedAtSource
+      ).toFixed(2);
+    },
+    openDialog(mode, invoice) {
+      this.mode = mode;
+      if (mode === "add") {
+        this.dialogLabel = "New e-Invocie";
+        this.invoice = this.newInvoice();
+      } else if (mode === "edit") {
+        this.dialogLabel = "Update e-Invocie";
+        this.invoice = invoice;
+      }
+      this.open = true;
+    },
+    getDivisions() {
+      GeneralService.entry("DIVISIONS")
+        .then((response) => {
+          this.divisions = [];
+          this.divisions = response;
+        })
+        .catch((err) => {});
+    },
+    getProjects() {
+      GeneralService.entry("PROJECTS")
+        .then((response) => {
+          this.projects = [];
+          this.projects = response;
+        })
+        .catch((err) => {});
+    },
+    getGSTList() {
+      GeneralService.entry("GST")
+        .then((response) => {
+          this.gstList = [];
+          this.gstList = response;
+        })
+        .catch((err) => {});
+    },
+    getFYList() {
+      GeneralService.entry("EINVOICE_YEARS")
+        .then((response) => {
+          this.fyList = [];
+          this.fyList = response;
+        })
+        .catch((err) => {});
+    },
+    getMonths() {
+      EnumService.getOptions("EFyMonths")
+        .then((response) => {
+          this.months = [];
+          this.months = response;
+        })
+        .catch((err) => {});
+    },
+    getEInvoice() {
+      this.getAll();
+      this.showReset = true;
+    },
+    resetSelection() {
+      this.showReset = false;
+      (this.selectedGst = null),
+        (this.selectedFY = null),
+        (this.selectedMonth = null);
+      this.einvoiceList = [];
+    },
+  },
+};
+</script>
+
+<style>
+.jmsc-table-header {
+  border-bottom: 0.2px solid rgb(0, 0, 0);
+}
+.jmsc-table {
+  border-bottom: 0.2px solid rgb(0, 0, 0);
+}
+</style>

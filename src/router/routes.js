@@ -89,6 +89,18 @@ const routes = [
         },
       },
       {
+        name: "einvoice",
+        path: "/einvoice",
+        component: () => import("src/pages/main/einvoice/EInvoice.vue"),
+        meta: {
+          moduleName: "Banking",
+          breadcrumbs: [
+            { label: "eInvoice", routName: "" },
+            { label: "eInvoice", routName: "einvoice" },
+          ],
+        },
+      },
+      {
         name: "allCF",
         path: "/all_cf",
         component: () => import("src/pages/main/cf/AllCF.vue"),

@@ -818,7 +818,7 @@ export default {
         .catch((err) => {});
     },
     getBanks() {
-      GeneralService.entry("Bank")
+      GeneralService.entry("BANK")
         .then((response) => {
           this.banks = [];
           this.banks = response;
