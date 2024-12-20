@@ -229,7 +229,110 @@
         </q-tr>
         <q-tr v-show="props.expand" :props="props">
           <q-td colspan="100%">
-            <div class="row">this is expand area</div>
+            <div class="row" v-if="!props.row.invoiceAttached">
+              <div class="col-2">Upload e-Invoice</div>
+              <div class="col-3">
+                <q-input
+                  @update:model-value="
+                    (val) => {
+                      props.row.invoiceFile = val[0];
+                    }
+                  "
+                  dense
+                  type="file"
+                />
+              </div>
+              <div class="col-2 q-ml-md">
+                <q-btn
+                  size="sm"
+                  class="text-capitalize"
+                  dense
+                  :loading="props.row.uploadingInvoice"
+                  color="primary"
+                  text-color="white"
+                  @click="uploadInvoice(props.row, 'EINVOICE')"
+                  icon="cloud_upload"
+                  label="upload"
+                />
+              </div>
+            </div>
+            <div class="row" v-else>
+              <div class="col q-ml-lg">
+                <span class="text-bold">{{ "e-Invoice: " }}</span>
+                <span
+                  class="text-blue"
+                  style="cursor: pointer"
+                  @click="downloadInvoice(props.row, 'EINVOICE')"
+                  >{{ props.row.invoiceFileName }}</span
+                >
+
+                <q-btn
+                  class="q-ml-sm"
+                  dense
+                  flat
+                  size="sm"
+                  color="primary"
+                  @click="downloadInvoice(props.row, 'EINVOICE')"
+                  icon="cloud_download"
+                >
+                  <q-tooltip delay="100">Download e-Invoice</q-tooltip>
+                </q-btn>
+              </div>
+            </div>
+          </q-td>
+        </q-tr>
+        <q-tr v-show="props.expand" :props="props">
+          <q-td colspan="100%">
+            <div class="row" v-if="!props.row.memoAttached">
+              <div class="col-2">Upload Memo Bill</div>
+              <div class="col-3">
+                <q-input
+                  @update:model-value="
+                    (val) => {
+                      props.row.invoiceMemo = val[0];
+                    }
+                  "
+                  dense
+                  type="file"
+                />
+              </div>
+              <div class="col-2 q-ml-md">
+                <q-btn
+                  size="sm"
+                  class="text-capitalize"
+                  dense
+                  :loading="props.row.uploadingMemo"
+                  color="primary"
+                  text-color="white"
+                  @click="uploadInvoice(props.row, 'EINVOICE_MEMO')"
+                  icon="cloud_upload"
+                  label="upload"
+                />
+              </div>
+            </div>
+            <div class="row" v-else>
+              <div class="col q-ml-lg">
+                <span class="text-bold">{{ "Memo Bill: " }}</span>
+                <span
+                  class="text-blue"
+                  style="cursor: pointer"
+                  @click="downloadInvoice(props.row, 'EINVOICE_MEMO')"
+                  >{{ props.row.memoFileName }}</span
+                >
+
+                <q-btn
+                  class="q-ml-sm"
+                  dense
+                  flat
+                  size="sm"
+                  color="primary"
+                  @click="downloadInvoice(props.row, 'EINVOICE_MEMO')"
+                  icon="cloud_download"
+                >
+                  <q-tooltip delay="100">Download Payment Memo</q-tooltip>
+                </q-btn>
+              </div>
+            </div>
           </q-td>
         </q-tr>
       </template>
@@ -528,6 +631,7 @@ import { ref } from "vue";
 import EnumService from "../../../services/EnumerationService";
 import GeneralService from "../../../services/GeneralService";
 import EInvoiceServcie from "../../../services/EInvoiceServcie";
+import FileUploadDownloadService from "../../../services/FileUploadDownloadService";
 import { commonMixin } from "../../../mixin/common";
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 import {
@@ -690,6 +794,62 @@ export default {
     };
   },
   methods: {
+    uploadInvoice(invoice, fileType) {
+      // invoice.uploadingMemo = false;
+      // invoice.uploadingInvoice = false;
+      var file = null;
+      if (fileType === "EINVOICE") {
+        invoice.uploadingInvoice = true;
+        file = invoice.invoiceFile;
+      }
+      if (fileType === "EINVOICE_MEMO") {
+        invoice.uploadingMemo = true;
+        file = invoice.invoiceMemo;
+      }
+      FileUploadDownloadService.uploadFile(
+        file,
+        this.clientId,
+        fileType,
+        invoice.id
+      )
+        .then((response) => {
+          console.log(response);
+          if (fileType === "EINVOICE") {
+            invoice.uploadingInvoice = false;
+          }
+          if (fileType === "EINVOICE_MEMO") {
+            invoice.uploadingMemo = false;
+          }
+          this.getAll();
+        })
+        .catch((err) => {
+          this.fail(err.message);
+          if (fileType === "EINVOICE") {
+            invoice.uploadingInvoice = false;
+          }
+          if (fileType === "EINVOICE_MEMO") {
+            invoice.uploadingMemo = false;
+          }
+        });
+    },
+    downloadInvoice(invoice, fileType) {
+      let fileName =
+        fileType === "EINVOICE_MEMO"
+          ? invoice.memoFileName
+          : invoice.invoiceFileName;
+      FileUploadDownloadService.downloadFile(
+        this.clientId,
+        fileType,
+        invoice.id,
+        fileName
+      )
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((err) => {
+          this.fail(err.message);
+        });
+    },
     newInvoice() {
       return {
         clientId: this.clientId,
