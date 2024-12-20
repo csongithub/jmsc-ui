@@ -1,5 +1,38 @@
 <template>
-  <div class="row q-mt-sm">
+  <div class="row q-mt-sm q-mb-lg">
+    <div class="col">
+      <q-radio
+        class="q-mr-md"
+        dense
+        v-model="viewMode"
+        val="create"
+        label="Create or Update"
+      />
+      <q-radio
+        class="q-mr-md"
+        dense
+        v-model="viewMode"
+        val="search_fy"
+        label="Search by FY (Turn Over)"
+      />
+      <q-radio
+        class="q-mr-md"
+        dense
+        v-model="viewMode"
+        val="search_gst_fy"
+        label="Search by GST & FY"
+      />
+      <q-radio
+        class="q-mr-md"
+        dense
+        v-model="viewMode"
+        val="search_fy_month"
+        label="Search by FY and Month"
+      />
+    </div>
+  </div>
+
+  <div class="row q-mt-sm" v-if="viewMode === 'create'">
     <div class="col-3">
       <q-select
         :disable="showReset"
@@ -65,7 +98,146 @@
       />
     </div>
   </div>
+  <div class="row q-mt-sm" v-if="viewMode === 'search_fy'">
+    <div class="col-2 q-ml-sm">
+      <q-select
+        label="Select FY"
+        behavior="menu"
+        dense
+        outlined
+        v-model="selectedFY"
+        :options="fyList"
+        option-label="displayName"
+        option-value="id"
+      >
+      </q-select>
+    </div>
+    <div class="col-2 q-ml-sm">
+      <q-btn
+        class="text-capitalize text-weight-light"
+        color="primary"
+        label="Get E-invoice"
+        @click="getAllForFy()"
+      />
+    </div>
+  </div>
+  <div class="row q-mt-sm" v-if="viewMode === 'search_gst_fy'">
+    <div class="col-3">
+      <q-select
+        label="Select GST"
+        behavior="menu"
+        dense
+        outlined
+        v-model="selectedGst"
+        :options="gstList"
+        option-label="displayName"
+        option-value="id"
+      >
+      </q-select>
+    </div>
+    <div class="col-2 q-ml-sm">
+      <q-select
+        label="Select FY"
+        behavior="menu"
+        dense
+        outlined
+        v-model="selectedFY"
+        :options="fyList"
+        option-label="displayName"
+        option-value="id"
+      >
+      </q-select>
+    </div>
 
+    <div class="col-2 q-ml-sm" v-if="!showReset">
+      <q-btn
+        class="text-capitalize text-weight-light"
+        color="primary"
+        label="Get E-invoice"
+        @click="getAllForGstAndFy()"
+      />
+    </div>
+  </div>
+  <div class="row q-mt-sm" v-if="viewMode === 'search_fy_month'">
+    <div class="col-2 q-ml-sm">
+      <q-select
+        label="Select FY"
+        behavior="menu"
+        dense
+        outlined
+        v-model="selectedFY"
+        :options="fyList"
+        option-label="displayName"
+        option-value="id"
+      >
+      </q-select>
+    </div>
+    <div class="col-2 q-ml-sm">
+      <q-select
+        label="Select Month"
+        behavior="menu"
+        dense
+        outlined
+        v-model="selectedMonth"
+        :options="months"
+        option-label="displayName"
+        option-value="id"
+      >
+      </q-select>
+    </div>
+    <div class="col-2 q-ml-sm" v-if="!showReset">
+      <q-btn
+        class="text-capitalize text-weight-light"
+        color="primary"
+        label="Get E-invoice"
+        @click="getAllForFyAndMonth()"
+      />
+    </div>
+  </div>
+  <div class="q-mt-xs q-ml-sm bg-teal-1" v-if="totalGrossValue > 0">
+    <div class="row">
+      <div class="col text-bold">
+        {{ viewMode === "search_fy" ? "Turn Over (Gross)" : "Gross Amount" }}
+      </div>
+      <div class="col text-bold">Cheque Amount</div>
+      <div class="col text-bold">Taxable Amount</div>
+      <div class="col text-bold">GST Applicable</div>
+      <div class="col text-bold">GST Deducted at Source</div>
+      <div class="col text-bold">Final GST Liability to Pay</div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <q-icon :name="icons.rupee" />{{
+          totalGrossValue.toLocaleString("en-IN")
+        }}
+      </div>
+      <div class="col">
+        <q-icon :name="icons.rupee" />{{
+          totalChequeValue.toLocaleString("en-IN")
+        }}
+      </div>
+      <div class="col">
+        <q-icon :name="icons.rupee" />{{
+          totalTaxableValue.toLocaleString("en-IN")
+        }}
+      </div>
+      <div class="col">
+        <q-icon :name="icons.rupee" />{{
+          totalGstToPay.toLocaleString("en-IN")
+        }}
+      </div>
+      <div class="col">
+        <q-icon :name="icons.rupee" />
+        {{ totalGstDeductedAtSource.toLocaleString("en-IN") }}
+      </div>
+      <div class="col text-red text-bold">
+        <q-icon :name="icons.rupee" />{{
+          totalGSTLiability.toLocaleString("en-IN")
+        }}
+      </div>
+    </div>
+  </div>
+  <q-separator />
   <div>
     <q-table
       class="my-sticky-header-table"
@@ -767,7 +939,12 @@ export default {
       },
     };
   },
-  watch: {},
+  watch: {
+    viewMode(val) {
+      this.resetSelection();
+      this.resetValues();
+    },
+  },
   created() {},
   mounted() {},
   components: {},
@@ -785,15 +962,35 @@ export default {
       selectedMonth: null,
       gstList: this.getGSTList(),
       selectedGst: null,
+      mode: "add",
       showReset: false,
       open: false,
       invoice: {},
       gstRates: [12, 18],
       projects: this.getProjects(),
       divisions: this.getDivisions(),
+      viewMode: "create",
+      totalGrossValue: 0,
+      totalChequeValue: 0,
+      totalTaxableValue: 0,
+      totalGstToPay: 0,
+      totalGstDeductedAtSource: 0,
+      totalGSTLiability: 0,
     };
   },
   methods: {
+    updateValue(invoices) {
+      this.resetValues();
+      invoices.forEach((invoice) => {
+        this.totalGrossValue = this.totalGrossValue + invoice.grossAmount;
+        this.totalChequeValue = this.totalChequeValue + invoice.chequeAmount;
+        this.totalTaxableValue = this.totalTaxableValue + invoice.taxableAmount;
+        this.totalGstToPay = this.totalGstToPay + invoice.totalGstToPay;
+        this.totalGstDeductedAtSource =
+          this.totalGstDeductedAtSource + invoice.gstDeductedAtSource;
+        this.totalGSTLiability = this.totalGSTLiability + invoice.finalGstToPay;
+      });
+    },
     uploadInvoice(invoice, fileType) {
       // invoice.uploadingMemo = false;
       // invoice.uploadingInvoice = false;
@@ -879,6 +1076,14 @@ export default {
     resetInvocie() {
       this.invoice = this.newInvoice();
     },
+    resetValues() {
+      this.totalGrossValue = 0;
+      this.totalChequeValue = 0;
+      this.totalTaxableValue = 0;
+      this.totalGstToPay = 0;
+      this.totalGstDeductedAtSource = 0;
+      this.totalGSTLiability = 0;
+    },
     createInvoice() {
       EInvoiceServcie.createOrUpdate(this.invoice)
         .then((response) => {
@@ -904,7 +1109,52 @@ export default {
         .then((response) => {
           this.einvoiceList = [];
           this.einvoiceList = response;
-          console.log("All: " + JSON.stringify(this.einvoiceList));
+          this.updateValue(this.einvoiceList);
+          // console.log("All: " + JSON.stringify(this.einvoiceList));
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
+    },
+    getAllForFy() {
+      EInvoiceServcie.getAllForFy(this.clientId, this.selectedFY)
+        .then((response) => {
+          this.einvoiceList = [];
+          this.einvoiceList = response;
+          this.updateValue(this.einvoiceList);
+          // console.log("All: " + JSON.stringify(this.einvoiceList));
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
+    },
+    getAllForGstAndFy() {
+      EInvoiceServcie.getAllForGstAndFy(
+        this.clientId,
+        this.selectedGst,
+        this.selectedFY
+      )
+        .then((response) => {
+          this.einvoiceList = [];
+          this.einvoiceList = response;
+          this.updateValue(this.einvoiceList);
+          // console.log("All: " + JSON.stringify(this.einvoiceList));
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
+    },
+    getAllForFyAndMonth() {
+      EInvoiceServcie.getAllForFyAndMonth(
+        this.clientId,
+        this.selectedFY,
+        this.selectedMonth
+      )
+        .then((response) => {
+          this.einvoiceList = [];
+          this.einvoiceList = response;
+          this.updateValue(this.einvoiceList);
+          // console.log("All: " + JSON.stringify(this.einvoiceList));
         })
         .catch((err) => {
           this.fail(this.getErrorMessage(err));
@@ -1027,5 +1277,11 @@ export default {
 }
 .jmsc-table {
   border-bottom: 0.2px solid rgb(0, 0, 0);
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px;
 }
 </style>

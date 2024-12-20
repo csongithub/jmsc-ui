@@ -29,6 +29,48 @@ export default {
         return Promise.reject(err);
       });
   },
+  getAllForFy(clientId, fy) {
+    return api
+      .get("/v1/einvoice/" + clientId + "/" + fy)
+      .then((response) => {
+        let records = response.data;
+        return records;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting eInvocies: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
+  getAllForGstAndFy(clientId, gst, fy) {
+    return api
+      .get("/v1/einvoice/" + clientId + "/" + gst + "/" + fy)
+      .then((response) => {
+        let records = response.data;
+        return records;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting eInvocies: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
+  getAllForFyAndMonth(clientId, fy, month) {
+    return api
+      .get("/v1/einvoice/by_fy_month/" + clientId + "/" + fy + "/" + month)
+      .then((response) => {
+        let records = response.data;
+        return records;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting eInvocies: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
   deleteEInvoice(client_id, invoice_id) {
     return api
       .delete("/v1/einvoice/delete/" + client_id + "/" + invoice_id)
