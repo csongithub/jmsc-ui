@@ -384,7 +384,7 @@
           <q-td key="description" :props="props">{{
             props.row.description
           }}</q-td>
-          <q-td key="actions">
+          <q-td key="actions" v-if="viewMode === 'create'">
             <q-icon
               v-if="admin"
               class="q-ma-sm q-pa-none pointer"
@@ -690,7 +690,11 @@
             <div class="row">
               <div class="col">
                 <q-input
-                  :disable="true"
+                  @keydown.tab.prevent="calculateFinalGST($event.target.value)"
+                  @keydown.enter.prevent="
+                    calculateFinalGST($event.target.value)
+                  "
+                  @blur="calculateFinalGST($event.target.value)"
                   type="number"
                   dense
                   outlined
@@ -1203,6 +1207,11 @@ export default {
       this.invoice.gstDeductedAtSource = Number(grossValue * 0.02).toFixed(2);
       this.invoice.finalGstToPay = Number(
         this.invoice.totalGstToPay - this.invoice.gstDeductedAtSource
+      ).toFixed(2);
+    },
+    calculateFinalGST(value) {
+      this.invoice.finalGstToPay = Number(
+        this.invoice.totalGstToPay - value
       ).toFixed(2);
     },
     openDialog(mode, invoice) {
