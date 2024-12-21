@@ -34,7 +34,7 @@
           @click="openDialog('add', null)"
           :icon="icons.add"
         />
-        <q-btn
+        <!-- <q-btn
           class="q-mt-sm q-mr-sm text-capitalize"
           outline
           color="primary"
@@ -43,7 +43,7 @@
           size="sm"
           glossy
           @click="getAll()"
-        />
+        /> -->
       </template>
       <template v-slot:top-right>
         <q-input
@@ -101,16 +101,19 @@
             props.row.creationType
           }}</q-td> -->
           <q-td key="bg_type" :props="props">{{
-            props.row.type +
-            (props.row.creationType === "NEW" ? " (N)" : " (E)")
+            (props.row.type === "BID_SECURITY" ? "BID" : "PER") +
+            (props.row.creationType === "NEW" ? " -N" : " -E")
           }}</q-td>
           <q-td key="bg_number" :props="props">{{ props.row.bgNumber }}</q-td>
           <q-td key="bg_amount" :props="props"
             ><q-icon :name="icons.rupee" />
             {{ props.row.bgAmount.toLocaleString("en-IN") + ".00" }}</q-td
           >
-          <q-td key="valid_from" :props="props">{{ props.row.validFrom }}</q-td>
-          <q-td key="valid_to" :props="props"> {{ props.row.validTo }}</q-td>
+          <q-td key="validity" :props="props">{{
+            props.row.validFrom + " To " + props.row.validTo
+          }}</q-td>
+          <!-- <q-td key="valid_from" :props="props">{{ props.row.validFrom }}</q-td>
+          <q-td key="valid_to" :props="props"> {{ props.row.validTo }}</q-td> -->
           <q-td key="in_favour_of" :props="props">{{
             props.row.inFavourOf
           }}</q-td>
@@ -523,8 +526,8 @@ export default {
         "bg_type",
         "bg_number",
         "bg_amount",
-        "valid_from",
-        "valid_to",
+        "validity",
+        "work_name",
         "bank",
         "status",
       ]),
@@ -551,17 +554,10 @@ export default {
           sortable: true,
         },
         {
-          name: "valid_from",
+          name: "validity",
           align: "left",
-          label: "From Date",
-          field: "validFrom",
-          sortable: true,
-        },
-        {
-          name: "valid_to",
-          align: "left",
-          label: "To Date",
-          field: "validTo",
+          label: "Validity",
+          field: (row) => row.validFrom + " To " + row.validTo,
           sortable: true,
         },
         {
@@ -672,6 +668,7 @@ export default {
         .then((response) => {
           console.log(response);
           bg.uploadingFile = false;
+          this.getAll();
         })
         .catch((err) => {
           this.fail(err.message);
@@ -821,7 +818,7 @@ export default {
         .catch((err) => {});
     },
     getBanks() {
-      GeneralService.entry("Bank")
+      GeneralService.entry("BANK")
         .then((response) => {
           this.banks = [];
           this.banks = response;

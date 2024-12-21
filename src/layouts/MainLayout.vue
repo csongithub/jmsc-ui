@@ -175,6 +175,12 @@
               <q-item-section>Loans</q-item-section>
             </q-item>
           </q-expansion-item>
+          <q-item exact clickable v-ripple to="/einvoice">
+            <q-item-section avatar>
+              <q-icon :name="icons.invoice" />
+            </q-item-section>
+            <q-item-section>eInvoice</q-item-section>
+          </q-item>
           <q-expansion-item
             dense
             dense-toggle
@@ -302,13 +308,11 @@ import {
   fasSpinner,
   fasUser,
   fasFolder,
+  fasFileInvoice,
 } from "@quasar/extras/fontawesome-v5";
 import {
   matCurrencyRupee,
-  matCreditCard,
-  matAccountBox,
   matAccountCircle,
-  matCommentBank,
 } from "@quasar/extras/material-icons";
 import NotificationService from "src/services/NotificationService";
 export default {
@@ -369,6 +373,7 @@ export default {
         spin: fasSpinner,
         users: fasUser,
         drive: fasFolder,
+        invoice: fasFileInvoice,
       },
       quotes: [
         {
