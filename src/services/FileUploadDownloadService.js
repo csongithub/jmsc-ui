@@ -30,7 +30,7 @@ export default {
         return Promise.reject(err);
       });
   },
-  downloadFile(client_id, file_type, file_id, file_name) {
+  downloadFile(client_id, file_type, file_id, file_name, mode) {
     return downloadAPI
       .get("/v1/download/" + client_id + "/" + file_type + "/" + file_id, {
         headers: {},
@@ -40,6 +40,11 @@ export default {
         let fileUrl = window.URL.createObjectURL(
           new Blob([response.data], { type: "application/pdf" })
         );
+        if (mode === "view") {
+          this.fileUrl = fileUrl;
+          window.open(fileUrl);
+          return;
+        }
         let fileLink = document.createElement("a");
         fileLink.href = fileUrl;
         fileLink.setAttribute("download", file_name);

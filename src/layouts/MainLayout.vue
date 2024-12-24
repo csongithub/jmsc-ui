@@ -179,7 +179,7 @@
             <q-item-section avatar>
               <q-icon :name="icons.invoice" />
             </q-item-section>
-            <q-item-section>eInvoice</q-item-section>
+            <q-item-section>e-Invoice</q-item-section>
           </q-item>
           <q-expansion-item
             dense

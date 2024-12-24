@@ -203,7 +203,7 @@
       <div class="col text-bold">Taxable Amount</div>
       <div class="col text-bold">GST Applicable</div>
       <div class="col text-bold">GST Deducted at Source</div>
-      <div class="col text-bold">Final GST Liability to Pay</div>
+      <div class="col text-bold">Final GST to Pay</div>
     </div>
     <div class="row">
       <div class="col">
@@ -240,7 +240,7 @@
   <q-separator />
   <div>
     <q-table
-      class="my-sticky-header-table"
+      class="my-sticky-header-table_einvoice"
       title="e-Invoice List"
       dense
       bordered
@@ -317,6 +317,7 @@
         <q-tr :props="props">
           <q-td auto-width>
             <q-btn
+              size="xs`"
               color="primary"
               outline
               round
@@ -434,7 +435,7 @@
                 <span
                   class="text-blue"
                   style="cursor: pointer"
-                  @click="downloadInvoice(props.row, 'EINVOICE')"
+                  @click="downloadInvoice(props.row, 'EINVOICE', 'view')"
                   >{{ props.row.invoiceFileName }}</span
                 >
 
@@ -444,7 +445,7 @@
                   flat
                   size="sm"
                   color="primary"
-                  @click="downloadInvoice(props.row, 'EINVOICE')"
+                  @click="downloadInvoice(props.row, 'EINVOICE', 'download')"
                   icon="cloud_download"
                 >
                   <q-tooltip delay="100">Download e-Invoice</q-tooltip>
@@ -488,7 +489,7 @@
                 <span
                   class="text-blue"
                   style="cursor: pointer"
-                  @click="downloadInvoice(props.row, 'EINVOICE_MEMO')"
+                  @click="downloadInvoice(props.row, 'EINVOICE_MEMO', 'view')"
                   >{{ props.row.memoFileName }}</span
                 >
 
@@ -498,7 +499,9 @@
                   flat
                   size="sm"
                   color="primary"
-                  @click="downloadInvoice(props.row, 'EINVOICE_MEMO')"
+                  @click="
+                    downloadInvoice(props.row, 'EINVOICE_MEMO', 'download')
+                  "
                   icon="cloud_download"
                 >
                   <q-tooltip delay="100">Download Payment Memo</q-tooltip>
@@ -509,9 +512,7 @@
         </q-tr>
       </template>
     </q-table>
-    <div v-if="einvoiceList.length === 0 && showReset" class="text-red q-mt-lg">
-      No e-Invoice found for selected GST, FY, and Month
-    </div>
+
     <q-dialog
       position="right"
       v-model="open"
@@ -831,6 +832,7 @@ export default {
         "gst_deducted_at_source",
         "final_gst_to_pay",
         "source_division_name",
+        "action",
       ]),
       columns: [
         {
@@ -932,6 +934,13 @@ export default {
           field: "description",
           sortable: true,
         },
+        {
+          name: "action",
+          align: "left",
+          label: "Action",
+          field: "action",
+          sortable: true,
+        },
       ],
       icons: {
         rupee: matCurrencyRupee,
@@ -956,7 +965,7 @@ export default {
     return {
       clientId: this.getClientId(),
       admin: this.isAdmin(),
-      myPagination: { rowsPerPage: 10 },
+      myPagination: { rowsPerPage: 25 },
       einvoiceList: [],
       einvoice_filter: "",
       loading: false,
@@ -1033,7 +1042,7 @@ export default {
           }
         });
     },
-    downloadInvoice(invoice, fileType) {
+    downloadInvoice(invoice, fileType, mode) {
       let fileName =
         fileType === "EINVOICE_MEMO"
           ? invoice.memoFileName
@@ -1042,7 +1051,8 @@ export default {
         this.clientId,
         fileType,
         invoice.id,
-        fileName
+        fileName,
+        mode
       )
         .then((response) => {
           console.log(response);
@@ -1104,6 +1114,7 @@ export default {
         });
     },
     getAll() {
+      this.loading = true;
       EInvoiceServcie.getAllForMonths(
         this.clientId,
         this.selectedGst,
@@ -1114,25 +1125,29 @@ export default {
           this.einvoiceList = [];
           this.einvoiceList = response;
           this.updateValue(this.einvoiceList);
-          // console.log("All: " + JSON.stringify(this.einvoiceList));
+          this.loading = false;
         })
         .catch((err) => {
+          this.loading = false;
           this.fail(this.getErrorMessage(err));
         });
     },
     getAllForFy() {
+      this.loading = true;
       EInvoiceServcie.getAllForFy(this.clientId, this.selectedFY)
         .then((response) => {
           this.einvoiceList = [];
           this.einvoiceList = response;
           this.updateValue(this.einvoiceList);
-          // console.log("All: " + JSON.stringify(this.einvoiceList));
+          this.loading = false;
         })
         .catch((err) => {
+          this.loading = false;
           this.fail(this.getErrorMessage(err));
         });
     },
     getAllForGstAndFy() {
+      this.loading = true;
       EInvoiceServcie.getAllForGstAndFy(
         this.clientId,
         this.selectedGst,
@@ -1142,13 +1157,15 @@ export default {
           this.einvoiceList = [];
           this.einvoiceList = response;
           this.updateValue(this.einvoiceList);
-          // console.log("All: " + JSON.stringify(this.einvoiceList));
+          this.loading = false;
         })
         .catch((err) => {
+          this.loading = false;
           this.fail(this.getErrorMessage(err));
         });
     },
     getAllForFyAndMonth() {
+      this.loading = true;
       EInvoiceServcie.getAllForFyAndMonth(
         this.clientId,
         this.selectedFY,
@@ -1158,9 +1175,10 @@ export default {
           this.einvoiceList = [];
           this.einvoiceList = response;
           this.updateValue(this.einvoiceList);
-          // console.log("All: " + JSON.stringify(this.einvoiceList));
+          this.loading = false;
         })
         .catch((err) => {
+          this.loading = false;
           this.fail(this.getErrorMessage(err));
         });
     },
@@ -1270,6 +1288,7 @@ export default {
       this.showReset = true;
     },
     resetSelection() {
+      this.resetValues();
       this.showReset = false;
       (this.selectedGst = null),
         (this.selectedFY = null),
@@ -1280,17 +1299,4 @@ export default {
 };
 </script>
 
-<style>
-.jmsc-table-header {
-  border-bottom: 0.2px solid rgb(0, 0, 0);
-}
-.jmsc-table {
-  border-bottom: 0.2px solid rgb(0, 0, 0);
-}
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 60px;
-}
-</style>
+<style lang="sass"></style>
