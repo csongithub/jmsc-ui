@@ -181,7 +181,7 @@
                 <span
                   class="text-blue"
                   style="cursor: pointer"
-                  @click="downloadFile(props.row)"
+                  @click="downloadFile(props.row, 'view')"
                   >{{ props.row.fileName }}</span
                 >
 
@@ -191,7 +191,7 @@
                   flat
                   size="sm"
                   color="primary"
-                  @click="downloadFile(props.row)"
+                  @click="downloadFile(props.row, 'download')"
                   icon="cloud_download"
                 >
                   <q-tooltip delay="100">Download this file</q-tooltip>
@@ -674,12 +674,13 @@ export default {
           this.fail(err.message);
         });
     },
-    downloadFile(bg) {
+    downloadFile(bg, mode) {
       FileUploadDownloadService.downloadFile(
         this.clientId,
         "BANK_GUARANTEE",
         bg.id,
-        bg.fileName
+        bg.fileName,
+        mode
       )
         .then((response) => {
           console.log(response);
