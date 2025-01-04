@@ -115,6 +115,7 @@
         >
           <q-tab name="party" label="Party"> </q-tab>
           <q-tab name="bank_accounts" label="Bank Accounts" />
+          <q-tab name="party_kyc" label="KYC" />
         </q-tabs>
         <q-tab-panels
           v-model="tab"
@@ -258,6 +259,11 @@
               <ManageAccount :party_id="party.id" />
             </q-card-section>
           </q-tab-panel>
+          <q-tab-panel name="party_kyc">
+            <q-card-section>
+              <PartyKYC :party_id="party.id" :party="party" />
+            </q-card-section>
+          </q-tab-panel>
         </q-tab-panels>
       </q-card>
     </q-dialog>
@@ -271,6 +277,7 @@ import { commonMixin } from "../../../mixin/common";
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 import { matCurrencyRupee, matDelete } from "@quasar/extras/material-icons";
 import ManageAccount from "./ManagePartyAccount.vue";
+import PartyKYC from "./PartyKYC.vue";
 import { ref } from "vue";
 export default {
   name: "Site",
@@ -296,6 +303,7 @@ export default {
   },
   components: {
     ManageAccount,
+    PartyKYC,
   },
   created() {},
   mounted() {

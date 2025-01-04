@@ -36,7 +36,7 @@
               class="text-capitalize text-weight-light"
               color="primary"
               label="Pay in Cash"
-              @click="onStart"
+              @click="onStart('in_cash')"
             />
           </div>
         </div>
@@ -98,7 +98,7 @@
           class="text-capitalize text-weight-light q-mr-sm"
           color="primary"
           label="start"
-          @click="onStart"
+          @click="onStart('in_account')"
         >
           <q-tooltip class="bg-primary"
             >Click this button to create a payment</q-tooltip
@@ -372,6 +372,8 @@
                   @click="
                     step === 2
                       ? savePayment('APPROVAL_REQUIRED')
+                      : payment_mode === 'Cash'
+                      ? isKYCDone(selected_party[0], $refs)
                       : $refs.stepper.next()
                   "
                   color="primary"
@@ -464,12 +466,6 @@ export default {
           label: "Address",
           field: "address",
           sortable: true,
-        },
-        {
-          name: "actions",
-          required: false,
-          label: "Actions",
-          field: "actions",
         },
       ],
       party_all_account_columns: [
@@ -580,6 +576,14 @@ export default {
     };
   },
   methods: {
+    isKYCDone(selected_party, $refs) {
+      if (selected_party.kyc_required && !selected_party.kyc_status) {
+        this.fail("Party KYC Not Done");
+        return false;
+      }
+      $refs.stepper.next();
+      return true;
+    },
     resetMode() {
       this.from_Account = null;
       this.selected_party = ref([]);
@@ -593,13 +597,15 @@ export default {
 
       return this.amount_inwords;
     },
-    onStart() {
+    onStart(mode) {
       this.payment_date = this.getTodaysDate();
-      // this.getPartyAllAccounts();
-      this.getPartyLinkedAccounts();
-      this.getAllSites();
-      this.getAllMachines();
-      this.openCreatePaymentWindow();
+      if (mode === "in_cash") {
+        this.getAllSites();
+        this.getAllMachines();
+        this.openCreatePaymentWindow();
+      } else if (mode === "in_account") {
+        this.getPartyLinkedAccounts();
+      }
     },
     openCreatePaymentWindow() {
       if (this.from_Account == null) {
@@ -673,9 +679,12 @@ export default {
           this.party_linked_accounts = response.filter(
             (ac) => ac.status === "ACTIVE"
           );
+          this.getAllSites();
+          this.getAllMachines();
+          this.openCreatePaymentWindow();
         })
         .catch((err) => {
-          this.fail("Error in loading party linked accounts");
+          this.fail(this.getErrorMessage(err));
         });
     },
     getAllSites() {
