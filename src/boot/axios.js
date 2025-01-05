@@ -63,9 +63,12 @@ export default boot(({ app }) => {
   // incoming request are being done.   When the request hit 0 the progress
   // should disappear.
   //
-  api.interceptors.response.use(function (config) {
-    //console.log("axios.interceptors.response common header " + JSON.stringify(config))
-    return config;
+  api.interceptors.response.use(function (response) {
+    if (response.status === 401) {
+      window.alert("Previous Session Expired, Please Relogin to Continue");
+    } else {
+      return response;
+    }
   });
   downloadAPI.interceptors.response.use(function (config) {
     //console.log("axios.interceptors.response common header " + JSON.stringify(config))
