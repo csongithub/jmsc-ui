@@ -798,7 +798,34 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-    <!-- {{ JSON.stringify(invoice) }} -->
+    <q-dialog
+      v-model="viewImage"
+      persistent
+      @hide="closeImageView"
+      ref="viewInvoiceImageRef"
+    >
+      <q-card style="width: 600px">
+        <q-bar
+          class="bg-primary glossy text-white text-weight-light text-subtitle2"
+        >
+          {{ "" }}
+          <q-space />
+          <q-btn
+            class="text-capitalize text-grey"
+            dense
+            flat
+            label="Download this file"
+            @click="downloadImage()"
+          />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip>Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+        <q-card-section>
+          <img :src="fileUrl" class="responsive" />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -989,9 +1016,23 @@ export default {
       totalGstToPay: 0,
       totalGstDeductedAtSource: 0,
       totalGSTLiability: 0,
+      fileUrl: null,
+      viewImage: false,
+      fileName: null,
     };
   },
   methods: {
+    downloadImage() {
+      let fileLink = document.createElement("a");
+      fileLink.href = this.fileUrl;
+      fileLink.setAttribute("download", this.fileName);
+      document.body.appendChild(fileLink);
+      fileLink.click();
+    },
+    closeImageView() {
+      this.viewImage = false;
+      this.fileUrl = null;
+    },
     updateValue(invoices) {
       this.resetValues();
       invoices.forEach((invoice) => {
@@ -1043,7 +1084,7 @@ export default {
         });
     },
     downloadInvoice(invoice, fileType, mode) {
-      let fileName =
+      this.fileName =
         fileType === "EINVOICE_MEMO"
           ? invoice.memoFileName
           : invoice.invoiceFileName;
@@ -1051,11 +1092,15 @@ export default {
         this.clientId,
         fileType,
         invoice.id,
-        fileName,
+        this.fileName,
         mode
       )
         .then((response) => {
           console.log(response);
+          if (response !== null) {
+            this.fileUrl = response;
+            this.viewImage = true;
+          }
         })
         .catch((err) => {
           this.fail(err.message);

@@ -31,6 +31,10 @@ export default {
       });
   },
   downloadFile(client_id, file_type, file_id, file_name, mode) {
+    var image = false;
+    if (!file_name.endsWith(".pdf")) {
+      image = true;
+    }
     return downloadAPI
       .get("/v1/download/" + client_id + "/" + file_type + "/" + file_id, {
         headers: {},
@@ -41,15 +45,19 @@ export default {
           new Blob([response.data], { type: "application/pdf" })
         );
         if (mode === "view") {
-          this.fileUrl = fileUrl;
-          window.open(fileUrl);
-          return;
+          if (image) {
+            return fileUrl;
+          } else {
+            window.open(fileUrl);
+          }
+          return null;
         }
         let fileLink = document.createElement("a");
         fileLink.href = fileUrl;
         fileLink.setAttribute("download", file_name);
         document.body.appendChild(fileLink);
         fileLink.click();
+        return null;
       })
       .catch((err) => {
         console.log("Error in downloading file: " + JSON.stringify(err));
