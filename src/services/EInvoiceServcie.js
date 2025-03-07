@@ -85,4 +85,25 @@ export default {
         return Promise.reject(err);
       });
   },
+  deleteFile(client_id, invoice_id, which_file) {
+    return api
+      .delete(
+        "/v1/einvoice/delete_file/" +
+          client_id +
+          "/" +
+          invoice_id +
+          "/" +
+          which_file
+      )
+      .then((response) => {
+        let responseCode = response.data;
+        return responseCode;
+      })
+      .catch((err) => {
+        console.log(
+          "Error while deleting the attachement: " + JSON.stringify(err)
+        );
+        return Promise.reject(err);
+      });
+  },
 };

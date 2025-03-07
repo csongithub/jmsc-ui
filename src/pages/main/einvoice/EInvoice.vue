@@ -311,6 +311,7 @@
           <q-th v-for="col in props.cols" :key="col.name" :props="props">
             {{ col.label }}
           </q-th>
+          <q-th v-if="viewMode === 'create'">Action</q-th>
         </q-tr>
       </template>
       <template v-slot:body="props">
@@ -403,8 +404,10 @@
         <q-tr v-show="props.expand" :props="props">
           <q-td colspan="100%">
             <div class="row" v-if="!props.row.invoiceAttached">
-              <div class="col-2">Upload e-Invoice</div>
-              <div class="col-3">
+              <div v-if="viewMode === 'create'" class="col-2">
+                Upload e-Invoice
+              </div>
+              <div v-if="viewMode === 'create'" class="col-3">
                 <q-input
                   @update:model-value="
                     (val) => {
@@ -415,7 +418,7 @@
                   type="file"
                 />
               </div>
-              <div class="col-2 q-ml-md">
+              <div v-if="viewMode === 'create'" class="col-2 q-ml-md">
                 <q-btn
                   size="sm"
                   class="text-capitalize"
@@ -438,18 +441,22 @@
                   @click="downloadInvoice(props.row, 'EINVOICE', 'view')"
                   >{{ props.row.invoiceFileName }}</span
                 >
-
-                <q-btn
-                  class="q-ml-sm"
-                  dense
-                  flat
-                  size="sm"
-                  color="primary"
+                <q-icon
+                  class="q-ma-sm q-pa-none pointer"
+                  name="cloud_download"
                   @click="downloadInvoice(props.row, 'EINVOICE', 'download')"
-                  icon="cloud_download"
                 >
                   <q-tooltip delay="100">Download e-Invoice</q-tooltip>
-                </q-btn>
+                </q-icon>
+                <q-icon
+                  v-if="viewMode === 'create'"
+                  class="q-ma-sm q-pa-none pointer"
+                  color="red"
+                  :name="icons.delete"
+                  @click="deleteFile(props.row, 'invoice')"
+                >
+                  <q-tooltip delay="100">Delete this file</q-tooltip>
+                </q-icon>
               </div>
             </div>
           </q-td>
@@ -457,8 +464,10 @@
         <q-tr v-show="props.expand" :props="props">
           <q-td colspan="100%">
             <div class="row" v-if="!props.row.memoAttached">
-              <div class="col-2">Upload Memo Bill</div>
-              <div class="col-3">
+              <div v-if="viewMode === 'create'" class="col-2">
+                Upload Memo Bill
+              </div>
+              <div v-if="viewMode === 'create'" class="col-3">
                 <q-input
                   @update:model-value="
                     (val) => {
@@ -469,7 +478,7 @@
                   type="file"
                 />
               </div>
-              <div class="col-2 q-ml-md">
+              <div v-if="viewMode === 'create'" class="col-2 q-ml-md">
                 <q-btn
                   size="sm"
                   class="text-capitalize"
@@ -493,19 +502,24 @@
                   >{{ props.row.memoFileName }}</span
                 >
 
-                <q-btn
-                  class="q-ml-sm"
-                  dense
-                  flat
-                  size="sm"
-                  color="primary"
+                <q-icon
+                  class="q-ma-sm q-pa-none pointer"
+                  name="cloud_download"
                   @click="
                     downloadInvoice(props.row, 'EINVOICE_MEMO', 'download')
                   "
-                  icon="cloud_download"
                 >
                   <q-tooltip delay="100">Download Payment Memo</q-tooltip>
-                </q-btn>
+                </q-icon>
+                <q-icon
+                  v-if="viewMode === 'create'"
+                  class="q-ma-sm q-pa-none pointer"
+                  color="red"
+                  :name="icons.delete"
+                  @click="deleteFile(props.row, 'memo')"
+                >
+                  <q-tooltip>Delete this file</q-tooltip>
+                </q-icon>
               </div>
             </div>
           </q-td>
@@ -814,9 +828,11 @@
             class="text-capitalize text-grey"
             dense
             flat
-            label="Download this file"
+            icon="cloud_download"
             @click="downloadImage()"
-          />
+          >
+            <q-tooltip>Download this image</q-tooltip>
+          </q-btn>
           <q-btn dense flat icon="close" v-close-popup>
             <q-tooltip>Close</q-tooltip>
           </q-btn>
@@ -961,13 +977,13 @@ export default {
           field: "description",
           sortable: true,
         },
-        {
-          name: "action",
-          align: "left",
-          label: "Action",
-          field: "action",
-          sortable: true,
-        },
+        // {
+        //   name: "action",
+        //   align: "left",
+        //   label: "Action",
+        //   field: "action",
+        //   sortable: true,
+        // },
       ],
       icons: {
         rupee: matCurrencyRupee,
@@ -1022,6 +1038,31 @@ export default {
     };
   },
   methods: {
+    deleteFile(row, which_file) {
+      this.$q
+        .dialog({
+          title: "Are You Sure?",
+          message: "This will delete this file.",
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          EInvoiceServcie.deleteFile(this.clientId, row.id, which_file)
+            .then((response) => {
+              if (response) {
+                if ("memo" === which_file) row.memoAttached = false;
+                else row.invoiceAttached = false;
+              }
+            })
+            .catch((err) => {
+              this.loading = false;
+              this.fail(this.getErrorMessage(err));
+            });
+        })
+        .onOk(() => {})
+        .onCancel(() => {})
+        .onDismiss(() => {});
+    },
     downloadImage() {
       let fileLink = document.createElement("a");
       fileLink.href = this.fileUrl;
