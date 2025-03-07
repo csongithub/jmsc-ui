@@ -63,10 +63,21 @@ export default boot(({ app }) => {
   // incoming request are being done.   When the request hit 0 the progress
   // should disappear.
   //
-  api.interceptors.response.use(function (config) {
-    //console.log("axios.interceptors.response common header " + JSON.stringify(config))
-    return config;
-  });
+  api.interceptors.response.use(
+    function (response) {
+      console.log("==============================" + JSON.stringify(response));
+      return response;
+    },
+    function (error) {
+      if (401 === error.response.status) {
+        window.alert("Previous session expired, Please login again");
+        LocalStorage.clear();
+        this.$router.push({ name: "login" });
+      } else {
+        return Promise.reject(error);
+      }
+    }
+  );
   downloadAPI.interceptors.response.use(function (config) {
     //console.log("axios.interceptors.response common header " + JSON.stringify(config))
     return config;
