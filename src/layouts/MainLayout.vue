@@ -15,6 +15,7 @@
 
         <q-toolbar-title>
           {{ client !== null ? client.displayName : "" }}
+
           <q-space />
           <q-breadcrumbs
             gutter="none"
@@ -33,11 +34,13 @@
             >
             </q-breadcrumbs-el>
           </q-breadcrumbs>
+          <q-space />
         </q-toolbar-title>
 
         <q-space />
         <!-- <span v-if="!isAdmin">{{user !== null ? user.displayName : ''}}</span>
         <span v-else>{{'Admin'}}</span> -->
+        <div class="row">{{ "Turn Over: " + turnover }}</div>
         <q-btn
           class=""
           flat
@@ -341,6 +344,9 @@ export default {
             " notifications"
         );
     }
+    window.addEventListener("turnover-changed", (event) => {
+      this.turnover = event.detail.turnover;
+    });
   },
   computed: {
     currentRouteNames() {
@@ -350,6 +356,7 @@ export default {
   setup() {},
   data() {
     return {
+      turnover: LocalStorage.getItem("auth").turnover,
       refreshing: false,
       showWelcome: false,
       leftDrawerOpen: true,

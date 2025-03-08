@@ -1192,6 +1192,7 @@ export default {
           } else if (this.mode === "edit") {
             this.success("e-Invoice Updated Successfully");
           }
+          this.fetchCurrentTurnover(this.clientId);
           this.getAll();
           this.open = false;
         })
@@ -1280,6 +1281,7 @@ export default {
           EInvoiceServcie.deleteEInvoice(this.clientId, row.id)
             .then((response) => {
               if (response === 0) {
+                this.fetchCurrentTurnover(this.clientId);
                 this.getAll();
                 this.success("e-Invoice has been deleted");
               }
