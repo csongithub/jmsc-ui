@@ -42,6 +42,26 @@
         <span v-else>{{'Admin'}}</span> -->
         <div class="row">{{ "Turn Over: " + turnover }}</div>
         <q-btn
+          v-if="backup_done"
+          @click="startDataBackup()"
+          size="sm"
+          class=""
+          flat
+          :icon="'backup'"
+        >
+          <q-tooltip>Start data backup</q-tooltip>
+        </q-btn>
+        <div>
+          <q-spinner-gears
+            class="q-ml-sm"
+            v-if="backup_started"
+            color="white"
+            size="1.5em"
+          />
+
+          <q-tooltip>Data backup in progress</q-tooltip>
+        </div>
+        <q-btn
           class=""
           flat
           @click="$q.fullscreen.toggle()"
@@ -291,13 +311,28 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+    <!-- <q-dialog v-model="backupDoneAlert">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Backup Completed!</div>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          Database backup sompleted successfully.
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="OK" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog> -->
   </q-layout>
 </template>
 
 <script>
 import { LocalStorage } from "quasar";
 import { commonMixin } from "../mixin/common";
-
+import { api } from "src/boot/axios";
 import {
   fasCreditCard,
   fasUserFriends,
@@ -312,10 +347,12 @@ import {
   fasUser,
   fasFolder,
   fasFileInvoice,
+  fasDatabase,
 } from "@quasar/extras/fontawesome-v5";
 import {
   matCurrencyRupee,
   matAccountCircle,
+  matBackup,
 } from "@quasar/extras/material-icons";
 import NotificationService from "src/services/NotificationService";
 export default {
@@ -347,6 +384,7 @@ export default {
     window.addEventListener("turnover-changed", (event) => {
       this.turnover = event.detail.turnover;
     });
+    this.dataBackupStatus();
   },
   computed: {
     currentRouteNames() {
@@ -381,6 +419,8 @@ export default {
         users: fasUser,
         drive: fasFolder,
         invoice: fasFileInvoice,
+        matBackpack: matBackup,
+        fasDatabase: fasDatabase,
       },
       quotes: [
         {
@@ -458,9 +498,60 @@ export default {
         person: null,
         quote: null,
       },
+      backup_started: false,
+      backup_done: true,
+      backupDoneAlert: false,
     };
   },
   methods: {
+    getBackupStatus() {
+      return api
+        .get("/v1/postres/backup_status")
+        .then((response) => {
+          if (response.data) {
+            this.backup_started = false;
+            this.backup_done = true;
+          } else {
+            this.backup_started = true;
+            this.backup_done = false;
+          }
+        })
+        .catch((err) => {
+          console.log(
+            "Error in starting databackup: " + JSON.stringify(err.response.data)
+          );
+          return Promise.reject(err);
+        });
+    },
+    delay(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    },
+    async dataBackupStatus() {
+      while (true) {
+        this.getBackupStatus();
+        await this.delay(5000); // Wait for 5 second
+        if (this.backup_done) {
+          break;
+        }
+      }
+    },
+    startDataBackup() {
+      this.backup_started = true;
+      this.backup_done = false;
+      return api
+        .post("/v1/postres/start_data_backup")
+        .then((response) => {
+          this.dataBackupStatus();
+        })
+        .catch((err) => {
+          this.backup_started = false;
+          this.backup_done = true;
+          console.log(
+            "Error in starting databackup: " + JSON.stringify(err.response.data)
+          );
+          return Promise.reject(err);
+        });
+    },
     openWelcome() {
       this.showWelcome = true;
     },
