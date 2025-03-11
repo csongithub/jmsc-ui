@@ -1,7 +1,6 @@
 import { date } from "quasar";
 import { LocalStorage } from "quasar";
 import EnumService from "../services/EnumerationService";
-import { api } from "src/boot/axios";
 export const commonMixin = {
   data() {
     return {
