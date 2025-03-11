@@ -233,32 +233,6 @@ export const commonMixin = {
       var output_date = date.formatDate(input_date, format);
       return output_date;
     },
-    fetchCurrentTurnover(clientId) {
-      return api
-        .get("/v1/einvoice/" + clientId + "/current/turnover")
-        .then((response) => {
-          let turnover = response.data;
-          let auth = LocalStorage.getItem("auth");
-          if (auth && auth.client) {
-            auth.turnover = turnover;
-            LocalStorage.set("auth", auth);
-            window.dispatchEvent(
-              new CustomEvent("turnover-changed", {
-                detail: {
-                  turnover: turnover,
-                },
-              })
-            );
-          }
-          return turnover;
-        })
-        .catch((err) => {
-          console.log(
-            "Error in getting eInvocies: " + JSON.stringify(err.response.data)
-          );
-          return Promise.reject(err);
-        });
-    },
   },
   computed: {},
   watch: {},

@@ -175,7 +175,6 @@ export default {
         permissions: this.loginResponse.permissions,
       };
       LocalStorage.set("auth", auth);
-      this.fetchCurrentTurnover(auth.client.id);
       this.$router.push({ name: "home" });
     },
   },

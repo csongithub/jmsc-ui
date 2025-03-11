@@ -40,7 +40,15 @@
         <q-space />
         <!-- <span v-if="!isAdmin">{{user !== null ? user.displayName : ''}}</span>
         <span v-else>{{'Admin'}}</span> -->
-        <div class="row">{{ "Turn Over: " + turnover }}</div>
+        <q-btn
+          v-if="turnover === null"
+          @click="showTurnover()"
+          label="Show Turnover"
+          size="sm"
+          class="text-capitalize"
+          flat
+        />
+        <div v-else class="row">{{ "Turn Over: " + turnover }}</div>
         <q-btn
           v-if="backup_done"
           @click="startDataBackup()"
@@ -311,21 +319,6 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-    <!-- <q-dialog v-model="backupDoneAlert">
-      <q-card>
-        <q-card-section>
-          <div class="text-h6">Backup Completed!</div>
-        </q-card-section>
-
-        <q-card-section class="q-pt-none">
-          Database backup sompleted successfully.
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="OK" color="primary" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog> -->
   </q-layout>
 </template>
 
@@ -354,13 +347,10 @@ import {
   matAccountCircle,
   matBackup,
 } from "@quasar/extras/material-icons";
-import NotificationService from "src/services/NotificationService";
 export default {
   name: "MainLayout",
   mixins: [commonMixin],
-  components: {
-    // NewPost
-  },
+  components: {},
 
   created() {
     this.inactivityTime();
@@ -373,7 +363,6 @@ export default {
     if (!this.getClient()) {
       this.openLoginLayout();
     } else {
-      this.turnover = LocalStorage.getItem("auth").turnover;
       this.updateNotificationCache(this.client.id);
       if (this.$store.getters["notification/count"] > 0)
         this.info(
@@ -382,9 +371,9 @@ export default {
             " notifications"
         );
     }
-    window.addEventListener("turnover-changed", (event) => {
-      this.turnover = event.detail.turnover;
-    });
+    // window.addEventListener("turnover-changed", (event) => {
+    //   this.turnover = event.detail.turnover;
+    // });
     this.dataBackupStatus();
   },
   computed: {
@@ -505,6 +494,34 @@ export default {
     };
   },
   methods: {
+    showTurnover() {
+      this.fetchCurrentTurnover(this.client.id);
+    },
+    fetchCurrentTurnover(clientId) {
+      return api
+        .get("/v1/einvoice/" + clientId + "/current/turnover")
+        .then((response) => {
+          this.turnover = response.data;
+          // let auth = LocalStorage.getItem("auth");
+          // if (auth && auth.client) {
+          //   auth.turnover = turnover;
+          //   LocalStorage.set("auth", auth);
+          //   window.dispatchEvent(
+          //     new CustomEvent("turnover-changed", {
+          //       detail: {
+          //         turnover: turnover,
+          //       },
+          //     })
+          //   );
+          // }
+        })
+        .catch((err) => {
+          console.log(
+            "Error in getting turnover: " + JSON.stringify(err.response.data)
+          );
+          return Promise.reject(err);
+        });
+    },
     getBackupStatus() {
       return api
         .get("/v1/postres/backup_status")
@@ -530,7 +547,7 @@ export default {
     async dataBackupStatus() {
       while (true) {
         this.getBackupStatus();
-        await this.delay(5000); // Wait for 5 second
+        await this.delay(60000); // Wait for 5 second
         if (this.backup_done) {
           break;
         }
