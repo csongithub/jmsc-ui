@@ -373,6 +373,7 @@ export default {
     if (!this.getClient()) {
       this.openLoginLayout();
     } else {
+      this.turnover = LocalStorage.getItem("auth").turnover;
       this.updateNotificationCache(this.client.id);
       if (this.$store.getters["notification/count"] > 0)
         this.info(
@@ -394,7 +395,7 @@ export default {
   setup() {},
   data() {
     return {
-      turnover: LocalStorage.getItem("auth").turnover,
+      turnover: null,
       refreshing: false,
       showWelcome: false,
       leftDrawerOpen: true,
