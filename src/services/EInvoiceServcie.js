@@ -106,4 +106,23 @@ export default {
         return Promise.reject(err);
       });
   },
+  fetchCurrentTurnover(clientId) {
+    return api
+      .get("/v1/einvoice/" + clientId + "/current/turnover")
+      .then((response) => {
+        window.dispatchEvent(
+          new CustomEvent("turnover-changed", {
+            detail: {
+              turnover: response.data,
+            },
+          })
+        );
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting turnover: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
 };

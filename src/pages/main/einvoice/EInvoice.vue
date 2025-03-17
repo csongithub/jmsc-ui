@@ -1192,9 +1192,9 @@ export default {
           } else if (this.mode === "edit") {
             this.success("e-Invoice Updated Successfully");
           }
-          this.fetchCurrentTurnover(this.clientId);
           this.getAll();
           this.open = false;
+          EInvoiceServcie.fetchCurrentTurnover(this.clientId);
         })
         .catch((err) => {
           this.fail(this.getErrorMessage(err));
