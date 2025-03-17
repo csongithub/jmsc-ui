@@ -41,14 +41,16 @@
         <!-- <span v-if="!isAdmin">{{user !== null ? user.displayName : ''}}</span>
         <span v-else>{{'Admin'}}</span> -->
         <q-btn
-          v-if="turnover === null"
+          v-if="!showTurnOver"
           @click="showTurnover()"
           label="Show Turnover"
           size="sm"
           class="text-capitalize"
           flat
         />
-        <div v-else class="row">{{ "Turn Over: " + turnover }}</div>
+        <div v-if="showTurnOver" class="row">
+          {{ "Turn Over: " + turnover }}
+        </div>
         <q-btn
           v-if="backup_done"
           @click="startDataBackup()"
@@ -325,6 +327,7 @@
 <script>
 import { LocalStorage } from "quasar";
 import { commonMixin } from "../mixin/common";
+import EInvoiceServcie from "../services/EInvoiceServcie";
 import { api } from "src/boot/axios";
 import {
   fasCreditCard,
@@ -371,9 +374,9 @@ export default {
             " notifications"
         );
     }
-    // window.addEventListener("turnover-changed", (event) => {
-    //   this.turnover = event.detail.turnover;
-    // });
+    window.addEventListener("turnover-changed", (event) => {
+      this.turnover = event.detail.turnover;
+    });
     this.dataBackupStatus();
   },
   computed: {
@@ -385,6 +388,7 @@ export default {
   data() {
     return {
       turnover: null,
+      showTurnOver: false,
       refreshing: false,
       showWelcome: false,
       leftDrawerOpen: true,
@@ -495,32 +499,8 @@ export default {
   },
   methods: {
     showTurnover() {
-      this.fetchCurrentTurnover(this.client.id);
-    },
-    fetchCurrentTurnover(clientId) {
-      return api
-        .get("/v1/einvoice/" + clientId + "/current/turnover")
-        .then((response) => {
-          this.turnover = response.data;
-          // let auth = LocalStorage.getItem("auth");
-          // if (auth && auth.client) {
-          //   auth.turnover = turnover;
-          //   LocalStorage.set("auth", auth);
-          //   window.dispatchEvent(
-          //     new CustomEvent("turnover-changed", {
-          //       detail: {
-          //         turnover: turnover,
-          //       },
-          //     })
-          //   );
-          // }
-        })
-        .catch((err) => {
-          console.log(
-            "Error in getting turnover: " + JSON.stringify(err.response.data)
-          );
-          return Promise.reject(err);
-        });
+      EInvoiceServcie.fetchCurrentTurnover(this.client.id);
+      this.showTurnOver = true;
     },
     getBackupStatus() {
       return api
