@@ -214,6 +214,28 @@
             </q-item-section>
             <q-item-section>e-Invoice</q-item-section>
           </q-item>
+
+          <q-expansion-item
+            dense
+            dense-toggle
+            expand-separator
+            icon="inventory"
+            label="Purchase"
+          >
+            <q-item exact clickable v-ripple to="/supplier">
+              <q-item-section avatar>
+                <q-icon :name="icons.creditors" />
+              </q-item-section>
+              <q-item-section>Supplier</q-item-section>
+            </q-item>
+            <q-item exact clickable v-ripple to="/entry">
+              <q-item-section avatar>
+                <q-icon :name="icons.bgGroup" />
+              </q-item-section>
+              <q-item-section>Entry</q-item-section>
+            </q-item>
+          </q-expansion-item>
+          <q-separator></q-separator>
           <q-expansion-item
             dense
             dense-toggle

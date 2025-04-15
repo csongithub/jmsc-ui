@@ -101,6 +101,30 @@ const routes = [
         },
       },
       {
+        name: "supplier",
+        path: "/supplier",
+        component: () => import("src/pages/main/supply/Supplier.vue"),
+        meta: {
+          moduleName: "Purchage",
+          breadcrumbs: [
+            { label: "Purchage", routName: "" },
+            { label: "Supplier", routName: "supplier" },
+          ],
+        },
+      },
+      {
+        name: "entry",
+        path: "/entry",
+        component: () => import("src/pages/main/supply/Entry.vue"),
+        meta: {
+          moduleName: "Purchage",
+          breadcrumbs: [
+            { label: "Purchage", routName: "" },
+            { label: "Entry", routName: "entry" },
+          ],
+        },
+      },
+      {
         name: "allCF",
         path: "/all_cf",
         component: () => import("src/pages/main/cf/AllCF.vue"),
