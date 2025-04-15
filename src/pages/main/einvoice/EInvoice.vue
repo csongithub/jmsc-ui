@@ -277,12 +277,17 @@
       </template>
       <template v-slot:top-right>
         <q-btn
+          dense
+          flat
+          class="q-mr-sm"
+          v-if="einvoiceList.length > 0"
           color="primary"
           icon-right="archive"
-          label="Export to csv"
           no-caps
           @click="exportAsFile"
-        />
+        >
+          <q-tooltip>Export</q-tooltip>
+        </q-btn>
         <q-input
           class="q-mr-sm"
           borderless
