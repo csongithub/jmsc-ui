@@ -276,6 +276,13 @@
         />
       </template>
       <template v-slot:top-right>
+        <q-btn
+          color="primary"
+          icon-right="archive"
+          label="Export to csv"
+          no-caps
+          @click="exportAsFile"
+        />
         <q-input
           class="q-mr-sm"
           borderless
@@ -847,7 +854,6 @@
 
 <script>
 import { ref } from "vue";
-
 import EnumService from "../../../services/EnumerationService";
 import GeneralService from "../../../services/GeneralService";
 import EInvoiceServcie from "../../../services/EInvoiceServcie";
@@ -860,6 +866,7 @@ import {
   matExpandLess,
   matDelete,
 } from "@quasar/extras/material-icons";
+
 export default {
   name: "eInvoice",
   mixins: [commonMixin],
@@ -1038,6 +1045,11 @@ export default {
     };
   },
   methods: {
+    exportAsFile() {
+      const fileName = "einvoice.csv";
+      const fileType = "text/csv";
+      this.exportTable(this.columns, this.einvoiceList, fileName, fileType);
+    },
     deleteFile(row, which_file) {
       this.$q
         .dialog({

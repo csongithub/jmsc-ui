@@ -1,7 +1,8 @@
 import { date } from "quasar";
 import { LocalStorage } from "quasar";
 import EnumService from "../services/EnumerationService";
-import { api } from "src/boot/axios";
+// import { api } from "src/boot/axios";
+import { exportFile, useQuasar } from "quasar";
 export const commonMixin = {
   data() {
     return {
@@ -9,6 +10,52 @@ export const commonMixin = {
     };
   },
   methods: {
+    wrapCsvValue(val, formatFn, row) {
+      let formatted = formatFn !== void 0 ? formatFn(val, row) : val;
+
+      formatted =
+        formatted === void 0 || formatted === null ? "" : String(formatted);
+
+      formatted = formatted.split('"').join('""');
+      /**
+       * Excel accepts \n and \r in strings, but some other CSV parsers do not
+       * Uncomment the next two lines to escape new lines
+       */
+      // .split('\n').join('\\n')
+      // .split('\r').join('\\r')
+
+      return `"${formatted}"`;
+    },
+    exportTable(columns, rows, filename, type) {
+      // naive encoding to csv format
+      const content = [columns.map((col) => this.wrapCsvValue(col.label))]
+        .concat(
+          rows.map((row) =>
+            columns
+              .map((col) =>
+                this.wrapCsvValue(
+                  typeof col.field === "function"
+                    ? col.field(row)
+                    : row[col.field === void 0 ? col.name : col.field],
+                  col.format,
+                  row
+                )
+              )
+              .join(",")
+          )
+        )
+        .join("\r\n");
+
+      const status = exportFile(filename, content, type);
+
+      if (status !== true) {
+        $q.notify({
+          message: "Browser denied file download...",
+          color: "negative",
+          icon: "warning",
+        });
+      }
+    },
     disableByPermission(permission) {
       if (this.isAdmin()) return false;
       else return !permission;
