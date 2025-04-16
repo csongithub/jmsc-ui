@@ -91,6 +91,18 @@
         </div>
       </template>
       <template v-slot:top-right>
+        <q-btn
+          dense
+          flat
+          class="q-mr-sm"
+          v-if="drafts.length > 0"
+          color="primary"
+          icon-right="archive"
+          no-caps
+          @click="exportAsFile"
+        >
+          <q-tooltip>Export</q-tooltip>
+        </q-btn>
         <q-input
           class="q-mr-sm"
           borderless
@@ -369,6 +381,15 @@
         </q-card>
       </q-dialog>
     </div>
+    <ExportTable
+      :header="'Export Payments'"
+      :open="openExport"
+      :rows="columns"
+      :content="drafts"
+      :fileName="exportFileName"
+      :fileType="fileType"
+      @close="openExport = false"
+    />
   </div>
 </template>
 
@@ -378,6 +399,7 @@ import Payment from "../payment/Payment.vue";
 import PaymentService2 from "../../../services/PaymentService2";
 import BankAccountService from "../../../services/BankAccountService";
 import PartyAccountService from "../../../services/PartyAccountService";
+import ExportTable from "src/components/ExportTable.vue";
 import {
   matCurrencyRupee,
   matExpandMore,
@@ -417,6 +439,7 @@ export default {
   },
   components: {
     Payment,
+    ExportTable,
   },
   watch: {},
   created() {},
@@ -540,9 +563,15 @@ export default {
       filetrOption: "general",
       filterSubmit: false,
       chipsLabels: [],
+      openExport: false,
+      fileType: "text/csv",
+      exportFileName: "payment_history.csv",
     };
   },
   methods: {
+    exportAsFile() {
+      this.openExport = true;
+    },
     openFilterPanel() {
       this.drawFilterPanel = true;
     },
