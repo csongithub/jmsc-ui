@@ -16,10 +16,22 @@
             <q-tooltip>Close</q-tooltip>
           </q-btn>
         </q-bar>
-        <q-card-section class="q-mt-lg">
+        <q-card-section class="q-mt-xs">
+          <div class="row q-mb-sm">
+            <span class="q-mr-md">Select Columns to export</span>
+            <q-btn
+              v-if="selectedColumns.length > 0"
+              size="sm"
+              dense
+              outline
+              color="primary"
+              no-caps
+              @click="exportFile()"
+              label="Export Selected"
+            />
+          </div>
           <q-table
             class=""
-            title="Select Columns"
             dense
             bordered
             flat
@@ -30,20 +42,8 @@
             selection="multiple"
             v-model:selected="selectedColumns"
             hide-bottom
+            hide-header="true"
           >
-            <template v-slot:top-right>
-              <q-btn
-                v-if="selectedColumns.length > 0"
-                dense
-                flat
-                color="primary"
-                icon-right="archive"
-                no-caps
-                @click="exportFile()"
-              >
-                <q-tooltip>Export</q-tooltip>
-              </q-btn>
-            </template>
           </q-table>
         </q-card-section>
       </q-card>

@@ -854,7 +854,7 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-    <ExportTableVue
+    <ExportTable
       :header="'Export e-Invoices'"
       :open="openExport"
       :rows="columns"
@@ -862,7 +862,7 @@
       :fileName="exportFileName"
       :fileType="fileType"
       @close="openExport = false"
-    ></ExportTableVue>
+    />
   </div>
 </template>
 
@@ -881,7 +881,7 @@ import {
   matExpandLess,
   matDelete,
 } from "@quasar/extras/material-icons";
-import ExportTableVue from "src/components/ExportTable.vue";
+import ExportTable from "src/components/ExportTable.vue";
 
 export default {
   name: "eInvoice",
@@ -1034,7 +1034,7 @@ export default {
   created() {},
   mounted() {},
   components: {
-    ExportTableVue,
+    ExportTable,
   },
   data() {
     return {
