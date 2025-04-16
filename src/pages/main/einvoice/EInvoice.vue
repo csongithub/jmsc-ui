@@ -854,11 +854,21 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+    <ExportTableVue
+      :header="'Export e-Invoices'"
+      :open="openExport"
+      :rows="columns"
+      :content="einvoiceList"
+      :fileName="exportFileName"
+      :fileType="fileType"
+      @close="openExport = false"
+    ></ExportTableVue>
   </div>
 </template>
 
 <script>
 import { ref } from "vue";
+
 import EnumService from "../../../services/EnumerationService";
 import GeneralService from "../../../services/GeneralService";
 import EInvoiceServcie from "../../../services/EInvoiceServcie";
@@ -871,6 +881,7 @@ import {
   matExpandLess,
   matDelete,
 } from "@quasar/extras/material-icons";
+import ExportTableVue from "src/components/ExportTable.vue";
 
 export default {
   name: "eInvoice",
@@ -889,6 +900,13 @@ export default {
         "source_division_name",
         "action",
       ]),
+      column: [
+        {
+          name: "label",
+          field: "label",
+          label: "Name",
+        },
+      ],
       columns: [
         {
           name: "bill_date",
@@ -1015,7 +1033,9 @@ export default {
   },
   created() {},
   mounted() {},
-  components: {},
+  components: {
+    ExportTableVue,
+  },
   data() {
     return {
       clientId: this.getClientId(),
@@ -1047,13 +1067,14 @@ export default {
       fileUrl: null,
       viewImage: false,
       fileName: null,
+      openExport: false,
+      fileType: "text/csv",
+      exportFileName: "einvoice.csv",
     };
   },
   methods: {
     exportAsFile() {
-      const fileName = "einvoice.csv";
-      const fileType = "text/csv";
-      this.exportTable(this.columns, this.einvoiceList, fileName, fileType);
+      this.openExport = true;
     },
     deleteFile(row, which_file) {
       this.$q
