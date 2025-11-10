@@ -208,6 +208,20 @@
               <q-item-section>Loans</q-item-section>
             </q-item>
           </q-expansion-item>
+          <q-expansion-item
+            dense
+            dense-toggle
+            expand-separator
+            :icon="icons.fasBook"
+            label="Accounting"
+          >
+            <q-item exact clickable v-ripple to="/project" class="q-ml-md">
+              <q-item-section avatar>
+                <q-icon :name="icons.site" />
+              </q-item-section>
+              <q-item-section>Project</q-item-section>
+            </q-item>
+          </q-expansion-item>
           <q-item exact clickable v-ripple to="/einvoice">
             <q-item-section avatar>
               <q-icon :name="icons.invoice" />
@@ -247,6 +261,7 @@
             </q-item-section>
             <q-item-section>Bidding</q-item-section>
           </q-item>
+
           <q-item exact clickable v-ripple to="/site">
             <q-item-section avatar>
               <q-icon :name="icons.site" />
@@ -415,6 +430,7 @@ export default {
         invoice: fasFileInvoice,
         matBackpack: matBackup,
         fasDatabase: fasDatabase,
+        fasBook: fasBook,
       },
       quotes: [
         {
