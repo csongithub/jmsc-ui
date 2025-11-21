@@ -38,8 +38,13 @@
         </q-toolbar-title>
 
         <q-space />
-        <!-- <span v-if="!isAdmin">{{user !== null ? user.displayName : ''}}</span>
-        <span v-else>{{'Admin'}}</span> -->
+        <q-btn
+          @click="switchToAccountingMode()"
+          label="Switch to Accounting Mode"
+          size="sm"
+          class="text-capitalize q-mr-sm"
+          color="secondary"
+        />
         <q-btn
           v-if="!showTurnOver"
           @click="showTurnover()"
@@ -514,6 +519,9 @@ export default {
     };
   },
   methods: {
+    switchToAccountingMode() {
+      this.$router.push({ name: "accounting" });
+    },
     showTurnover() {
       EInvoiceServcie.fetchCurrentTurnover(this.client.id);
       this.showTurnOver = true;

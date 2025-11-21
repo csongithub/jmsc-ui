@@ -432,6 +432,12 @@ const routes = [
     ],
   },
   {
+    path: "/accounting",
+    name: "accounting",
+    component: () => import("layouts/AccountingLayout.vue"),
+    children: [],
+  },
+  {
     path: "/login",
     name: "login",
     component: () => import("layouts/LoginLayout.vue"),

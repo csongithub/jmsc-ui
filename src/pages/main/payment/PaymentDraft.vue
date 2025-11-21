@@ -18,7 +18,13 @@
       wrap-cells
     >
       <template v-slot:loading>
-        <q-inner-loading v-if="loading" showing color="primary" label="Loading..." size="sm"/>
+        <q-inner-loading
+          v-if="loading"
+          showing
+          color="primary"
+          label="Loading..."
+          size="sm"
+        />
       </template>
       <template v-slot:header="props">
         <q-tr :props="props">
@@ -51,19 +57,24 @@
         />
       </template>
       <template v-slot:top-right>
-        <q-bar v-if="sum > 0"  class="bg-primary text-white q-mr-md text-weight-light shadow-4">
-            <div >
-              <q-icon :name="icons.rupee"/>
-                {{sum.toLocaleString('en-IN') + '.00'}}
-            </div>
-             <q-tooltip 
-                  transition-show="scale"  
-                  transition-hide="scale" 
-                  class="bg-primary text-white shadow-4">
-                  {{getAmountInWords('sum')}}
-              </q-tooltip>
-          </q-bar>
-        <q-input class="q-mr-sm"
+        <q-bar
+          v-if="sum > 0"
+          class="bg-primary text-white q-mr-md text-weight-light shadow-4"
+        >
+          <div>
+            <q-icon :name="icons.rupee" />
+            {{ sum.toLocaleString("en-IN") + ".00" }}
+          </div>
+          <q-tooltip
+            transition-show="scale"
+            transition-hide="scale"
+            class="bg-primary text-white shadow-4"
+          >
+            {{ getAmountInWords("sum") }}
+          </q-tooltip>
+        </q-bar>
+        <q-input
+          class="q-mr-sm"
           borderless
           dense
           outlined
@@ -76,19 +87,19 @@
           </template>
         </q-input>
         <q-select
-            v-model="visibleColumns"
-            multiple
-            outlined
-            dense
-            options-dense
-            :display-value="$q.lang.table.columns"
-            emit-value
-            map-options
-            :options="columns"
-            option-value="name"
-            options-cover
-            style="min-width: 150px"
-          />
+          v-model="visibleColumns"
+          multiple
+          outlined
+          dense
+          options-dense
+          :display-value="$q.lang.table.columns"
+          emit-value
+          map-options
+          :options="columns"
+          option-value="name"
+          options-cover
+          style="min-width: 150px"
+        />
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
@@ -102,8 +113,12 @@
               @click="expandDraft(props)"
               :icon="props.expand ? icons.expendLess : icons.expendMore"
             >
-              <q-tooltip v-if="!props.expand" :delay="1000">Open payment details</q-tooltip>
-              <q-tooltip v-if="props.expand" :delay="1000">Hide payment details</q-tooltip>
+              <q-tooltip v-if="!props.expand" :delay="1000"
+                >Open payment details</q-tooltip
+              >
+              <q-tooltip v-if="props.expand" :delay="1000"
+                >Hide payment details</q-tooltip
+              >
             </q-btn>
             <q-toggle
               v-model="props.row.print"
@@ -112,23 +127,49 @@
               checked-icon="check"
             />
           </q-td>
-           <q-td key="payment_id" :props="props">{{props.row.payment_id}}</q-td>
-          <q-td key="party_nick_name" :props="props">{{props.row.party_nick_name}}</q-td>
-          <q-td key="party_name" :props="props">{{props.row.party_nick_name}}</q-td>
-          <q-td key="account_holder" :props="props">{{props.row.account_holder}}</q-td>
-           <q-td key="account_number" :props="props">{{props.row.account_number}}</q-td>
-          <q-td key="amount" :props="props"> 
-                <q-icon :name="icons.rupee" />
-                {{ props.row.amount.toLocaleString("en-IN") + ".00" }}
+          <q-td key="payment_id" :props="props">{{
+            props.row.payment_id
+          }}</q-td>
+          <q-td key="party_nick_name" :props="props">{{
+            props.row.party_nick_name
+          }}</q-td>
+          <q-td key="party_name" :props="props">{{
+            props.row.party_nick_name
+          }}</q-td>
+          <q-td key="account_holder" :props="props">{{
+            props.row.account_holder
+          }}</q-td>
+          <q-td key="account_number" :props="props">{{
+            props.row.account_number
+          }}</q-td>
+          <q-td key="amount" :props="props">
+            <q-icon :name="icons.rupee" />
+            {{ props.row.amount.toLocaleString("en-IN") + ".00" }}
           </q-td>
-          <q-td key="reason" :props="props">{{props.row.reason}}</q-td>
-          <q-td key="reason_name" :props="props">{{props.row.reason_name}}</q-td>
-          <q-td key="mode" :props="props">{{props.row.mode}}</q-td>
-          <q-td key="transaction_ref" :props="props">{{props.row.transaction_ref}}</q-td>
-          <q-td key="payment_date" :props="props">{{props.row.payment_date}}</q-td>
+          <q-td key="reason" :props="props">{{ props.row.reason }}</q-td>
+          <q-td key="reason_name" :props="props">{{
+            props.row.reason_name
+          }}</q-td>
+          <q-td key="mode" :props="props">{{ props.row.mode }}</q-td>
+          <q-td key="transaction_ref" :props="props">{{
+            props.row.transaction_ref
+          }}</q-td>
+          <q-td key="payment_date" :props="props">{{
+            props.row.payment_date
+          }}</q-td>
           <q-td key="actions">
-              <q-icon class="pointer q-mr-xs" color="green"  name="mode" @click="updateDraft(props.row)"/>
-              <q-icon class="pointer" color="red" :name="icons.delete" @click="deleteDraft(props.row)"/>
+            <q-icon
+              class="pointer q-mr-xs"
+              color="green"
+              name="mode"
+              @click="updateDraft(props.row)"
+            />
+            <q-icon
+              class="pointer"
+              color="red"
+              :name="icons.delete"
+              @click="deleteDraft(props.row)"
+            />
           </q-td>
         </q-tr>
         <q-tr v-show="props.expand" :props="props">
@@ -221,7 +262,7 @@
           </q-td>
         </q-tr>
       </template>
-    </q-table> 
+    </q-table>
 
     <q-dialog
       v-model="update_draft"
@@ -303,7 +344,8 @@
               </q-select>
             </div>
             <div class="col-3">
-              <q-input :readonly="payment_mode === 'Cash' ? true : false"
+              <q-input
+                :readonly="payment_mode === 'Cash' ? true : false"
                 dense
                 outlined
                 v-model="transaction_ref"
@@ -402,7 +444,7 @@ import MachineService from "../../../services/MachineService";
 import { commonMixin } from "../../../mixin/common";
 import Payment from "../payment/Payment.vue";
 import PaymentService2 from "../../../services/PaymentService2";
-import BankAccountService from "../../../services/BankAccountService";
+import BankAccountService from "../../../services/main/BankAccountService";
 import PartyAccountService from "../../../services/PartyAccountService";
 import IndianBankRTGS from "../payment/templates/IndianBankRTGSNew.vue";
 import {
@@ -420,7 +462,6 @@ export default {
     return {
       selected_draft: ref([]),
       step: ref(1),
-      
 
       icons: {
         rupee: matCurrencyRupee,
@@ -429,7 +470,16 @@ export default {
         expendMore: matExpandMore,
         expendLess: matExpandLess,
       },
-      visibleColumns: ref(['party_nick_name', 'account_holder', 'amount', 'reason', 'reason_name', 'mode', 'transaction_ref', 'payment_date']),
+      visibleColumns: ref([
+        "party_nick_name",
+        "account_holder",
+        "amount",
+        "reason",
+        "reason_name",
+        "mode",
+        "transaction_ref",
+        "payment_date",
+      ]),
     };
   },
   components: {
@@ -460,7 +510,7 @@ export default {
       draft_pagination: { rowsPerPage: 25 },
       sum: 0,
       columns: [
-         {
+        {
           name: "payment_id",
           align: "left",
           label: "Payment ID",
@@ -472,7 +522,7 @@ export default {
           required: true,
           label: "Party",
           align: "left",
-          field: row => this.getPartyNames(row.party_id,'nick_name'),
+          field: (row) => this.getPartyNames(row.party_id, "nick_name"),
           format: (val) => `${val}`,
           sortable: true,
         },
@@ -480,7 +530,7 @@ export default {
           name: "party_name",
           align: "left",
           label: "Party Legal Name",
-          field: row => this.getPartyNames(row.party_id,'name'),
+          field: (row) => this.getPartyNames(row.party_id, "name"),
           sortable: true,
         },
         {
@@ -584,8 +634,7 @@ export default {
   methods: {
     getAmountInWords(mode) {
       if (this.sum > 0)
-        this.in_words =
-          PaymentService2.convertNumberToWords(this.sum) + "Only";
+        this.in_words = PaymentService2.convertNumberToWords(this.sum) + "Only";
       else this.in_words = "";
 
       return this.in_words;
@@ -619,10 +668,10 @@ export default {
       this.open = false;
     },
     addToPrint(props) {
-      if(props.row.mode === 'Cash') {
-        props.row.print = false
-        this.info('Cash payment can not be printed')
-        return
+      if (props.row.mode === "Cash") {
+        props.row.print = false;
+        this.info("Cash payment can not be printed");
+        return;
       }
       if (this.print_list.length === 2 && props.row.print) {
         this.fail("Maximum two payments can be printed");
@@ -752,9 +801,8 @@ export default {
     //   this.saveDraft('APPROVAL_REQUIRED')
     // },
     saveDraft(mode) {
-
-      if(this.payment_date === null || this.payment_date === '') {
-        this.fail('Please enter payment date')
+      if (this.payment_date === null || this.payment_date === "") {
+        this.fail("Please enter payment date");
         return;
       }
       let payment = {
@@ -780,7 +828,10 @@ export default {
           this.fail("Please select paymet mode");
           return;
         }
-        if (this.isNullOrUndefined(this.transaction_ref) && this.payment_mode !== 'Cash') {
+        if (
+          this.isNullOrUndefined(this.transaction_ref) &&
+          this.payment_mode !== "Cash"
+        ) {
           this.fail("Please enter cheque no/transaction reference number");
           return;
         }
@@ -859,15 +910,15 @@ export default {
         });
     },
     getAllDrafts() {
-      this.sum = 0
+      this.sum = 0;
       this.print_list = [];
       this.loading = true;
       PaymentService2.getAllDrafts(this.client_id, "DRAFT")
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
           this.drafts = response;
-          for(let d of this.drafts) {
-            this.sum = this.sum +  d.amount
+          for (let d of this.drafts) {
+            this.sum = this.sum + d.amount;
           }
           this.loading = false;
         })
@@ -877,12 +928,12 @@ export default {
         });
     },
     expandDraft(props) {
-      console.log(JSON.stringify(props.row))
-      if(props.row.mode === 'Cash') {
+      console.log(JSON.stringify(props.row));
+      if (props.row.mode === "Cash") {
         props.expand = !props.expand;
-        return
+        return;
       }
-  
+
       if (!props.expand) {
         BankAccountService.accountById(
           this.client_id,

@@ -265,7 +265,7 @@
 </template>
 
 <script>
-import PartyService from "../../../services/PartyService";
+import PartyService from "../../../services/main/PartyService";
 import EnumService from "../../../services/EnumerationService";
 import { commonMixin } from "../../../mixin/common";
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";

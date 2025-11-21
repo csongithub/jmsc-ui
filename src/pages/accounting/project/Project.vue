@@ -347,7 +347,6 @@ import ProjectService from "src/services/ProjectService";
 import { commonMixin } from "../../../mixin/common";
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 import { matCurrencyRupee, matDelete } from "@quasar/extras/material-icons";
-import { date } from "quasar";
 import { ref } from "vue";
 export default {
   name: "Project",
@@ -456,7 +455,12 @@ export default {
   components: {},
   created() {},
   mounted() {
+    window.addEventListener("keydown", this.globalKeyDownHandler);
     this.getAllProjects();
+  },
+  beforeUnmount() {
+    // Remove event listener before the component is unmounted to prevent memory leaks
+    window.removeEventListener("keydown", this.globalKeyDownHandler);
   },
   data() {
     return {
@@ -470,9 +474,18 @@ export default {
       open: false,
       mode: "add",
       dialog_label: "New Project",
+      keysPressed: null,
     };
   },
   methods: {
+    globalKeyDownHandler(event) {
+      // if (this.keysPressed !== "Control") this.keysPressed = event.key; //Control
+      console.log("Global keydown:", event.key);
+      // if (this.keysPressed === "Control" && event.key === "c") {
+      //   this.keysPressed = null;
+      //   this.openDialog("add", null);
+      // }
+    },
     newProject() {
       return {
         id: null,

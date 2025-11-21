@@ -18,7 +18,13 @@
       wrap-cells
     >
       <template v-slot:loading>
-        <q-inner-loading v-if="loading" showing color="primary" label="Loading..." size="sm"/>
+        <q-inner-loading
+          v-if="loading"
+          showing
+          color="primary"
+          label="Loading..."
+          size="sm"
+        />
       </template>
       <template v-slot:header="props">
         <q-tr :props="props">
@@ -29,7 +35,8 @@
         </q-tr>
       </template>
       <template v-slot:top-left>
-        <q-btn v-if="isAdmin || permissions.approvePayments"
+        <q-btn
+          v-if="isAdmin || permissions.approvePayments"
           class="q-mt-sm q-mr-sm text-capitalize"
           color="primary"
           label="Approve All"
@@ -58,33 +65,43 @@
           @click="getAllDrafts()"
         />
         <div class="row q-mt-sm bg-grey" v-if="filter_criteria.show">
-          <q-icon :name="icons.filter" color="primary"/>
+          <q-icon :name="icons.filter" color="primary" />
           <div class="col q-mr-sm" v-if="filter_criteria.from_account">
-            <span >{{'From A/C: ' + filter_criteria.from_account}}</span>
+            <span>{{ "From A/C: " + filter_criteria.from_account }}</span>
           </div>
           <div class="col q-mr-sm" v-if="filter_criteria.to_account">
-            <span >{{'To A/C: ' + filter_criteria.to_account}}</span>
+            <span>{{ "To A/C: " + filter_criteria.to_account }}</span>
           </div>
           <div class="col" v-if="filter_criteria.party_name">
-            <span >{{'Party Name/Nick Name: ' + filter_criteria.party_name}}</span>
+            <span>{{
+              "Party Name/Nick Name: " + filter_criteria.party_name
+            }}</span>
           </div>
         </div>
       </template>
       <template v-slot:top-right>
-        <q-bar v-if="sum > 0"  class="bg-primary text-white q-mr-md text-weight-light shadow-4">
-            <div >
-              <q-icon :name="icons.rupee"/>
-                {{sum.toLocaleString('en-IN') + '.00'}}
-            </div>
-             <q-tooltip 
-                  transition-show="scale"  
-                  transition-hide="scale" 
-                  class="bg-primary text-white shadow-4">
-                  {{getAmountInWords('sum')}}
-              </q-tooltip>
-          </q-bar>
-        <span v-if="showLabel && range.from !== undefined">Payments Between:<b> {{range.from + ' to ' + range.to}}</b></span>
-        <span v-else-if="showLabel">Payments On : <b>{{range}}</b></span>
+        <q-bar
+          v-if="sum > 0"
+          class="bg-primary text-white q-mr-md text-weight-light shadow-4"
+        >
+          <div>
+            <q-icon :name="icons.rupee" />
+            {{ sum.toLocaleString("en-IN") + ".00" }}
+          </div>
+          <q-tooltip
+            transition-show="scale"
+            transition-hide="scale"
+            class="bg-primary text-white shadow-4"
+          >
+            {{ getAmountInWords("sum") }}
+          </q-tooltip>
+        </q-bar>
+        <span v-if="showLabel && range.from !== undefined"
+          >Payments Between:<b> {{ range.from + " to " + range.to }}</b></span
+        >
+        <span v-else-if="showLabel"
+          >Payments On : <b>{{ range }}</b></span
+        >
         <q-btn
           class=""
           color="primary"
@@ -92,9 +109,7 @@
           :icon="icons.filter"
           @click="openFilterWindow()"
         >
-          <q-tooltip :delay="500"
-            >Apply Filters</q-tooltip
-          >
+          <q-tooltip :delay="500">Apply Filters</q-tooltip>
         </q-btn>
         <q-btn
           class=""
@@ -107,7 +122,8 @@
             >Select Payments Date or Payments Between dates</q-tooltip
           >
         </q-btn>
-        <q-input class="q-mr-sm"
+        <q-input
+          class="q-mr-sm"
           borderless
           dense
           outlined
@@ -120,19 +136,19 @@
           </template>
         </q-input>
         <q-select
-            v-model="visibleColumns"
-            multiple
-            outlined
-            dense
-            options-dense
-            :display-value="$q.lang.table.columns"
-            emit-value
-            map-options
-            :options="columns"
-            option-value="name"
-            options-cover
-            style="min-width: 150px"
-          />
+          v-model="visibleColumns"
+          multiple
+          outlined
+          dense
+          options-dense
+          :display-value="$q.lang.table.columns"
+          emit-value
+          map-options
+          :options="columns"
+          option-value="name"
+          options-cover
+          style="min-width: 150px"
+        />
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
@@ -146,8 +162,12 @@
               @click="expandDraft(props)"
               :icon="props.expand ? icons.expendLess : icons.expendMore"
             >
-              <q-tooltip v-if="!props.expand" :delay="1000">Open payment details</q-tooltip>
-              <q-tooltip v-if="props.expand" :delay="1000">Hide payment details</q-tooltip>
+              <q-tooltip v-if="!props.expand" :delay="1000"
+                >Open payment details</q-tooltip
+              >
+              <q-tooltip v-if="props.expand" :delay="1000"
+                >Hide payment details</q-tooltip
+              >
             </q-btn>
             <q-toggle
               v-model="props.row.print"
@@ -156,47 +176,73 @@
               checked-icon="check"
             />
           </q-td>
-          <q-td key="payment_id" :props="props">{{props.row.payment_id}}</q-td>
-          <q-td key="party_nick_name" :props="props">{{props.row.party_nick_name}}</q-td>
-          <q-td key="party_name" :props="props">{{props.row.party_nick_name}}</q-td>
-          <q-td key="account_holder" :props="props">{{props.row.account_holder}}</q-td>
-           <q-td key="account_number" :props="props">{{props.row.account_number}}</q-td>
-          <q-td key="amount" :props="props"> 
-                <q-icon :name="icons.rupee" />
-                {{ props.row.amount.toLocaleString("en-IN") + ".00" }}
+          <q-td key="payment_id" :props="props">{{
+            props.row.payment_id
+          }}</q-td>
+          <q-td key="party_nick_name" :props="props">{{
+            props.row.party_nick_name
+          }}</q-td>
+          <q-td key="party_name" :props="props">{{
+            props.row.party_nick_name
+          }}</q-td>
+          <q-td key="account_holder" :props="props">{{
+            props.row.account_holder
+          }}</q-td>
+          <q-td key="account_number" :props="props">{{
+            props.row.account_number
+          }}</q-td>
+          <q-td key="amount" :props="props">
+            <q-icon :name="icons.rupee" />
+            {{ props.row.amount.toLocaleString("en-IN") + ".00" }}
           </q-td>
-          <q-td key="reason" :props="props">{{props.row.reason}}</q-td>
-          <q-td key="reason_name" :props="props">{{props.row.reason_name}}</q-td>
-          <q-td key="mode" :props="props">{{props.row.mode}}</q-td>
-          <q-td key="transaction_ref" :props="props">{{props.row.transaction_ref}}</q-td>
-          <q-td key="payment_date" :props="props">{{props.row.payment_date}}</q-td>
+          <q-td key="reason" :props="props">{{ props.row.reason }}</q-td>
+          <q-td key="reason_name" :props="props">{{
+            props.row.reason_name
+          }}</q-td>
+          <q-td key="mode" :props="props">{{ props.row.mode }}</q-td>
+          <q-td key="transaction_ref" :props="props">{{
+            props.row.transaction_ref
+          }}</q-td>
+          <q-td key="payment_date" :props="props">{{
+            props.row.payment_date
+          }}</q-td>
           <q-td key="actions">
             <q-btn-dropdown
-                dense
-                size="md"
-                flat
-                v-model="menu"
-                class="text-capitalize text-caption"
-                label="Actions"
-              >
-                <q-list dense>
-                  <q-item v-if="isAdmin || permissions.approvePayments" clickable dense flat v-close-popup @click="adminApproval(props.row, 'single')">
-                     <q-icon name="check" class="text-green q-mr-sm" size="sm"/>
-                     <span  class="text-weight-light">Approve Payment</span>
-                  </q-item>
-                  <q-separator/>
-                  <q-item clickable v-close-popup @click="backToDraft(props.row)">
-                    <q-icon name="arrow_back" class="text-orange q-mr-sm" size="sm"/>
-                     <span  class="text-weight-light">Back to Draft</span>
-                  </q-item>
-                  <q-separator/>
-                  <q-item clickable v-close-popup @click="deleteDraft(props.row)">
-                    <q-icon name="clear" class="text-red q-mr-sm" size="sm"/>
-                     <span  class="text-weight-light">Delete Payment</span>
-                  </q-item>
-                </q-list>
-                
-              </q-btn-dropdown>
+              dense
+              size="md"
+              flat
+              v-model="menu"
+              class="text-capitalize text-caption"
+              label="Actions"
+            >
+              <q-list dense>
+                <q-item
+                  v-if="isAdmin || permissions.approvePayments"
+                  clickable
+                  dense
+                  flat
+                  v-close-popup
+                  @click="adminApproval(props.row, 'single')"
+                >
+                  <q-icon name="check" class="text-green q-mr-sm" size="sm" />
+                  <span class="text-weight-light">Approve Payment</span>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup @click="backToDraft(props.row)">
+                  <q-icon
+                    name="arrow_back"
+                    class="text-orange q-mr-sm"
+                    size="sm"
+                  />
+                  <span class="text-weight-light">Back to Draft</span>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup @click="deleteDraft(props.row)">
+                  <q-icon name="clear" class="text-red q-mr-sm" size="sm" />
+                  <span class="text-weight-light">Delete Payment</span>
+                </q-item>
+              </q-list>
+            </q-btn-dropdown>
           </q-td>
         </q-tr>
         <q-tr v-show="props.expand" :props="props">
@@ -292,65 +338,76 @@
     </q-table>
   </div>
   <div>
-      <q-dialog v-model="selectRange" persistent ref="selectDateRef">
-        <q-card flat bordered>
-          <q-date v-model="range" range today-btn />
-          <q-card-actions align="right">
-            <q-btn
-              class="text-capitalize"
-              color="primary"
-              flat
-              @click="hideDateSelector"
-              >cancel</q-btn
-            >
-            <q-btn
-              class="text-capitalize"
-              color="primary"
-              flat
-              @click="getForSelectedRange"
-              >ok</q-btn
-            >
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
-            <q-dialog v-model="filter_window" persistent ref="filterRef">
-        <q-card flat bordered style="width: 400px; max-width: 80vw"> 
-          <q-bar class="bg-primary glossy text-white text-weight-light text-subtitle2">
+    <q-dialog v-model="selectRange" persistent ref="selectDateRef">
+      <q-card flat bordered>
+        <q-date v-model="range" range today-btn />
+        <q-card-actions align="right">
+          <q-btn
+            class="text-capitalize"
+            color="primary"
+            flat
+            @click="hideDateSelector"
+            >cancel</q-btn
+          >
+          <q-btn
+            class="text-capitalize"
+            color="primary"
+            flat
+            @click="getForSelectedRange"
+            >ok</q-btn
+          >
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="filter_window" persistent ref="filterRef">
+      <q-card flat bordered style="width: 400px; max-width: 80vw">
+        <q-bar
+          class="bg-primary glossy text-white text-weight-light text-subtitle2"
+        >
           {{ "Apply Filters" }}
           <q-space />
           <q-btn dense flat icon="close" v-close-popup>
             <q-tooltip>Close</q-tooltip>
           </q-btn>
         </q-bar>
-          <q-card-section>
-            <div class="row q-mb-sm">
-              <div class="col">
-                <q-input dense outlined v-model="filter_criteria.from_account"
-                  label="From Acccount"
-                  placeholder="Enter from account number"
-                  full-width
-                />
-              </div>
+        <q-card-section>
+          <div class="row q-mb-sm">
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                v-model="filter_criteria.from_account"
+                label="From Acccount"
+                placeholder="Enter from account number"
+                full-width
+              />
             </div>
-            <div class="row q-mb-sm">
-              <div class="col">
-                <q-input dense outlined v-model="filter_criteria.to_account"
-                  label="To Acccount"
-                  placeholder="Enter to account number"
-                  full-width
-                />
-              </div>
+          </div>
+          <div class="row q-mb-sm">
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                v-model="filter_criteria.to_account"
+                label="To Acccount"
+                placeholder="Enter to account number"
+                full-width
+              />
             </div>
-            <div class="row q-mb-sm">
-              <div class="col">
-                <q-input dense outlined v-model="filter_criteria.party_name"
-                  label="Party Name / Nick Name"
-                  placeholder="Enter party name or nick name"
-                  full-width
-                />
-              </div>
+          </div>
+          <div class="row q-mb-sm">
+            <div class="col">
+              <q-input
+                dense
+                outlined
+                v-model="filter_criteria.party_name"
+                label="Party Name / Nick Name"
+                placeholder="Enter party name or nick name"
+                full-width
+              />
             </div>
-            <!-- <div class="row q-mb-sm">
+          </div>
+          <!-- <div class="row q-mb-sm">
               <div class="col q-mr-sm">
                <q-input dense outlined v-model="filter_criteria.range.from"
                   label="From Date"
@@ -366,24 +423,25 @@
                 />
               </div>
             </div> -->
-          </q-card-section>
-          <q-card-actions align="right">
-            <q-btn
-              class="text-capitalize"
-              color="primary"
-              flat
-              label="Clear"
-              @click="clearFilter"/>
-            <q-btn
-              class="text-capitalize"
-              color="primary"
-              flat
-              label="Apply Filter"
-              @click="getFilterResult"/>
-            
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn
+            class="text-capitalize"
+            color="primary"
+            flat
+            label="Clear"
+            @click="clearFilter"
+          />
+          <q-btn
+            class="text-capitalize"
+            color="primary"
+            flat
+            label="Apply Filter"
+            @click="getFilterResult"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
   <div>
     <q-dialog v-model="open" persistent @hide="onHide" ref="createPaymentRef">
@@ -413,7 +471,7 @@ import AdminAuth from "../../auth/AdminAuth";
 import { commonMixin } from "../../../mixin/common";
 import Payment from "../payment/Payment.vue";
 import PaymentService2 from "../../../services/PaymentService2";
-import BankAccountService from "../../../services/BankAccountService";
+import BankAccountService from "../../../services/main/BankAccountService";
 import PartyAccountService from "../../../services/PartyAccountService";
 import IndianBankRTGS from "../payment/templates/IndianBankRTGSNew.vue";
 import {
@@ -421,7 +479,7 @@ import {
   matExpandMore,
   matExpandLess,
   matDateRange,
-  matFilterAlt
+  matFilterAlt,
 } from "@quasar/extras/material-icons";
 import { ref } from "vue";
 export default {
@@ -436,9 +494,16 @@ export default {
         expendMore: matExpandMore,
         expendLess: matExpandLess,
         range: matDateRange,
-        filter: matFilterAlt
+        filter: matFilterAlt,
       },
-      visibleColumns: ref(['party_nick_name', 'account_holder', 'amount', 'mode', 'transaction_ref', 'payment_date']),
+      visibleColumns: ref([
+        "party_nick_name",
+        "account_holder",
+        "amount",
+        "mode",
+        "transaction_ref",
+        "payment_date",
+      ]),
     };
   },
   components: {
@@ -457,13 +522,13 @@ export default {
       authTitle: "",
       authMessage: "",
       authData: null,
-      actionLabel: 'Approve',
+      actionLabel: "Approve",
       approval_mode: null,
       client_id: this.getClientId(),
       draft_pagination: { rowsPerPage: 100 },
-       sum: 0,
+      sum: 0,
       columns: [
-         {
+        {
           name: "payment_id",
           align: "left",
           label: "Payment ID",
@@ -475,7 +540,7 @@ export default {
           required: true,
           label: "Party",
           align: "left",
-          field: row => this.getPartyNames(row.party_id,'nick_name'),
+          field: (row) => this.getPartyNames(row.party_id, "nick_name"),
           format: (val) => `${val}`,
           sortable: true,
         },
@@ -483,7 +548,7 @@ export default {
           name: "party_name",
           align: "left",
           label: "Party Legal Name",
-          field: row => this.getPartyNames(row.party_id,'name'),
+          field: (row) => this.getPartyNames(row.party_id, "name"),
           sortable: true,
         },
         {
@@ -571,19 +636,23 @@ export default {
       filter_criteria: this.newFiletr(),
       isAdmin: this.isAdmin(),
       permissions: this.getPermissions(),
-      askPasswordForAdmin: false
+      askPasswordForAdmin: false,
     };
   },
   methods: {
     clearFilter() {
-      this.filter_criteria = this.newFiletr()
+      this.filter_criteria = this.newFiletr();
     },
     getFilterResult() {
-      PaymentService2.getPaymentByCriteria(this.client_id, "APPROVAL_REQUIRED", this.filter_criteria)
+      PaymentService2.getPaymentByCriteria(
+        this.client_id,
+        "APPROVAL_REQUIRED",
+        this.filter_criteria
+      )
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
           this.drafts = response;
-          this.filter_criteria.show = true
+          this.filter_criteria.show = true;
         })
         .catch((err) => {});
     },
@@ -595,40 +664,39 @@ export default {
         party_name: null,
         range: {
           from: null,
-          to: null
-        }
-      }
+          to: null,
+        },
+      };
     },
     openFilterWindow() {
-      this.filter_criteria.show = false
-      this.filter_window = true
+      this.filter_criteria.show = false;
+      this.filter_window = true;
     },
     getAmountInWords(mode) {
       if (this.sum > 0)
-        this.in_words =
-          PaymentService2.convertNumberToWords(this.sum) + "Only";
+        this.in_words = PaymentService2.convertNumberToWords(this.sum) + "Only";
       else this.in_words = "";
 
       return this.in_words;
     },
     hideRangeLabel() {
       this.range = { from: "", to: "" };
-      this.showLabel = false
+      this.showLabel = false;
     },
-    showDateSelector(){
-      this.beforeShowDateSelector()
-      this.selectRange = true
+    showDateSelector() {
+      this.beforeShowDateSelector();
+      this.selectRange = true;
     },
     beforeShowDateSelector() {
-      this.hideRangeLabel()
+      this.hideRangeLabel();
     },
-    hideDateSelector(){
-      this.selectRange = false
+    hideDateSelector() {
+      this.selectRange = false;
     },
     getForSelectedRange() {
-      this.clearFilter()
-      this.showLabel = true
-      this.sum = 0
+      this.clearFilter();
+      this.showLabel = true;
+      this.sum = 0;
       let range = {};
       if (this.range.from !== undefined && this.range.to !== undefined) {
         range = {
@@ -646,16 +714,20 @@ export default {
         range: range,
       };
       // window.alert(JSON.stringify(req))
-      PaymentService2.paymentsBetweenDates(this.client_id, "APPROVAL_REQUIRED", req)
+      PaymentService2.paymentsBetweenDates(
+        this.client_id,
+        "APPROVAL_REQUIRED",
+        req
+      )
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
           this.drafts = response;
-          for(let d of this.drafts) {
-            this.sum = this.sum + d.amount
+          for (let d of this.drafts) {
+            this.sum = this.sum + d.amount;
           }
         })
         .catch((err) => {});
-        this.hideDateSelector()
+      this.hideDateSelector();
     },
     openPrint() {
       this.payments.splice(0, this.payments.length);
@@ -733,7 +805,7 @@ export default {
     },
     adminApproval(draft, approval_mode) {
       this.approval_mode = approval_mode;
-      if(this.askPasswordForAdmin) {
+      if (this.askPasswordForAdmin) {
         this.openAuth(
           "Approve",
           "Please enter the admin password",
@@ -742,7 +814,7 @@ export default {
           "Approve"
         );
       } else {
-        this.approveWithoutPassword(draft)
+        this.approveWithoutPassword(draft);
       }
     },
     approveWithoutPassword(draft) {
@@ -754,7 +826,7 @@ export default {
           persistent: true,
         })
         .onOk(() => {
-          this.postApproval(draft)
+          this.postApproval(draft);
         })
         .onOk(() => {})
         .onCancel(() => {})
@@ -771,11 +843,11 @@ export default {
       );
     },
     openAuth(title, message, options, data, actionLabel) {
-      this.authTitle = title
-      this.authMessage = message
-      this.openAuthorization = options
-      this.authData = data
-      this.actionLabel = actionLabel
+      this.authTitle = title;
+      this.authMessage = message;
+      this.openAuthorization = options;
+      this.authData = data;
+      this.actionLabel = actionLabel;
     },
     cancelAuth(val) {
       this.openAuthorization = val;
@@ -789,33 +861,33 @@ export default {
       }
     },
     approvePayments(payment, is_single_approve) {
-      let self = this
-      let payments = []
-      if(is_single_approve) {
-        payments.push(payment.payment_id)
+      let self = this;
+      let payments = [];
+      if (is_single_approve) {
+        payments.push(payment.payment_id);
       } else {
         for (let d of this.drafts) {
-          payments.push(d.payment_id)
+          payments.push(d.payment_id);
         }
       }
       let req = {
         client_id: this.client_id,
-        payments: payments
-      }
+        payments: payments,
+      };
       PaymentService2.approvePayments(req)
-          .then((response) => {
-            if (response === 0) {
-              self.getAllDrafts();
-              if(is_single_approve) {
-                self.success("Payment has been approved");
-              } else {
-                self.success("All payments has been approved");
-              }
+        .then((response) => {
+          if (response === 0) {
+            self.getAllDrafts();
+            if (is_single_approve) {
+              self.success("Payment has been approved");
+            } else {
+              self.success("All payments has been approved");
             }
-          })
-          .catch((err) => {
-            self.fail(this.getErrorMessage(err));
-          });
+          }
+        })
+        .catch((err) => {
+          self.fail(this.getErrorMessage(err));
+        });
     },
     deleteDraft(draft) {
       console.log(JSON.stringify(draft));
@@ -857,19 +929,22 @@ export default {
           persistent: true,
         })
         .onOk(() => {
-          this.backToDraftInternal(draft)
+          this.backToDraftInternal(draft);
         })
         .onOk(() => {})
         .onCancel(() => {})
         .onDismiss(() => {});
     },
     backToDraftInternal(draft) {
-      let self = this
+      let self = this;
       PaymentService2.rejectPayment(this.client_id, draft.payment_id)
         .then((response) => {
           if (response === 0) {
             // self.getAllDrafts();
-            this.drafts.splice(this.drafts.findIndex(d => d.payment_id === draft.payment_id) , 1)
+            this.drafts.splice(
+              this.drafts.findIndex((d) => d.payment_id === draft.payment_id),
+              1
+            );
             self.success("Payment has been rejected");
           }
         })
@@ -877,7 +952,7 @@ export default {
           self.fail(self.getErrorMessage(err));
         });
     },
-    linkPartyAccount(party_id, account_id){
+    linkPartyAccount(party_id, account_id) {
       PartyAccountService.linkPartyAccount(this.client_id, party_id, account_id)
         .then((response) => {
           if (response === 0) {
@@ -888,17 +963,17 @@ export default {
         });
     },
     getAllDrafts() {
-      this.clearFilter()
-      this.sum = 0
+      this.clearFilter();
+      this.sum = 0;
       this.selected_list = [];
       this.loading = true;
-      this.hideRangeLabel()
+      this.hideRangeLabel();
       PaymentService2.getAllDrafts(this.client_id, "APPROVAL_REQUIRED")
         .then((response) => {
           this.drafts.splice(0, this.drafts.length);
           this.drafts = response;
-          for(let d of this.drafts) {
-            this.sum = this.sum +  d.amount
+          for (let d of this.drafts) {
+            this.sum = this.sum + d.amount;
           }
           this.loading = false;
         })

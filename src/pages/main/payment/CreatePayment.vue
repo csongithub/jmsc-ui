@@ -411,9 +411,9 @@
 <script>
 import { commonMixin } from "../../../mixin/common";
 import Payment from "../payment/Payment.vue";
-import PartyService from "../../../services/PartyService";
+import PartyService from "../../../services/main/PartyService";
 import PaymentService2 from "../../../services/PaymentService2";
-import BankAccountService from "../../../services/BankAccountService";
+import BankAccountService from "../../../services/main/BankAccountService";
 import PartyAccountService from "../../../services/PartyAccountService";
 import SiteService from "../../../services/SiteService";
 import MachineService from "../../../services/MachineService";

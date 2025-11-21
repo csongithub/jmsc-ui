@@ -70,7 +70,7 @@ export default boot(({ app }) => {
     },
     function (error) {
       if (401 === error.response.status) {
-        window.alert("Previous session expired, Please login again");
+        // window.alert("Previous session expired, Please login again");
         LocalStorage.clear();
         this.$router.push({ name: "login" });
       } else {
