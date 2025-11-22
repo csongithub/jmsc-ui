@@ -126,6 +126,7 @@
           >
             <div class="row">
               <q-select
+                class="full-width"
                 dense
                 outlined
                 hide-bottom-space
@@ -153,6 +154,8 @@
             </div>
             <div class="row">
               <q-input
+                hide-bottom-space
+                class="full-width"
                 dense
                 outlined
                 v-model="ledger.code"
@@ -164,6 +167,8 @@
             </div>
             <div class="row">
               <q-input
+                class="full-width"
+                hide-bottom-space
                 dense
                 outlined
                 v-model="ledger.name"
@@ -175,6 +180,8 @@
             </div>
             <div class="row">
               <q-input
+                class="full-width"
+                hide-bottom-space
                 dense
                 outlined
                 v-model="ledger.startDate"
@@ -202,6 +209,8 @@
             </div>
             <div class="row">
               <q-input
+                class="full-width"
+                hide-bottom-space
                 type="number"
                 dense
                 outlined
@@ -214,6 +223,8 @@
             </div>
             <div class="row">
               <q-input
+                class="full-width"
+                hide-bottom-space
                 dense
                 outlined
                 v-model="ledger.remark"
@@ -228,19 +239,17 @@
               <q-space />
               <q-btn
                 dense
-                glossy
                 size="sm"
                 label="Create"
                 type="submit"
-                color="primary"
+                color="secondary"
                 class="text-capitalize q-px-lg"
               />
 
               <q-btn
                 dense
-                glossy
                 size="sm"
-                label="Cancel"
+                label="Reset"
                 type="reset"
                 class="text-capitalize q-ml-sm q-px-lg"
               />

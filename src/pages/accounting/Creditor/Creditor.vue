@@ -49,113 +49,125 @@
               />
             </div>
           </div>
-          <div class="q-mt-xl">
-            <q-form
-              @submit="saveCreditor"
-              @reset="cancel"
-              class="q-gutter-md"
-              v-if="showCreate"
+          <q-card style="" v-if="showCreate" class="full-width">
+            <q-bar
+              class="q-mt-md bg-secondary text-white text-weight-light text-subtitle2"
             >
-              <div>
-                <q-input
-                  dense
-                  outlined
-                  v-model="creditor.name"
-                  label="Creditor Name"
-                  lazy-rules
-                  :rules="[
-                    (val) => (val && val.length > 0) || 'Enter Creditor name',
-                  ]"
-                />
-              </div>
-              <div>
-                <q-input
-                  dense
-                  outlined
-                  v-model="creditor.address"
-                  label="Creditor Address"
-                  lazy-rules
-                  :rules="[
-                    (val) =>
-                      (val && val.length > 0) || 'Enter creditor address',
-                  ]"
-                />
-              </div>
-              <div>
-                <q-select
-                  dense
-                  outlined=""
-                  hide-bottom-space
-                  label="Select Party"
-                  label-color="secondary"
-                  :options="partyOptions"
-                  v-model="creditor.partyId"
-                  option-disable="inactive"
-                  emit-value
-                  map-options
-                  use-input
-                  input-debounce="0"
-                  @filter="filterParty"
-                  lazy-rules
-                  :rules="[
-                    (val) => (val && val !== null) || 'Please link a party',
-                  ]"
+              {{ "New Creditor" }}
+            </q-bar>
+            <q-card-section>
+              <div class="">
+                <q-form
+                  @submit="saveCreditor"
+                  @reset="cancel"
+                  class="q-gutter-md"
                 >
-                  <template v-slot:no-option>
-                    <q-item>
-                      <q-item-section class="text-red">
-                        No Party Matched
-                      </q-item-section>
-                    </q-item>
-                  </template>
-                </q-select>
-              </div>
+                  <div>
+                    <q-input
+                      dense
+                      outlined
+                      v-model="creditor.name"
+                      label="Creditor Name"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Enter Creditor name',
+                      ]"
+                    />
+                  </div>
+                  <div>
+                    <q-input
+                      dense
+                      outlined
+                      v-model="creditor.address"
+                      label="Creditor Address"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Enter creditor address',
+                      ]"
+                    />
+                  </div>
+                  <div>
+                    <q-select
+                      dense
+                      outlined=""
+                      hide-bottom-space
+                      label="Select Party"
+                      label-color="secondary"
+                      :options="partyOptions"
+                      v-model="creditor.partyId"
+                      option-disable="inactive"
+                      emit-value
+                      map-options
+                      use-input
+                      input-debounce="0"
+                      @filter="filterParty"
+                      lazy-rules
+                      :rules="[
+                        (val) => (val && val !== null) || 'Please link a party',
+                      ]"
+                    >
+                      <template v-slot:no-option>
+                        <q-item>
+                          <q-item-section class="text-red">
+                            No Party Matched
+                          </q-item-section>
+                        </q-item>
+                      </template>
+                    </q-select>
+                  </div>
 
-              <div>
-                <q-btn
-                  dense
-                  size="sm"
-                  label="Save"
-                  type="submit"
-                  color="secondary"
-                  class="text-capitalize q-px-md"
-                />
+                  <div>
+                    <q-btn
+                      dense
+                      size="sm"
+                      label="Save"
+                      type="submit"
+                      color="secondary"
+                      class="text-capitalize q-px-md"
+                    />
 
-                <q-btn
-                  dense
-                  size="sm"
-                  label="Cancel"
-                  type="reset"
-                  class="text-capitalize q-px-md q-mx-sm"
-                />
+                    <q-btn
+                      dense
+                      size="sm"
+                      label="Cancel"
+                      type="reset"
+                      class="text-capitalize q-px-md q-mx-sm"
+                    />
+                  </div>
+                </q-form></div
+            ></q-card-section>
+          </q-card>
+
+          <q-card v-if="selectedCreditor !== null" class="q-mt-xl full-width">
+            <q-bar
+              class="bg-secondary text-white text-weight-light text-subtitle2"
+            >
+            </q-bar>
+            <q-card-section>
+              <div class="row">
+                <div class="col">NAME</div>
+                <div class="col">{{ ":" + creditor.name }}</div>
               </div>
-            </q-form>
-          </div>
-          <div
-            v-if="selectedCreditor !== null"
-            class="bg-grey-2 q-pa-md shadow-1"
-          >
-            <div class="row">
-              <div class="col">NAME</div>
-              <div class="col">{{ ":" + creditor.name }}</div>
-            </div>
-            <div class="row q-mt-sm">
-              <div class="col">ADDRESS</div>
-              <div class="col">{{ ":" + creditor.address }}</div>
-            </div>
-            <div class="row q-mt-sm">
-              <div class="col">PARTY LEGAL NAME</div>
-              <div class="col">
-                {{ ":" + getPartyNames(creditor.partyId, "name") }}
+              <div class="row q-mt-sm">
+                <div class="col">ADDRESS</div>
+                <div class="col">{{ ":" + creditor.address }}</div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col">PARTY NICK NAME</div>
-              <div class="col text-secondary">
-                {{ ":" + getPartyNames(creditor.partyId, "nick_name") }}
+              <div class="row q-mt-sm">
+                <div class="col">PARTY LEGAL NAME</div>
+                <div class="col">
+                  {{ ":" + getPartyNames(creditor.partyId, "name") }}
+                </div>
               </div>
-            </div>
-          </div>
+              <div class="row">
+                <div class="col">PARTY NICK NAME</div>
+                <div class="col text-secondary">
+                  {{ ":" + getPartyNames(creditor.partyId, "nick_name") }}
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
         </div>
       </template>
 
@@ -170,10 +182,11 @@
 
       <template v-slot:after>
         <div class="q-pa-md">
-          <q-bar dense>
-            <q-btn dense flat :icon="fabApple" />
+          <q-bar
+            dense
+            class="bg-secondary text-white text-weight-light text-subtitle2"
+          >
             <div class="">Add Materials (Ctrl + M)</div>
-            <q-space />
           </q-bar>
           <q-table
             flat
@@ -301,10 +314,8 @@
               </q-tr>
             </template>
           </q-table>
-          <q-page-container>
-            <q-page
-              class="row justify-center items-center text-bold text-uppercase"
-            >
+          <q-page-container class="q-mt-xl" v-if="selectedCreditor === null">
+            <q-page class="row justify-center text-bold text-uppercase">
               {{ "please select a creditor" }}
             </q-page>
           </q-page-container>
