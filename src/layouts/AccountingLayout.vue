@@ -80,7 +80,7 @@ import { commonMixin } from "../mixin/common";
 import Dashboard from "../pages/accounting/Dashboard.vue";
 import Project from "../pages/accounting/project/Project.vue";
 import Creditor from "../pages/accounting/Creditor/Creditor.vue";
-import Leadger from "../pages/accounting/Leadger.vue";
+import Leadger from "../pages/accounting/Ledger/Leadger.vue";
 import ProjectService from "src/services/ProjectService";
 import { ref } from "vue";
 

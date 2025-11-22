@@ -131,7 +131,10 @@
               </div>
             </q-form>
           </div>
-          <div v-if="selectedCreditor !== null">
+          <div
+            v-if="selectedCreditor !== null"
+            class="bg-grey-2 q-pa-md shadow-1"
+          >
             <div class="row">
               <div class="col">NAME</div>
               <div class="col">{{ ":" + creditor.name }}</div>
@@ -169,7 +172,7 @@
         <div class="q-pa-md">
           <q-bar dense>
             <q-btn dense flat :icon="fabApple" />
-            <div class="text-weight-bold">SUPPLIES (Alt+C)</div>
+            <div class="">Add Materials (Ctrl + M)</div>
             <q-space />
           </q-bar>
           <q-table
@@ -184,14 +187,14 @@
             :filter="filterItem"
           >
             <template v-slot:top-left v-if="selectedCreditor != null">
-              <q-btn
+              <!-- <q-btn
                 class="text-capitalize"
                 color="secondary"
                 label="Add More"
                 size="sm"
                 @click="addItem"
                 :icon="icons.add"
-              />
+              /> -->
 
               <!-- <q-btn
                 class="text-capitalize q-ml-sm"
@@ -281,6 +284,13 @@
                     @click="addItemToList(props.row)"
                   />
                   <q-icon
+                    v-if="props.row.mode === 'edit'"
+                    color="red"
+                    class="q-mr-sm pointer"
+                    :name="icons.delete"
+                    @click="removeItem(props.rowIndex)"
+                  />
+                  <q-icon
                     v-else
                     color="primary"
                     class="q-mr-sm pointer"
@@ -309,7 +319,12 @@ import { ref } from "vue";
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
 import PartyService from "src/services/main/PartyService";
-import { fasPlus, fasEdit, fasSave } from "@quasar/extras/fontawesome-v5";
+import {
+  fasPlus,
+  fasEdit,
+  fasSave,
+  fasTrash,
+} from "@quasar/extras/fontawesome-v5";
 import { reset } from "numeral";
 
 export default {
@@ -334,6 +349,7 @@ export default {
         plus: fasPlus,
         edit: fasEdit,
         save: fasSave,
+        delete: fasTrash,
       },
       columns: [
         {
@@ -370,11 +386,11 @@ export default {
   },
   methods: {
     globalKeyDownHandler(event) {
-      console.log("Global keydown:", event.key);
-      if (this.keysPressed !== "Alt") this.keysPressed = event.key;
+      // console.log("Global keydown:", event.key);
+      if (this.keysPressed !== "Control") this.keysPressed = event.key;
       if (
-        this.keysPressed === "Alt" &&
-        event.key === "c" &&
+        this.keysPressed === "Control" &&
+        event.key === "m" &&
         this.selectedCreditor !== null
       ) {
         this.keysPressed = null;
@@ -474,8 +490,14 @@ export default {
         this.saveCreditor("item saved");
       }
     },
+    removeItem(rowIndex) {
+      // window.alert(rowIndex);
+      this.items.splice(rowIndex, 1);
+      this.creditor.items = JSON.stringify(this.items);
+      this.saveCreditor("item saved");
+    },
   },
 };
 </script>
 
-<style></style>
+<style lang="sass" scoped></style>

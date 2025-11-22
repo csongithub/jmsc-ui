@@ -39,4 +39,48 @@ export default {
         return Promise.reject(err);
       });
   },
+  createLedger(ledger) {
+    return api
+      .post("/v1/accounting/ledger/create_or_update", ledger)
+      .then((response) => {
+        let ledger = response.data;
+        return ledger;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in creating ledger: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
+  getLedgers(clientId, creditorId) {
+    return api
+      .get("/v1/accounting/ledger/" + clientId + "/" + creditorId)
+      .then((response) => {
+        let ledgers = response.data;
+        return ledgers;
+      })
+      .catch((err) => {
+        console.log(
+          "Error while getting ledgers: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
+  getLedger(clientId, creditorId, ledgerId) {
+    return api
+      .get(
+        "/v1/accounting/ledger/" + clientId + "/" + creditorId + "/" + ledgerId
+      )
+      .then((response) => {
+        let ledger = response.data;
+        return ledger;
+      })
+      .catch((err) => {
+        console.log(
+          "Error while getting ledger: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
 };
