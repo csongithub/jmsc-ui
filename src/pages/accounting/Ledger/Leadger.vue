@@ -1,6 +1,6 @@
 <template>
   <q-layout>
-    <q-splitter v-model="splitterModel" style="height: 800px" class="q-ml-sm">
+    <q-splitter v-model="splitterModel" style="height: 800px">
       <template v-slot:before>
         <div class="row">
           <div class="col">
@@ -93,12 +93,44 @@
           </q-card>
         </div>
         <div class="q-mt-lg">
-          <div class="row text-">{{ "Ctrl + L : New Ledger" }}</div>
+          <div class="row text-">{{ "Alt + L : New Ledger" }}</div>
         </div>
       </template>
 
       <template v-slot:after>
-        <div></div>
+        <div class="q-ml-sm">
+          <q-card>
+            <q-tabs
+              v-model="tab"
+              dense
+              class="text-grey"
+              active-color="primary"
+              indicator-color="primary"
+              align="justify"
+              narrow-indicator
+              :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
+            >
+              <q-tab name="credit" label="Credit" />
+              <q-tab name="debit" label="Debit" />
+              <q-tab name="view" label="View" />
+            </q-tabs>
+
+            <q-separator />
+
+            <q-tab-panels v-model="tab" animated class="q-mt-sm">
+              <q-tab-panel name="credit"
+                ><Credit
+                  :creditorId="selectedCreditorId"
+                  :ledgerId="selectedLedger !== null ? selectedLedger.id : null"
+                ></Credit
+              ></q-tab-panel>
+
+              <q-tab-panel name="debit">Debit, what goes out</q-tab-panel>
+
+              <q-tab-panel name="view">Report </q-tab-panel>
+            </q-tab-panels>
+          </q-card>
+        </div>
       </template>
     </q-splitter>
 
@@ -107,7 +139,7 @@
       persistent
       @hide="closeCreateLedger"
       @before-show="openCreateLedger"
-      ref="neweProjectRef"
+      ref="newLedgerRef"
     >
       <q-card style="width: 300px; max-width: 80vw">
         <q-bar class="bg-secondary text-white text-weight-light text-subtitle2">
@@ -265,21 +297,25 @@
 import { ref } from "vue";
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
+import Credit from "./CreditEntry.vue";
+import Debit from "./Debit.vue";
+import View from "./View.vue";
+
 export default {
   name: "Ledger",
   mixins: [commonMixin],
-  components: {},
+  components: { Credit },
   mounted() {
-    window.addEventListener("keydown", this.globalKeyDownHandler);
+    window.addEventListener("keydown", this.altKeyDownHandler);
     this.getAllCreditors();
   },
   beforeUnmount() {
     // Remove event listener before the component is unmounted to prevent memory leaks
-    window.removeEventListener("keydown", this.globalKeyDownHandler);
+    window.removeEventListener("keydown", this.altKeyDownHandler);
   },
   beforeUnmount() {},
   setup() {
-    return { splitterModel: ref(20) };
+    return { splitterModel: ref(20), tab: ref("credit") };
   },
   data() {
     return {
@@ -293,17 +329,19 @@ export default {
       ledger: this.newLedger(),
       showCreateLedger: false,
       keysPressed: null,
+      items: null,
     };
   },
   methods: {
-    globalKeyDownHandler(event) {
-      // console.log("Global keydown:", event.key);
-      if (this.keysPressed !== "Control") this.keysPressed = event.key;
+    altKeyDownHandler(event) {
+      console.log(" keydown:", event.key);
+      if (this.keysPressed !== "Alt") this.keysPressed = event.key;
       if (
-        this.keysPressed === "Control" &&
+        this.keysPressed === "Alt" &&
         event.key === "l" &&
         this.selectedCreditor !== null
       ) {
+        console.log("Control keydown:", event.key);
         this.keysPressed = null;
         this.showCreateLedger = true;
       }

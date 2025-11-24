@@ -43,7 +43,6 @@
                 class="text-capitalize text-secondary"
                 :disable="disableSelectCreditor"
                 label="Create New"
-                :icon="icons.add"
                 outline
                 @click="showCreateForm('add')"
               />
@@ -186,7 +185,7 @@
             dense
             class="bg-secondary text-white text-weight-light text-subtitle2"
           >
-            <div class="">Add Materials (Ctrl + M)</div>
+            <div class="">Add Materials (Alt + a)</div>
           </q-bar>
           <q-table
             flat
@@ -398,10 +397,10 @@ export default {
   methods: {
     globalKeyDownHandler(event) {
       // console.log("Global keydown:", event.key);
-      if (this.keysPressed !== "Control") this.keysPressed = event.key;
+      if (this.keysPressed !== "Alt") this.keysPressed = event.key;
       if (
-        this.keysPressed === "Control" &&
-        event.key === "m" &&
+        this.keysPressed === "Alt" &&
+        event.key === "a" &&
         this.selectedCreditor !== null
       ) {
         this.keysPressed = null;

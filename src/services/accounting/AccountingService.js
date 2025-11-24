@@ -39,6 +39,18 @@ export default {
         return Promise.reject(err);
       });
   },
+  getMaterials(clientId, creditorId) {
+    return api
+      .get("/v1/accounting/creditor/materials/" + clientId + "/" + creditorId)
+      .then((response) => {
+        let materials = response.data;
+        return materials;
+      })
+      .catch((err) => {
+        console.log("Error in getting materials: " + JSON.stringify(err));
+        return Promise.reject(err);
+      });
+  },
   createLedger(ledger) {
     return api
       .post("/v1/accounting/ledger/create_or_update", ledger)
