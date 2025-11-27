@@ -29,4 +29,18 @@ export default {
         return Promise.reject(err);
       });
   },
+  getProjectList(client_id) {
+    return api
+      .get("/v1/projects/all/list/" + client_id)
+      .then((response) => {
+        let projects = response.data;
+        return projects;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting projects: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
 };

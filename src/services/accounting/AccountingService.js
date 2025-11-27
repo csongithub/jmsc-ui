@@ -95,4 +95,32 @@ export default {
         return Promise.reject(err);
       });
   },
+  postEntries(entries) {
+    return api
+      .post("/v1/accounting/ledger/entries/post", entries)
+      .then((response) => {
+        let status = response.data;
+        return status;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting records: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
+  findEntryByDateAndChallan(req) {
+    return api
+      .post("/v1/accounting/ledger/entries/validate_by_date_and_challan", req)
+      .then((response) => {
+        let entry = response.data;
+        return entry;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting entry: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
 };

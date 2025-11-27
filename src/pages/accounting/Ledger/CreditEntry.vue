@@ -8,18 +8,80 @@
       :columns="columns"
       row-key="name"
       binary-state-sort
-      :pagination="credits_pagination"
       :visible-columns="visibleColumns"
     >
-      <template v-slot:top=""> </template>
+      <template v-slot:top="">
+        <q-input
+          bg-color="secondary"
+          filled
+          :disable="disable"
+          class="custom-small-input"
+          style="max-width: 150px"
+          hide-bottom-space
+          dense
+          outlined
+          v-model="creditEntryDate"
+          :rules="['DD-MM-YYYY']"
+          placeholder="dd-mm-yyyy"
+        >
+          <template v-slot:append>
+            <q-icon name="event" class="cursor-pointer">
+              <q-popup-proxy
+                ref="qDateProxy"
+                cover
+                transition-show="scale"
+                transition-hide="scale"
+              >
+                <q-date v-model="creditEntryDate" mask="DD-MM-YYYY" minimal />
+              </q-popup-proxy>
+            </q-icon>
+          </template>
+        </q-input>
+        <q-select
+          :disable="disable"
+          bg-color="secondary"
+          filled
+          class="q-ml-sm custom-small-select"
+          dense
+          outlined
+          hide-bottom-space
+          label-color="secondary"
+          :options="projectOptions"
+          v-model="selectedProjectId"
+          option-disable="inactive"
+          emit-value
+          map-options
+          use-input
+          input-debounce="0"
+          @filter="filterProject"
+          :placeholder="selectedProjectId === null ? 'select project' : ''"
+        >
+          <template #label
+            ><span class="text-subtitle2">Select Project</span></template
+          >
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-red">
+                No Creditor Matched
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
+      </template>
       <template v-slot:top-left> </template>
       <template v-slot:bottom>
         <q-btn
+          :disable="
+            disable || creditEntryDate === null || selectedProjectId === null
+          "
           class="text-secondary"
           label="add (Alt + a)"
           @click="addNewEntry"
           size="10px"
         /><q-btn
+          :disable="
+            disable || creditEntryDate === null || selectedProjectId === null
+          "
           class="text-secondary dense q-ml-sm"
           label="duplicate (Alt + c)"
           @click="addDuplicateNewEntry"
@@ -27,38 +89,39 @@
         />
         <q-space />
         <q-btn
+          :disable="
+            disable || creditEntryDate === null || selectedProjectId === null
+          "
           color="secondary"
           class="text-secondary q-ml-md float-right"
           label="Post (Alt + s)"
           size="10px"
+          @click="postEntries()"
         />
       </template>
-      <template v-slot:loading>
-        <!-- <q-inner-loading
-          class="text-red"
-          v-if="creditorId === null || ledgerId === null"
-          showing
-          color="primary"
-          label="Select a Creditor and a Ledger"
-          size="sm"
-          transition-show
-        /> -->
-      </template>
+
       <template v-slot:top-right> </template>
       <template v-slot:body="props" v-if="items !== null">
         <q-tr :props="props" :ref="'itemRow-' + props.rowIndex">
           <q-td key="receipt" :props="props">
             <q-input
-              :disable="disable"
+              :disable="
+                disable ||
+                creditEntryDate === null ||
+                selectedProjectId === null
+              "
               class="custom-small-input"
               style="max-width: 100px"
               v-model="props.row.receipt"
               dense
               outlined
               :placeholder="'challan'"
+              @blur="
+                validateChallan($event.target.value, props, props.rowIndex)
+              "
             />
           </q-td>
-          <q-td key="date" :props="props">
+          <!-- <q-td key="date" :props="props">
             <q-input
               :disable="disable"
               class="custom-small-input"
@@ -87,10 +150,14 @@
                 </q-icon>
               </template>
             </q-input>
-          </q-td>
+          </q-td> -->
           <q-td key="item">
             <q-select
-              :disable="disable"
+              :disable="
+                disable ||
+                creditEntryDate === null ||
+                selectedProjectId === null
+              "
               class="custom-small-select"
               style="max-width: 150px"
               dense
@@ -98,21 +165,27 @@
               option-label="name"
               option-value="name"
               :options="itemOptions"
-              v-model="props.row.name"
+              v-model="props.row.item"
               option-disable="inactive"
               emit-value
               map-options
               use-input
+              input-debounce="0"
               @filter="filterItem"
               @update:model-value="setRow(props.row)"
               hide-dropdown-icon
+              :placeholder="props.row.item === null ? 'item' : ''"
             >
             </q-select>
           </q-td>
 
           <q-td key="quantity" :props="props">
             <q-input
-              :disable="disable"
+              :disable="
+                disable ||
+                creditEntryDate === null ||
+                selectedProjectId === null
+              "
               class="custom-small-input"
               type="number"
               style="max-width: 100px"
@@ -131,7 +204,11 @@
           </q-td>
           <q-td key="rate" :props="props">
             <q-input
-              :disable="disable"
+              :disable="
+                disable ||
+                creditEntryDate === null ||
+                selectedProjectId === null
+              "
               class="custom-small-input"
               type="number"
               style="max-width: 100px"
@@ -144,7 +221,11 @@
           </q-td>
           <q-td key="vehicle" :props="props">
             <q-input
-              :disable="disable"
+              :disable="
+                disable ||
+                creditEntryDate === null ||
+                selectedProjectId === null
+              "
               class="custom-small-input"
               style="max-width: 100px"
               v-model="props.row.vehicle"
@@ -155,7 +236,11 @@
           </q-td>
           <q-td key="remark" :props="props">
             <q-input
-              :disable="disable"
+              :disable="
+                disable ||
+                creditEntryDate === null ||
+                selectedProjectId === null
+              "
               class="custom-small-input"
               style="max-width: 100px"
               v-model="props.row.remark"
@@ -166,11 +251,11 @@
           </q-td>
           <q-td
             class="text-bold text-red"
-            key="total"
+            key="credit"
             :props="props"
             style="width: 150px; max-width: 200px"
           >
-            {{ props.row.total.toLocaleString("en-IN") + ".00" }}
+            {{ props.row.credit.toLocaleString("en-IN") + ".00" }}
           </q-td>
           <q-td style="max-width: 20px">
             <q-icon
@@ -183,6 +268,14 @@
         </q-tr>
       </template>
     </q-table>
+    <q-page-container
+      class="q-mt-xl"
+      v-if="creditEntryDate === null || selectedProjectId === null"
+    >
+      <q-page class="row text-red justify-center text-uppercase">
+        {{ "Select Date & Project" }}
+      </q-page>
+    </q-page-container>
   </q-layout>
 </template>
 
@@ -190,6 +283,8 @@
 import { fasPlus, fasTrash } from "@quasar/extras/fontawesome-v5";
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
+import ProjectService from "src/services/ProjectService";
+import { date } from "quasar";
 AccountingService;
 export default {
   name: "Credit",
@@ -203,8 +298,13 @@ export default {
       type: Number,
       default: null,
     },
+    startDate: {
+      type: Date,
+      default: null,
+    },
   },
   mounted() {
+    this.getProjects();
     window.addEventListener("keydown", this.keyDownHandlerForEntry);
   },
   beforeUnmount() {
@@ -219,6 +319,17 @@ export default {
     },
     ledgerId(val) {
       this.disable = val === null || this.creditorId === null;
+    },
+    creditEntryDate(val) {
+      const startDate = date.extractDate(this.startDate, "DD-MM-YYYY");
+      const entryDate = date.extractDate(val, "DD-MM-YYYY");
+      if (startDate > entryDate) {
+        this.creditEntryDate = null;
+        this.$q.notify({
+          message: "Invalid Date",
+          caption: "Entry date can not be before ledger opening date",
+        });
+      }
     },
   },
   setup() {
@@ -235,13 +346,13 @@ export default {
           field: "receipt",
         },
         ,
-        {
-          name: "date",
-          required: true,
-          label: "Date",
-          align: "left",
-          sortable: true,
-        },
+        // {
+        //   name: "date",
+        //   required: true,
+        //   label: "Date",
+        //   align: "left",
+        //   sortable: true,
+        // },
         {
           name: "item",
           align: "left",
@@ -254,15 +365,24 @@ export default {
         { name: "rate", align: "left", label: "Rate", field: "rate" },
         { name: "vehicle", align: "left", label: "Vehicle", field: "vehicle" },
         { name: "remark", align: "left", label: "Remark", field: "remark" },
-        { name: "total", align: "left", label: "Total", field: "total" },
+        { name: "credit", align: "left", label: "Total", field: "credit" },
       ],
     };
   },
   data() {
     return {
       clientId: this.getClientId(),
+      projects: [],
+      projectOptions: [],
+      selectedProjectId: null,
+      creditEntryDate: null,
       entries: [
         {
+          id: null,
+          clientId: null,
+          creditorId: null,
+          ledgerId: null,
+          projectId: null,
           receipt: null,
           date: null,
           item: null,
@@ -271,7 +391,10 @@ export default {
           unit: null,
           vehicle: null,
           remark: null,
-          total: 0.0,
+          credit: 0.0,
+          entryType: "CREDIT",
+          debit: 0.0,
+          narration: null,
         },
       ],
       selectedItem: null,
@@ -282,6 +405,33 @@ export default {
     };
   },
   methods: {
+    postEntries() {
+      this.entries.forEach((entry) => {
+        entry.clientId = this.clientId;
+        entry.creditorId = this.creditorId;
+        entry.ledgerId = this.ledgerId;
+        entry.projectId = this.selectedProjectId;
+        entry.date = this.creditEntryDate;
+      });
+      console.log(JSON.stringify(this.entries));
+      AccountingService.postEntries(this.entries)
+        .then((status) => {
+          if (status) this.success("entry updated");
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
+    },
+    getProjects() {
+      ProjectService.getProjectList(this.clientId)
+        .then((response) => {
+          this.projects.splice(0, this.projects.length);
+          this.projectOptions.splice(0, this.projectOptions.length);
+          this.projects = response.list;
+          this.projectOptions = response.list;
+        })
+        .catch((err) => {});
+    },
     keyDownHandlerForEntry(event) {
       console.log(" keydown:", event.key);
       if (this.keysPressed !== "Alt") this.keysPressed = event.key;
@@ -314,6 +464,11 @@ export default {
         return;
       }
       this.entries.push({
+        id: null,
+        clientId: null,
+        creditorId: null,
+        ledgerId: null,
+        projectId: null,
         receipt: null,
         date: null,
         item: null,
@@ -322,7 +477,18 @@ export default {
         unit: null,
         vehicle: null,
         remark: null,
-        total: 0.0,
+        credit: 0.0,
+        entryType: "CREDIT",
+        debit: 0.0,
+        narration: null,
+      });
+    },
+    filterProject(input, update, abort) {
+      update(() => {
+        const value = input.toLowerCase();
+        this.projectOptions = this.projects.filter((project) => {
+          return project.label.toLowerCase().indexOf(value) > -1;
+        });
       });
     },
     filterItem(input, update, abort) {
@@ -344,13 +510,85 @@ export default {
         .catch((err) => {});
     },
     setRow(row) {
-      let item = this.items.find((item) => item.name === row.name);
-      row.rate = item.rate;
+      let item = this.items.find(
+        (item) => item.name.toLowerCase() === row.item.toLowerCase()
+      );
+
+      row.rate = Number(item.rate);
       row.unit = item.unit;
     },
     setTotal(row) {
-      row.total = row.rate * row.quantity;
+      row.credit = Number(row.rate) * Number(row.quantity);
     },
+    validateChallan(val, props, rowIndex) {
+      for (let index = 0; index < this.entries.length; index++) {
+        if (rowIndex === index) {
+          continue;
+        }
+
+        if (
+          this.entries[index].receipt.trim().toLowerCase() ===
+          val.trim().toLowerCase()
+        ) {
+          props.row.receipt = null;
+          console.log(JSON.stringify(props));
+          this.$q.notify({
+            message: "Duplicate Receipt",
+            caption: "Challan/Receipt: " + this.entries[index].receipt,
+            color: "red",
+            timeout: 0,
+
+            actions: [
+              {
+                icon: "close",
+                color: "white",
+                round: true,
+                handler: () => {
+                  /* ... */
+                },
+              },
+            ],
+          });
+          return;
+        }
+      }
+
+      let req = {
+        clientId: this.clientId,
+        creditorId: this.creditorId,
+        date: this.creditEntryDate,
+        receipt: val,
+      };
+      AccountingService.findEntryByDateAndChallan(req)
+        .then((response) => {
+          if (response.id !== null) {
+            this.$q.notify({
+              type: "warning",
+              message: "Duplicate Entry Found For Receipt: " + response.receipt,
+              timeout: 0,
+              caption:
+                "Date: " +
+                response.date +
+                ", Item: " +
+                response.item +
+                ", Qty: " +
+                response.quantity,
+              actions: [
+                {
+                  icon: "close",
+                  color: "white",
+                  round: true,
+                  handler: () => {
+                    /* ... */
+                  },
+                },
+              ],
+            });
+          }
+        })
+        .catch((err) => {});
+    },
+    validateEntryDate(selectedDate) {},
   },
 };
 </script>

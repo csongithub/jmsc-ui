@@ -122,6 +122,9 @@
                 ><Credit
                   :creditorId="selectedCreditorId"
                   :ledgerId="selectedLedger !== null ? selectedLedger.id : null"
+                  :startDate="
+                    selectedLedger !== null ? selectedLedger.startDate : null
+                  "
                 ></Credit
               ></q-tab-panel>
 
