@@ -2,137 +2,152 @@
   <q-layout>
     <q-splitter v-model="splitterModel" style="height: 800px">
       <template v-slot:before>
-        <div class="row">
-          <div class="col">
-            <q-select
-              dense
-              outlined
-              hide-bottom-space
-              label="Select Creditors"
-              label-color="secondary"
-              :options="creditorsOptions"
-              v-model="selectedCreditorId"
-              option-disable="inactive"
-              emit-value
-              map-options
-              use-input
-              input-debounce="0"
-              @filter="filterCreditor"
-              @update:model-value="getLedgers"
-            >
-              <template v-slot:no-option>
-                <q-item>
-                  <q-item-section class="text-red">
-                    No Creditor Matched
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
+        <div style="max-width: 400px">
+          <div class="row">
+            <div class="col">
+              <q-select
+                dense
+                outlined
+                hide-bottom-space
+                label="Select Creditors"
+                label-color="secondary"
+                :options="creditorsOptions"
+                v-model="selectedCreditorId"
+                option-disable="inactive"
+                emit-value
+                map-options
+                use-input
+                input-debounce="0"
+                @filter="filterCreditor"
+                @update:model-value="getLedgers"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-red">
+                      No Creditor Matched
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
           </div>
-        </div>
-        <div class="row q-mt-sm">
-          <div class="col">
-            <q-select
-              :disable="selectedCreditorId == null"
-              dense
-              outlined
-              hide-bottom-space
-              label="Select Ledger"
-              label-color="secondary"
-              option-label="name"
-              :options="ledgersOptions"
-              v-model="selectedLedger"
-              option-disable="inactive"
-              use-input
-              input-debounce="0"
-              @filter="filterLedger"
-            >
-              <template v-slot:no-option>
-                <q-item>
-                  <q-item-section class="text-red">
-                    No Ledger Matched
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
+          <div class="row q-mt-sm">
+            <div class="col">
+              <q-select
+                :disable="selectedCreditorId == null"
+                dense
+                outlined
+                hide-bottom-space
+                label="Select Ledger"
+                label-color="secondary"
+                option-label="name"
+                :options="ledgersOptions"
+                v-model="selectedLedger"
+                option-disable="inactive"
+                use-input
+                input-debounce="0"
+                @filter="filterLedger"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-red">
+                      No Ledger Matched
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
           </div>
-        </div>
+          <div class="row q-mt-sm q-mb-md">
+            <q-btn
+              class="text-secondary float-right"
+              label="New Ledger (Alt + L)"
+              @click="showCreateLedger = true"
+              size="10px"
+              outline
+            />
+          </div>
 
-        <div class="row q-mt-md" v-if="selectedLedger !== null">
-          <q-card class="my-card q-mt-sm">
-            <q-card-section class="bg-secondary">
-              <div class="text-subtitle">{{ selectedLedger.name }}</div>
-            </q-card-section>
+          <q-separator />
+          <div class="row q-mt-md" v-if="selectedLedger !== null">
+            <q-card class="my-card q-mt-sm full-width">
+              <q-card-section class="bg-secondary">
+                <div class="text-subtitle">{{ selectedLedger.name }}</div>
+              </q-card-section>
 
-            <q-card-section>
-              <div class="row">
-                <div class="col">Ledger Code</div>
-                <div class="col">{{ ":" + selectedLedger.code }}</div>
-              </div>
-              <div class="row">
-                <div class="col">Start Date</div>
-                <div class="col">{{ ":" + selectedLedger.startDate }}</div>
-              </div>
-              <div class="row">
-                <div class="col">Creation Date</div>
-                <div class="col">
-                  {{ ":" + selectedLedger.createdTimestamp }}
+              <q-card-section>
+                <div class="row">
+                  <div class="col">Ledger Code</div>
+                  <div class="col">{{ ":" + selectedLedger.code }}</div>
                 </div>
-              </div>
-              <div class="row">
-                <div class="col">OB</div>
-                <div class="col">{{ ":" + selectedLedger.openingBalance }}</div>
-              </div>
-            </q-card-section>
-
-            <!-- <q-separator color="orange" inset dark /> -->
-
-            <!-- <q-card-actions>
-              <q-btn dense flat>OPEN</q-btn>
-            </q-card-actions> -->
-          </q-card>
-        </div>
-        <div class="q-mt-lg">
-          <div class="row text-">{{ "Alt + L : New Ledger" }}</div>
+                <div class="row">
+                  <div class="col">Start Date</div>
+                  <div class="col">{{ ":" + selectedLedger.startDate }}</div>
+                </div>
+                <div class="row">
+                  <div class="col">Creation Date</div>
+                  <div class="col">
+                    {{ ":" + selectedLedger.createdTimestamp }}
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col">OB</div>
+                  <div class="col">
+                    {{ ":" + selectedLedger.openingBalance }}
+                  </div>
+                </div>
+              </q-card-section>
+              <q-card-actions>
+                <q-toggle
+                  class="q-ml-sm"
+                  dense
+                  size="xs"
+                  v-model="updatePayments"
+                  checked-icon="check"
+                  color="green"
+                  unchecked-icon="clear"
+                  label="Debit Entry"
+              /></q-card-actions>
+            </q-card>
+          </div>
         </div>
       </template>
 
       <template v-slot:after>
         <div class="q-ml-sm">
-          <q-card>
-            <q-tabs
-              v-model="tab"
-              dense
-              class="text-grey"
-              active-color="primary"
-              indicator-color="primary"
-              align="justify"
-              narrow-indicator
-              :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
-            >
-              <q-tab name="credit" label="Credit" />
-              <q-tab name="debit" label="Debit" />
-              <q-tab name="view" label="View" />
-            </q-tabs>
+          <q-tabs
+            v-model="tab"
+            dense
+            class="text-grey"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+            :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
+          >
+            <q-tab name="entry" label="Entry" />
 
-            <q-separator />
+            <q-tab name="statement" label="Statement" />
+          </q-tabs>
 
-            <q-tab-panels v-model="tab" animated class="q-mt-sm">
-              <q-tab-panel name="credit"
-                ><Credit
-                  :creditorId="selectedCreditorId"
-                  :ledgerId="selectedLedger !== null ? selectedLedger.id : null"
-                  :startDate="
-                    selectedLedger !== null ? selectedLedger.startDate : null
-                  "
-                ></Credit
-              ></q-tab-panel>
+          <q-separator />
 
-              <q-tab-panel name="debit">Debit, what goes out</q-tab-panel>
+          <q-tab-panels v-model="tab" animated class="">
+            <q-tab-panel name="entry"
+              ><LedgerEntry
+                :creditorId="selectedCreditorId"
+                :ledgerId="selectedLedger !== null ? selectedLedger.id : null"
+                :startDate="
+                  selectedLedger !== null ? selectedLedger.startDate : null
+                "
+                :updatePayments="updatePayments"
+              ></LedgerEntry
+            ></q-tab-panel>
 
-              <q-tab-panel name="view">Report </q-tab-panel>
-            </q-tab-panels>
-          </q-card>
+            <q-tab-panel name="statement">
+              <Statement></Statement>
+            </q-tab-panel>
+          </q-tab-panels>
         </div>
       </template>
     </q-splitter>
@@ -300,14 +315,13 @@
 import { ref } from "vue";
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
-import Credit from "./CreditEntry.vue";
-import Debit from "./Debit.vue";
-import View from "./View.vue";
+import LedgerEntry from "./LedgerEntry.vue";
+import Statement from "./Statement.vue";
 
 export default {
   name: "Ledger",
   mixins: [commonMixin],
-  components: { Credit },
+  components: { LedgerEntry, Statement },
   mounted() {
     window.addEventListener("keydown", this.altKeyDownHandler);
     this.getAllCreditors();
@@ -318,7 +332,7 @@ export default {
   },
   beforeUnmount() {},
   setup() {
-    return { splitterModel: ref(20), tab: ref("credit") };
+    return { splitterModel: ref(20), tab: ref("entry") };
   },
   data() {
     return {
@@ -333,6 +347,7 @@ export default {
       showCreateLedger: false,
       keysPressed: null,
       items: null,
+      updatePayments: ref(false),
     };
   },
   methods: {
@@ -415,6 +430,7 @@ export default {
       this.ledgers = [];
       this.ledgersOptions = [];
       this.selectedLedger = null;
+      this.updatePayments = false;
       AccountingService.getLedgers(this.clientId, this.selectedCreditorId)
         .then((response) => {
           this.ledgers = response;

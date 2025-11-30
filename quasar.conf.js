@@ -13,7 +13,7 @@ const { configure } = require("quasar/wrappers");
 module.exports = configure(function (ctx) {
   return {
     configureWebpack: {
-      devtool: "inline-source-map", // Or 'source-map'
+      devtool: "source-map", // Or 'source-map'
     },
     // https://quasar.dev/quasar-cli/supporting-ts
     supportTS: false,
