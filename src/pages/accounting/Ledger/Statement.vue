@@ -80,13 +80,16 @@
             @click="getEntries"
             size="10px"
           />
+
           <q-btn
             v-if="entries.length > 0"
-            class="text-secondary float-right q-ml-sm text-capitalize"
-            label="Export-PDF"
-            @click="prepAndGenerate"
+            class="text-secondary q-pa-xs q-ml-xs text-capitalize"
             size="10px"
-          />
+            :icon="icons.pdf"
+            @click="prepAndGenerate"
+          >
+            <q-tooltip>Generate PDF</q-tooltip>
+          </q-btn>
         </template>
         <template
           v-slot:body-cell-quantity="props"
@@ -108,6 +111,7 @@
 <script>
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
+import { fasFilePdf } from "@quasar/extras/fontawesome-v5";
 import { date } from "quasar";
 // import jsPDF from "jspdf";
 // import html2canvas from "html2canvas";
@@ -155,6 +159,9 @@ export default {
   },
   setup() {
     return {
+      icons: {
+        pdf: fasFilePdf,
+      },
       creditColumns: [
         { name: "date", align: "left", label: "Date", field: "date" },
         { name: "item", align: "left", label: "Item", field: "item" },
