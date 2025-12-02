@@ -526,7 +526,7 @@ export default {
           sortable: true,
         },
 
-        { name: "quantity", align: "left", label: "Qty", field: "unit" },
+        { name: "quantity", align: "left", label: "Qty", field: "quantity" },
         { name: "rate", align: "left", label: "Rate", field: "rate" },
         { name: "vehicle", align: "left", label: "Vehicle", field: "vehicle" },
         { name: "remark", align: "left", label: "Remark", field: "remark" },

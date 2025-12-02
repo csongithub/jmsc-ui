@@ -145,7 +145,13 @@
             ></q-tab-panel>
 
             <q-tab-panel name="statement">
-              <Statement></Statement>
+              <Statement
+                :creditorId="selectedCreditorId"
+                :ledgerId="selectedLedger !== null ? selectedLedger.id : null"
+                :startDate="
+                  selectedLedger !== null ? selectedLedger.startDate : null
+                "
+              ></Statement>
             </q-tab-panel>
           </q-tab-panels>
         </div>

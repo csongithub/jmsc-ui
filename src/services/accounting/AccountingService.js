@@ -123,4 +123,18 @@ export default {
         return Promise.reject(err);
       });
   },
+  getEntries(req) {
+    return api
+      .post("/v1/accounting/ledger/entries", req)
+      .then((response) => {
+        let entries = response.data;
+        return entries;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting entries: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
 };
