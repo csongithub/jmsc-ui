@@ -1,6 +1,5 @@
 <template>
   <q-layout>
-    {{ subtitle }}
     <div>
       <q-table
         ref="myTable"
@@ -293,6 +292,7 @@ export default {
       toDate: null,
       subtitle: null,
       creditor: null,
+      openingBalance: null,
     };
   },
   methods: {
@@ -347,7 +347,19 @@ export default {
         content: [
           { text: title, style: "title" },
           { text: "Address: " + address, style: "address" },
-          { text: "Statement From: " + period, style: "period" },
+          {
+            text: "Statement From: " + period,
+            style: this.entryType === "ALL" ? "period" : "ob",
+          },
+          this.entryType === "ALL"
+            ? {
+                text:
+                  "Opengin Balance: " +
+                  this.openingBalance.toLocaleString("en-IN") +
+                  ".00",
+                style: "ob",
+              }
+            : null,
           {
             table: {
               headerRows: 1,
@@ -377,6 +389,13 @@ export default {
             alignment: "left",
           },
           period: {
+            fontSize: 8,
+            bold: true,
+            margin: [0, 0, 0, 1],
+            alignment: "left",
+            lineHeight: 1.5,
+          },
+          ob: {
             fontSize: 8,
             bold: true,
             margin: [0, 0, 0, 15],
@@ -456,6 +475,12 @@ export default {
             this.columns = this.allColumns;
           }
           this.entries = response;
+          if (this.entries.length > 0 && this.entryType === "ALL") {
+            this.openingBalance =
+              this.entries[0].total +
+              this.entries[0].debit -
+              this.entries[0].credit;
+          }
         })
         .catch((err) => {});
     },
