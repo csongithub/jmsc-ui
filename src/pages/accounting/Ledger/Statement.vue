@@ -223,9 +223,15 @@ export default {
       allColumns: [
         { name: "date", align: "left", label: "Date", field: "date" },
         {
+          name: "narration",
+          align: "left",
+          label: "Receipt-Vehicle",
+          field: "narration",
+        },
+        {
           name: "item",
           align: "left",
-          label: "Description",
+          label: "Item/Payment",
           field: "item",
         },
         {
@@ -267,10 +273,11 @@ export default {
             }`,
         },
         {
-          name: "narration",
+          name: "total",
           align: "left",
-          label: "Receipt-Vehicle",
-          field: "narration",
+          label: "Total",
+          field: "total",
+          format: (val) => `${val.toLocaleString("en-IN") + ".00"}`,
         },
       ],
     };
@@ -319,11 +326,15 @@ export default {
         body.push(
           this.columns.map((col) => ({
             text:
-              row[col.name] !== null && row[col.name] !== 0
-                ? col.name !== "quantity"
-                  ? row[col.name]
-                  : row[col.name] + " " + row["unit"]
-                : "",
+              row[col.name] === null || Number(row[col.name]) === 0.0
+                ? ""
+                : col.name === "quantity"
+                ? row[col.name] + " " + row["unit"]
+                : col.name === "total" && Number(row[col.name]) > 0
+                ? Number(row[col.name]).toLocaleString("en-IN") + ".00" + " Cr"
+                : col.name === "total" && Number(row[col.name]) < 0
+                ? Number(row[col.name]).toLocaleString("en-IN") + ".00" + " Dr"
+                : row[col.name],
             style: "table_body",
           }))
         );
