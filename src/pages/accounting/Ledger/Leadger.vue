@@ -19,7 +19,10 @@
                 use-input
                 input-debounce="0"
                 @filter="filterCreditor"
-                @update:model-value="getLedgers"
+                @update:model-value="
+                  getLedgers();
+                  detectPayments();
+                "
               >
                 <template v-slot:no-option>
                   <q-item>
@@ -314,6 +317,113 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="showPaymentsDetected" persistent ref="pendingPaymentref">
+      <q-card style="width: fit-content; max-width: 80vw">
+        <q-bar class="bg-secondary text-white text-weight-light text-subtitle2">
+          {{ "Payments Detected" }}
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip>Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+        <q-card-section class="text-bold">
+          {{ selectedCreditorName }}
+        </q-card-section>
+        <q-card-section>
+          <q-table
+            ref="myTable"
+            flat
+            dense
+            bordered
+            :rows="payments"
+            :columns="paymentColumns"
+            row-key="debit"
+            binary-state-sort
+            wrap-cells
+          >
+            <template v-slot:header="props">
+              <q-tr :props="props">
+                <q-th v-for="col in props.cols" :key="col.name" :props="props">
+                  {{ col.label }}
+                </q-th>
+              </q-tr>
+            </template>
+            <template v-slot:body="props">
+              <q-tr :props="props">
+                <q-td key="date" :props="props">{{ props.row.date }}</q-td>
+                <q-td key="debit" :props="props">{{
+                  props.row.debit.toLocaleString("en-IN") + ".00"
+                }}</q-td>
+                <q-td key="paymentMode" :props="props">{{
+                  props.row.paymentMode
+                }}</q-td>
+                <q-td
+                  style="max-width: 50px"
+                  key="paymentRefNo"
+                  :props="props"
+                  >{{ props.row.paymentRefNo }}</q-td
+                >
+                <q-td key="remark" :props="props">{{ props.row.remark }}</q-td>
+                <q-td key="ledger" :props="props">
+                  <q-select
+                    class="custom-small-select"
+                    :disable="!(props.row.status === 'CREATED')"
+                    dense
+                    outlined
+                    option-label="name"
+                    :options="ledgersOptions"
+                    v-model="props.row.ledger"
+                    option-disable="inactive"
+                    use-input
+                    input-debounce="0"
+                    @filter="filterLedger"
+                    hide-dropdown-icon
+                    :error="props.row.ledger_error"
+                    error-message="select ledger"
+                    @update:model-value="validateLedger(props)"
+                  >
+                    <template v-slot:no-option>
+                      <q-item>
+                        <q-item-section class="text-red">
+                          No Ledger Matched
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                  </q-select>
+                </q-td>
+
+                <q-td>
+                  <span
+                    class="text-green"
+                    v-if="props.row.status === 'ACCEPTED'"
+                    >Accepted</span
+                  >
+                  <span class="text-red" v-if="props.row.status === 'REJECTED'"
+                    >Rejected</span
+                  >
+                  <q-btn
+                    label="Accept"
+                    color="green"
+                    class="q-mr-md"
+                    size="10px"
+                    @click="updatePayment(props, 'ACCEPTED')"
+                    v-if="props.row.status === 'CREATED'"
+                  />
+                  <q-btn
+                    label="Reject"
+                    color="red"
+                    class="q-mr-md"
+                    size="10px"
+                    @click="updatePayment(props, 'REJECTED')"
+                    v-if="props.row.status === 'CREATED'"
+                  />
+                </q-td>
+              </q-tr>
+            </template>
+          </q-table>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
@@ -338,7 +448,39 @@ export default {
   },
   beforeUnmount() {},
   setup() {
-    return { splitterModel: ref(20), tab: ref("entry") };
+    return {
+      splitterModel: ref(20),
+      tab: ref("entry"),
+      paymentColumns: [
+        {
+          name: "date",
+          align: "left",
+          label: "Date",
+          field: "date",
+        },
+
+        {
+          name: "debit",
+          align: "left",
+          label: "Amount",
+          field: "debit",
+        },
+        {
+          name: "paymentMode",
+          align: "left",
+          label: "Mode",
+          field: "paymentMode",
+        },
+        {
+          name: "paymentRefNo",
+          align: "left",
+          label: "PaymentRef.No/Cheque/UTR",
+          field: "paymentRefNo",
+        },
+        { name: "remark", align: "left", label: "Note", field: "remark" },
+        { name: "ledger", align: "left", label: "Ledger", field: "ledger" },
+      ],
+    };
   },
   data() {
     return {
@@ -354,6 +496,9 @@ export default {
       keysPressed: null,
       items: null,
       updatePayments: ref(false),
+      payments: [],
+      showPaymentsDetected: false,
+      selectedCreditorName: null,
     };
   },
   methods: {
@@ -432,6 +577,7 @@ export default {
         })
         .catch((err) => {});
     },
+
     getLedgers() {
       this.ledgers = [];
       this.ledgersOptions = [];
@@ -443,8 +589,71 @@ export default {
         })
         .catch((err) => {});
     },
+
+    detectPayments() {
+      this.payments = [];
+      AccountingService.detectPayments(this.clientId, this.selectedCreditorId)
+        .then((response) => {
+          this.payments = response;
+          if (this.payments.length > 0) {
+            this.showPaymentsDetected = true;
+            this.selectedCreditorName = this.creditors.find(
+              (item) => Number(item.value) === 11
+            ).label;
+          }
+        })
+        .catch((err) => {});
+    },
+    validateLedger(props) {
+      if (this.isNotNullOrUndefined(props.row.ledger)) {
+        delete props.row.ledger_error;
+      }
+    },
+    updatePayment(props, status) {
+      if (this.isNullOrUndefined(props.row.ledger)) {
+        props.row.ledger_error = true;
+      }
+      let entry = this.payments[props.rowIndex];
+      entry.ledgerId = props.row.ledger.id;
+      entry.status = status;
+      delete entry.ledger;
+      AccountingService.updateDetectedPayment(entry)
+        .then((status) => {
+          if (status) {
+          }
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
+    },
   },
 };
 </script>
-
-<style></style>
+<style lang="scss" scoped>
+.hint-red .q-field__messages {
+  color: red !important;
+}
+.custom-small-input,
+.custom-small-select {
+  // Target the control and marginal areas for height adjustment
+  :deep(.q-field__control),
+  :deep(.q-field__marginal) {
+    height: 32px !important; // Adjust height as needed
+    min-height: 32px !important; // Ensure minimum height
+  }
+  // Adjust padding for the native input element
+  :deep(.q-field__control),
+  :deep(.q-field__native) {
+    padding: 0 4px; // Adjust padding as needed
+  }
+  // Adjust font size for the native input text
+  :deep(.q-field__native) {
+    font-size: 12px; // Adjust font size as needed
+    min-height: 32px !important; // Ensure minimum height for native element
+  }
+  // Adjust label position for smaller inputs
+  :deep(.q-field__label) {
+    top: 6px !important; // Adjust label position
+  }
+}
+</style>

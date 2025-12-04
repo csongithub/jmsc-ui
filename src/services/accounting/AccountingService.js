@@ -137,4 +137,28 @@ export default {
         return Promise.reject(err);
       });
   },
+  detectPayments(clientId, creditorId) {
+    return api
+      .get("/v1/accounting/creditor/payments/" + clientId + "/" + creditorId)
+      .then((response) => {
+        let payments = response.data;
+        return payments;
+      })
+      .catch((err) => {
+        console.log("Error in getting payments: " + JSON.stringify(err));
+        return Promise.reject(err);
+      });
+  },
+  updateDetectedPayment(entry) {
+    return api
+      .post("/v1/accounting/creditor/payments/update", entry)
+      .then((response) => {
+        let status = response.data;
+        return status;
+      })
+      .catch((err) => {
+        console.log("Error in getting payments: " + JSON.stringify(err));
+        return Promise.reject(err);
+      });
+  },
 };

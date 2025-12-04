@@ -1,0 +1,23 @@
+.jmsc-input,
+.jmsc-select {
+  // Target the control and marginal areas for height adjustment
+  :deep(.q-field__control),
+  :deep(.q-field__marginal) {
+    height: 32px !important; // Adjust height as needed
+    min-height: 32px !important; // Ensure minimum height
+  }
+  // Adjust padding for the native input element
+  :deep(.q-field__control),
+  :deep(.q-field__native) {
+    padding: 0 4px; // Adjust padding as needed
+  }
+  // Adjust font size for the native input text
+  :deep(.q-field__native) {
+    font-size: 12px; // Adjust font size as needed
+    min-height: 32px !important; // Ensure minimum height for native element
+  }
+  // Adjust label position for smaller inputs
+  :deep(.q-field__label) {
+    top: 6px !important; // Adjust label position
+  }
+}
