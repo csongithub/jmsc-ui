@@ -1,411 +1,427 @@
 <template>
   <q-layout>
-    <div v-if="!updatePayments">
-      <q-table
-        flat
-        dense
-        bordered
-        :rows="entries"
-        :columns="columns"
-        row-key="name"
-        binary-state-sort
-        :pagination="credit_pagination"
-      >
-        <template v-slot:top="">
-          <q-input
-            bg-color="secondary"
-            filled
-            :disable="disable"
-            class="custom-small-input"
-            style="max-width: 150px"
-            hide-bottom-space
-            dense
-            outlined
-            v-model="creditEntryDate"
-            :rules="['DD-MM-YYYY']"
-            placeholder="dd-mm-yyyy"
-          >
-            <template v-slot:append>
-              <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  ref="qDateProxy"
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
+    <div>
+      <div v-if="!updatePayments">
+        <q-table
+          flat
+          dense
+          bordered
+          :rows="entries"
+          :columns="columns"
+          row-key="name"
+          binary-state-sort
+          :pagination="credit_pagination"
+        >
+          <template v-slot:top="">
+            <q-input
+              bg-color="secondary"
+              filled
+              :disable="disable"
+              class="custom-small-input"
+              style="max-width: 150px"
+              hide-bottom-space
+              dense
+              outlined
+              v-model="creditEntryDate"
+              :rules="['DD-MM-YYYY']"
+              placeholder="dd-mm-yyyy"
+            >
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy
+                    ref="qDateProxy"
+                    cover
+                    transition-show="scale"
+                    transition-hide="scale"
+                  >
+                    <q-date
+                      v-model="creditEntryDate"
+                      mask="DD-MM-YYYY"
+                      minimal
+                    />
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+            <q-select
+              :disable="disable"
+              bg-color="secondary"
+              filled
+              class="q-ml-sm custom-small-select"
+              dense
+              outlined
+              hide-bottom-space
+              label-color="secondary"
+              :options="projectOptions"
+              v-model="selectedProjectId"
+              option-disable="inactive"
+              emit-value
+              map-options
+              use-input
+              input-debounce="0"
+              @filter="filterProject"
+              :placeholder="selectedProjectId === null ? 'select project' : ''"
+            >
+              <template #label
+                ><span class="text-subtitle2">Select Project</span></template
+              >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-red">
+                    No Creditor Matched
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+          </template>
+          <template v-slot:top-left> </template>
+          <template v-slot:bottom>
+            <q-btn
+              :disable="
+                disable ||
+                creditEntryDate === null ||
+                selectedProjectId === null
+              "
+              class="text-secondary"
+              label="add (Alt + a)"
+              @click="addNewEntry"
+              size="10px"
+            /><q-btn
+              :disable="
+                disable ||
+                creditEntryDate === null ||
+                selectedProjectId === null
+              "
+              class="text-secondary dense q-ml-sm"
+              label="duplicate (Alt + c)"
+              @click="addDuplicateNewEntry"
+              size="10px"
+            />
+            <q-space />
+            <q-btn
+              :disable="
+                disable ||
+                creditEntryDate === null ||
+                selectedProjectId === null
+              "
+              color="secondary"
+              class="text-secondary q-ml-md float-right"
+              label="Post"
+              size="10px"
+              @click="postEntries(entries)"
+            />
+          </template>
+
+          <template v-slot:top-right> </template>
+          <template v-slot:body="props" v-if="items !== null">
+            <q-tr :props="props" :ref="'itemRow-' + props.rowIndex">
+              <q-td key="receipt" :props="props">
+                <q-input
+                  :disable="
+                    disable ||
+                    creditEntryDate === null ||
+                    selectedProjectId === null
+                  "
+                  class="custom-small-input"
+                  style="max-width: 100px"
+                  v-model="props.row.receipt"
+                  dense
+                  outlined
+                  :placeholder="'challan'"
+                  @blur="
+                    validateChallan($event.target.value, props, props.rowIndex)
+                  "
+                />
+              </q-td>
+
+              <q-td key="item">
+                <q-select
+                  :disable="
+                    disable ||
+                    creditEntryDate === null ||
+                    selectedProjectId === null
+                  "
+                  class="custom-small-select"
+                  style="max-width: 150px"
+                  dense
+                  outlined
+                  option-label="name"
+                  option-value="name"
+                  :options="itemOptions"
+                  v-model="props.row.item"
+                  option-disable="inactive"
+                  emit-value
+                  map-options
+                  use-input
+                  input-debounce="0"
+                  @filter="filterItem"
+                  @update:model-value="setRow(props.row)"
+                  hide-dropdown-icon
+                  :placeholder="props.row.item === null ? 'item' : ''"
                 >
-                  <q-date v-model="creditEntryDate" mask="DD-MM-YYYY" minimal />
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
-          <q-select
-            :disable="disable"
-            bg-color="secondary"
-            filled
-            class="q-ml-sm custom-small-select"
-            dense
-            outlined
-            hide-bottom-space
-            label-color="secondary"
-            :options="projectOptions"
-            v-model="selectedProjectId"
-            option-disable="inactive"
-            emit-value
-            map-options
-            use-input
-            input-debounce="0"
-            @filter="filterProject"
-            :placeholder="selectedProjectId === null ? 'select project' : ''"
-          >
-            <template #label
-              ><span class="text-subtitle2">Select Project</span></template
-            >
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-red">
-                  No Creditor Matched
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
-        </template>
-        <template v-slot:top-left> </template>
-        <template v-slot:bottom>
-          <q-btn
-            :disable="
-              disable || creditEntryDate === null || selectedProjectId === null
-            "
-            class="text-secondary"
-            label="add (Alt + a)"
-            @click="addNewEntry"
-            size="10px"
-          /><q-btn
-            :disable="
-              disable || creditEntryDate === null || selectedProjectId === null
-            "
-            class="text-secondary dense q-ml-sm"
-            label="duplicate (Alt + c)"
-            @click="addDuplicateNewEntry"
-            size="10px"
-          />
-          <q-space />
-          <q-btn
-            :disable="
-              disable || creditEntryDate === null || selectedProjectId === null
-            "
-            color="secondary"
-            class="text-secondary q-ml-md float-right"
-            label="Post"
-            size="10px"
-            @click="postEntries(entries)"
-          />
-        </template>
+                </q-select>
+              </q-td>
 
-        <template v-slot:top-right> </template>
-        <template v-slot:body="props" v-if="items !== null">
-          <q-tr :props="props" :ref="'itemRow-' + props.rowIndex">
-            <q-td key="receipt" :props="props">
-              <q-input
-                :disable="
-                  disable ||
-                  creditEntryDate === null ||
-                  selectedProjectId === null
-                "
-                class="custom-small-input"
-                style="max-width: 100px"
-                v-model="props.row.receipt"
-                dense
-                outlined
-                :placeholder="'challan'"
-                @blur="
-                  validateChallan($event.target.value, props, props.rowIndex)
-                "
-              />
-            </q-td>
-
-            <q-td key="item">
-              <q-select
-                :disable="
-                  disable ||
-                  creditEntryDate === null ||
-                  selectedProjectId === null
-                "
-                class="custom-small-select"
-                style="max-width: 150px"
-                dense
-                outlined
-                option-label="name"
-                option-value="name"
-                :options="itemOptions"
-                v-model="props.row.item"
-                option-disable="inactive"
-                emit-value
-                map-options
-                use-input
-                input-debounce="0"
-                @filter="filterItem"
-                @update:model-value="setRow(props.row)"
-                hide-dropdown-icon
-                :placeholder="props.row.item === null ? 'item' : ''"
-              >
-              </q-select>
-            </q-td>
-
-            <q-td key="quantity" :props="props">
-              <q-input
-                :disable="
-                  disable ||
-                  creditEntryDate === null ||
-                  selectedProjectId === null
-                "
-                class="custom-small-input"
-                type="number"
-                style="max-width: 100px"
-                v-model="props.row.quantity"
-                dense
-                outlined
-                placeholder="qty"
-                @update:model-value="setTotal(props.row)"
-              >
-                <template v-slot:append>
-                  <q-avatar>
-                    {{ props.row.unit }}
-                  </q-avatar>
-                </template>
-              </q-input>
-            </q-td>
-            <q-td key="rate" :props="props">
-              <q-input
-                :disable="
-                  disable ||
-                  creditEntryDate === null ||
-                  selectedProjectId === null
-                "
-                class="custom-small-input"
-                type="number"
-                style="max-width: 100px"
-                v-model="props.row.rate"
-                dense
-                outlined
-                placeholder="rate"
-                @update:model-value="setTotal(props.row)"
-              />
-            </q-td>
-            <q-td key="vehicle" :props="props">
-              <q-input
-                :disable="
-                  disable ||
-                  creditEntryDate === null ||
-                  selectedProjectId === null
-                "
-                class="custom-small-input"
-                style="max-width: 100px"
-                v-model="props.row.vehicle"
-                dense
-                outlined
-                placeholder="vehicle"
-              />
-            </q-td>
-            <q-td key="remark" :props="props">
-              <q-input
-                :disable="
-                  disable ||
-                  creditEntryDate === null ||
-                  selectedProjectId === null
-                "
-                class="custom-small-input"
-                style="max-width: 100px"
-                v-model="props.row.remark"
-                dense
-                outlined
-                placeholder="remark"
-              />
-            </q-td>
-            <q-td
-              class="text-bold text-red"
-              key="credit"
-              :props="props"
-              style="width: 150px; max-width: 200px"
-            >
-              {{ props.row.credit.toLocaleString("en-IN") + ".00" }}
-            </q-td>
-            <q-td style="max-width: 20px">
-              <q-icon
-                color="red"
-                size="10px"
-                class="q-mr-sm pointer"
-                :name="icons.delete"
-                @click="removeEntry(props.rowIndex)"
-              />
-            </q-td>
-          </q-tr>
-        </template>
-      </q-table>
-    </div>
-    <div v-if="updatePayments">
-      <q-table
-        flat
-        dense
-        bordered
-        :rows="debitEntries"
-        :columns="paymentColumns"
-        row-key="name"
-        binary-state-sort
-      >
-        <template v-slot:top="">
-          <q-input
-            bg-color="secondary"
-            filled
-            :disable="disable"
-            class="custom-small-input"
-            style="max-width: 150px"
-            hide-bottom-space
-            dense
-            outlined
-            v-model="creditEntryDate"
-            :rules="['DD-MM-YYYY']"
-            placeholder="dd-mm-yyyy"
-          >
-            <template v-slot:append>
-              <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  ref="qDateProxy"
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
+              <q-td key="quantity" :props="props">
+                <q-input
+                  :disable="
+                    disable ||
+                    creditEntryDate === null ||
+                    selectedProjectId === null
+                  "
+                  class="custom-small-input"
+                  type="number"
+                  style="max-width: 100px"
+                  v-model="props.row.quantity"
+                  dense
+                  outlined
+                  placeholder="qty"
+                  @update:model-value="setTotal(props.row)"
                 >
-                  <q-date v-model="creditEntryDate" mask="DD-MM-YYYY" minimal />
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
-          <q-select
-            :disable="disable"
-            bg-color="secondary"
-            filled
-            class="q-ml-sm custom-small-select"
-            dense
-            outlined
-            hide-bottom-space
-            label-color="secondary"
-            :options="projectOptions"
-            v-model="selectedProjectId"
-            option-disable="inactive"
-            emit-value
-            map-options
-            use-input
-            input-debounce="0"
-            @filter="filterProject"
-            :placeholder="
-              selectedProjectId === null ? 'select project (optional)' : ''
-            "
-          >
-            <template #label
-              ><span class="text-subtitle2">Select Project</span></template
-            >
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-red">
-                  No Creditor Matched
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
-        </template>
-        <template v-slot:top-left> </template>
-        <template v-slot:bottom>
-          <q-btn
-            :disable="disable || creditEntryDate === null"
-            class="text-secondary"
-            label="add (Alt + a)"
-            @click="addNewEntry"
-            size="10px"
-          />
-          <q-space />
-          <q-btn
-            :disable="disable || creditEntryDate === null"
-            color="secondary"
-            class="text-secondary q-ml-md float-right"
-            label="Post"
-            size="10px"
-            @click="postEntries(debitEntries)"
-          />
-        </template>
-
-        <template v-slot:top-right> </template>
-        <template v-slot:body="props" v-if="items !== null">
-          <q-tr :props="props" :ref="'itemRow-' + props.rowIndex">
-            <q-td key="debit" :props="props">
-              <q-input
-                type="number"
-                :disable="disable || creditEntryDate === null"
-                class="custom-small-input"
-                style="max-width: 150px"
-                v-model="props.row.debit"
-                dense
-                outlined
-                :placeholder="'amount'"
-              />
-            </q-td>
-            <q-td key="paymentMode">
-              <q-select
-                :disable="disable || creditEntryDate === null"
-                class="custom-small-select"
-                dense
-                outlined
-                :options="['Cheque', 'Online', 'UPI', 'Cash']"
-                v-model="props.row.paymentMode"
-                :placeholder="
-                  props.row.paymentMode === null ? 'payment mode' : ''
-                "
+                  <template v-slot:append>
+                    <q-avatar>
+                      {{ props.row.unit }}
+                    </q-avatar>
+                  </template>
+                </q-input>
+              </q-td>
+              <q-td key="rate" :props="props">
+                <q-input
+                  :disable="
+                    disable ||
+                    creditEntryDate === null ||
+                    selectedProjectId === null
+                  "
+                  class="custom-small-input"
+                  type="number"
+                  style="max-width: 100px"
+                  v-model="props.row.rate"
+                  dense
+                  outlined
+                  placeholder="rate"
+                  @update:model-value="setTotal(props.row)"
+                />
+              </q-td>
+              <q-td key="vehicle" :props="props">
+                <q-input
+                  :disable="
+                    disable ||
+                    creditEntryDate === null ||
+                    selectedProjectId === null
+                  "
+                  class="custom-small-input"
+                  style="max-width: 100px"
+                  v-model="props.row.vehicle"
+                  dense
+                  outlined
+                  placeholder="vehicle"
+                />
+              </q-td>
+              <q-td key="remark" :props="props">
+                <q-input
+                  :disable="
+                    disable ||
+                    creditEntryDate === null ||
+                    selectedProjectId === null
+                  "
+                  class="custom-small-input"
+                  style="max-width: 100px"
+                  v-model="props.row.remark"
+                  dense
+                  outlined
+                  placeholder="remark"
+                />
+              </q-td>
+              <q-td
+                class="text-bold text-red"
+                key="credit"
+                :props="props"
+                style="width: 150px; max-width: 200px"
               >
-              </q-select>
-            </q-td>
+                {{ props.row.credit.toLocaleString("en-IN") + ".00" }}
+              </q-td>
+              <q-td style="max-width: 20px">
+                <q-icon
+                  color="red"
+                  size="10px"
+                  class="q-mr-sm pointer"
+                  :name="icons.delete"
+                  @click="removeEntry(props.rowIndex)"
+                />
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </div>
+      <div v-if="updatePayments">
+        <q-table
+          flat
+          dense
+          bordered
+          :rows="debitEntries"
+          :columns="paymentColumns"
+          row-key="name"
+          binary-state-sort
+        >
+          <template v-slot:top="">
+            <q-input
+              bg-color="secondary"
+              filled
+              :disable="disable"
+              class="custom-small-input"
+              style="max-width: 150px"
+              hide-bottom-space
+              dense
+              outlined
+              v-model="creditEntryDate"
+              :rules="['DD-MM-YYYY']"
+              placeholder="dd-mm-yyyy"
+            >
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy
+                    ref="qDateProxy"
+                    cover
+                    transition-show="scale"
+                    transition-hide="scale"
+                  >
+                    <q-date
+                      v-model="creditEntryDate"
+                      mask="DD-MM-YYYY"
+                      minimal
+                    />
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+            <q-select
+              :disable="disable"
+              bg-color="secondary"
+              filled
+              class="q-ml-sm custom-small-select"
+              dense
+              outlined
+              hide-bottom-space
+              label-color="secondary"
+              :options="projectOptions"
+              v-model="selectedProjectId"
+              option-disable="inactive"
+              emit-value
+              map-options
+              use-input
+              input-debounce="0"
+              @filter="filterProject"
+              :placeholder="
+                selectedProjectId === null ? 'select project (optional)' : ''
+              "
+            >
+              <template #label
+                ><span class="text-subtitle2">Select Project</span></template
+              >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-red">
+                    No Creditor Matched
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+          </template>
+          <template v-slot:top-left> </template>
+          <template v-slot:bottom>
+            <q-btn
+              :disable="disable || creditEntryDate === null"
+              class="text-secondary"
+              label="add (Alt + a)"
+              @click="addNewEntry"
+              size="10px"
+            />
+            <q-space />
+            <q-btn
+              :disable="disable || creditEntryDate === null"
+              color="secondary"
+              class="text-secondary q-ml-md float-right"
+              label="Post"
+              size="10px"
+              @click="postEntries(debitEntries)"
+            />
+          </template>
 
-            <q-td key="paymentRefNo" :props="props">
-              <q-input
-                :disable="disable || creditEntryDate === null"
-                class="custom-small-input"
-                style="max-width: 200px"
-                v-model="props.row.paymentRefNo"
-                dense
-                outlined
-                placeholder="cheque no, utr, tras. ref no"
-              />
-            </q-td>
+          <template v-slot:top-right> </template>
+          <template v-slot:body="props" v-if="items !== null">
+            <q-tr :props="props" :ref="'itemRow-' + props.rowIndex">
+              <q-td key="debit" :props="props">
+                <q-input
+                  type="number"
+                  :disable="disable || creditEntryDate === null"
+                  class="custom-small-input"
+                  style="max-width: 150px"
+                  v-model="props.row.debit"
+                  dense
+                  outlined
+                  :placeholder="'amount'"
+                />
+              </q-td>
+              <q-td key="paymentMode">
+                <q-select
+                  :disable="disable || creditEntryDate === null"
+                  class="custom-small-select"
+                  dense
+                  outlined
+                  :options="['Cheque', 'Online', 'UPI', 'Cash']"
+                  v-model="props.row.paymentMode"
+                  :placeholder="
+                    props.row.paymentMode === null ? 'payment mode' : ''
+                  "
+                >
+                </q-select>
+              </q-td>
 
-            <q-td key="remark" :props="props">
-              <q-input
-                :disable="disable || creditEntryDate === null"
-                class="custom-small-input"
-                style="max-width: 300px"
-                v-model="props.row.remark"
-                dense
-                outlined
-                placeholder="remark"
-              />
-            </q-td>
+              <q-td key="paymentRefNo" :props="props">
+                <q-input
+                  :disable="disable || creditEntryDate === null"
+                  class="custom-small-input"
+                  style="max-width: 200px"
+                  v-model="props.row.paymentRefNo"
+                  dense
+                  outlined
+                  placeholder="cheque no, utr, tras. ref no"
+                />
+              </q-td>
 
-            <q-td style="max-width: 20px">
-              <q-icon
-                color="red"
-                class="q-mr-sm pointer"
-                :name="icons.delete"
-                @click="removeEntry(props.rowIndex)"
-              />
-            </q-td>
-          </q-tr>
-        </template>
-      </q-table>
+              <q-td key="remark" :props="props">
+                <q-input
+                  :disable="disable || creditEntryDate === null"
+                  class="custom-small-input"
+                  style="max-width: 300px"
+                  v-model="props.row.remark"
+                  dense
+                  outlined
+                  placeholder="remark"
+                />
+              </q-td>
+
+              <q-td style="max-width: 20px">
+                <q-icon
+                  color="red"
+                  class="q-mr-sm pointer"
+                  :name="icons.delete"
+                  @click="removeEntry(props.rowIndex)"
+                />
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </div>
+      <q-page-container
+        class="q-mt-xl"
+        v-if="creditEntryDate === null || selectedProjectId === null"
+      >
+        <q-page class="row text-red justify-center text-uppercase">
+          {{ "Select Date & Project" }}
+        </q-page>
+      </q-page-container>
     </div>
-    <q-page-container
-      class="q-mt-xl"
-      v-if="creditEntryDate === null || selectedProjectId === null"
-    >
-      <q-page class="row text-red justify-center text-uppercase">
-        {{ "Select Date & Project" }}
-      </q-page>
-    </q-page-container>
   </q-layout>
 </template>
 
@@ -443,6 +459,9 @@ export default {
     this.disable = !(this.creditorId !== null && this.ledgerId !== null);
     this.getProjects();
     window.addEventListener("keydown", this.keyDownHandlerForEntry);
+    // this.$q.loading.show({
+    //   message: "Some important process  is in progress. Hang on...",
+    // });
   },
   beforeUnmount() {
     // Remove event listener before the component is unmounted to prevent memory leaks
@@ -501,7 +520,7 @@ export default {
         { name: "quantity", align: "left", label: "Qty", field: "quantity" },
         { name: "rate", align: "left", label: "Rate", field: "rate" },
         { name: "vehicle", align: "left", label: "Vehicle", field: "vehicle" },
-        { name: "remark", align: "left", label: "Remark", field: "remark" },
+        { name: "remark", align: "left", label: "Note", field: "remark" },
         { name: "credit", align: "left", label: "Total", field: "credit" },
       ],
       paymentColumns: [
@@ -521,15 +540,16 @@ export default {
         {
           name: "paymentRefNo",
           align: "left",
-          label: "Remark",
+          label: "Trans.Ref.No/UTR/ChequeNo",
           field: "paymentRefNo",
         },
-        { name: "remark", align: "left", label: "Remark", field: "remark" },
+        { name: "remark", align: "left", label: "Note", field: "remark" },
       ],
     };
   },
   data() {
     return {
+      show: true,
       clientId: this.getClientId(),
       user: this.isAdmin()
         ? "admin"

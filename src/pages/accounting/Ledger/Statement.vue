@@ -110,13 +110,7 @@
             size="10px"
             @click="editEntry(props.row)"
           />
-          <q-icon
-            color="grey"
-            class="q-mr-sm pointer"
-            :name="icons.copy"
-            size="10px"
-            @click="copyEntry(props.row.id)"
-          />
+
           <q-icon
             color="red"
             class="pointer"
@@ -144,7 +138,7 @@
               <q-tooltip>Close</q-tooltip>
             </q-btn>
           </q-bar>
-          <q-card-section v-if="entry.entryType === 'CREDIT'">
+          <q-card-section>
             <div class="row">
               <div class="col-3 q-mr-sm">Date</div>
               <div class="col-3">Project</div>
@@ -172,6 +166,7 @@
                           v-model="entry.date"
                           mask="DD-MM-YYYY"
                           minimal
+                          :options="disableFutureDates"
                         />
                       </q-popup-proxy>
                     </q-icon>
@@ -214,8 +209,9 @@
                 </q-select>
               </div>
             </div>
-
-            <div class="row q-mt-lg">
+          </q-card-section>
+          <q-card-section v-if="entry.entryType === 'CREDIT'">
+            <div class="row">
               <div class="col q-mr-sm">Receipt</div>
               <div class="col q-mr-sm">Item</div>
               <div class="col q-mr-sm">Qty.</div>
@@ -318,7 +314,61 @@
               </div>
             </div>
           </q-card-section>
-          <q-card-section v-if="entry.entryType === 'DEBTI'"> </q-card-section>
+          <q-card-section v-if="entry.entryType === 'DEBIT'">
+            <div class="row">
+              <div class="col q-mr-sm">Amount</div>
+              <div class="col q-mr-sm">Mode</div>
+              <div class="col q-mr-sm">Trans.Ref.No/UTR/ChequeNo</div>
+              <div class="col q-mr-sm">Note</div>
+            </div>
+            <div class="row">
+              <div class="col q-mr-sm">
+                <q-input
+                  type="number"
+                  class="custom-small-input"
+                  style="max-width: 150px"
+                  v-model="entry.debit"
+                  dense
+                  outlined
+                  :placeholder="'amount'"
+                />
+              </div>
+              <div class="col q-mr-sm">
+                <q-select
+                  class="custom-small-select"
+                  dense
+                  outlined
+                  :options="['Cheque', 'Online', 'UPI', 'Cash']"
+                  v-model="entry.paymentMode"
+                  :placeholder="
+                    entry.paymentMode === null ? 'payment mode' : ''
+                  "
+                >
+                </q-select>
+              </div>
+              <div class="col q-mr-sm">
+                <q-input
+                  class="custom-small-input"
+                  style="max-width: 200px"
+                  v-model="entry.paymentRefNo"
+                  dense
+                  outlined
+                  placeholder="cheque no, utr, tras. ref no"
+                />
+              </div>
+              <div class="col q-mr-sm">
+                <q-input
+                  class="custom-small-input"
+                  style="max-width: 300px"
+                  v-model="entry.remark"
+                  dense
+                  outlined
+                  placeholder="note"
+                />
+              </div>
+            </div>
+          </q-card-section>
+
           <q-card-actions
             ><q-btn
               color="secondary"
@@ -339,7 +389,6 @@
 </template>
 
 <script>
-import { copyToClipboard } from "quasar";
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
 import ProjectService from "src/services/ProjectService";
@@ -350,8 +399,6 @@ import {
   fasTrash,
 } from "@quasar/extras/fontawesome-v5";
 import { date } from "quasar";
-// import jsPDF from "jspdf";
-// import html2canvas from "html2canvas";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 
@@ -380,7 +427,9 @@ export default {
   beforeUnmount() {},
   components: {},
   watch: {
-    creditorId(val) {},
+    creditorId(val) {
+      this.getItems();
+    },
     ledgerId(val) {},
     entryType(val) {
       this.columns = [];
@@ -550,6 +599,17 @@ export default {
     };
   },
   methods: {
+    disableFutureDates(dateString) {
+      const today = new Date();
+      const inputDate = new Date(dateString); // QDate passes 'YYYY/MM/DD'
+
+      // Compare the input date with today's date
+      // Return true if the input date is today or in the past, false otherwise.
+      return (
+        date.isSameDate(inputDate, today, "day") ||
+        date.isBefore(inputDate, today, "day")
+      );
+    },
     postEntries() {
       let entries = [this.entry];
       AccountingService.postEntries(entries)
@@ -567,12 +627,12 @@ export default {
       let req = {
         clientId: this.clientId,
         creditorId: this.creditorId,
-        date: entry.date,
+        date: this.entry.date,
         receipt: val,
       };
       AccountingService.findEntryByDateAndChallan(req)
         .then((response) => {
-          if (response.id !== null) {
+          if (response.id !== null && response.id !== this.entry.id) {
             this.$q.notify({
               type: "warning",
               message: "Duplicate Entry Found For Receipt: " + response.receipt,
@@ -643,15 +703,7 @@ export default {
       row.rate = Number(item.rate);
       row.unit = item.unit;
     },
-    copyEntry(id) {
-      copyToClipboard(id)
-        .then(() => {
-          this.$q.notify({ type: "positive", message: "Entry Id Copied!" });
-        })
-        .catch(() => {
-          this.$q.notify({ type: "negative", message: "Copy failed" });
-        });
-    },
+
     cancelUpdate() {
       this.showEditEntryModal = false;
       this.entry = null;
