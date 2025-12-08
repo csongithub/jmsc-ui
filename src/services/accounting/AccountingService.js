@@ -161,4 +161,25 @@ export default {
         return Promise.reject(err);
       });
   },
+  deleteEntry(clientId, creditorId, ledgerId, entryId) {
+    return api
+      .delete(
+        "/v1/accounting/ledger/entries/delete/" +
+          clientId +
+          "/" +
+          creditorId +
+          "/" +
+          ledgerId +
+          "/" +
+          entryId
+      )
+      .then((response) => {
+        let status = response.data;
+        return status;
+      })
+      .catch((err) => {
+        console.log("Error in getting materials: " + JSON.stringify(err));
+        return Promise.reject(err);
+      });
+  },
 };

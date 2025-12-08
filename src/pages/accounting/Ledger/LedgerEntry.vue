@@ -122,36 +122,7 @@
                 "
               />
             </q-td>
-            <!-- <q-td key="date" :props="props">
-            <q-input
-              :disable="disable"
-              class="custom-small-input"
-              style="max-width: 150px"
-              hide-bottom-space
-              dense
-              outlined
-              v-model="props.row.date"
-              :rules="['DD-MM-YYYY']"
-              placeholder="dd-mm-yyyy"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    ref="qDateProxy"
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date
-                      v-model="props.row.date"
-                      mask="DD-MM-YYYY"
-                      minimal
-                    />
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
-          </q-td> -->
+
             <q-td key="item">
               <q-select
                 :disable="
@@ -261,6 +232,7 @@
             <q-td style="max-width: 20px">
               <q-icon
                 color="red"
+                size="10px"
                 class="q-mr-sm pointer"
                 :name="icons.delete"
                 @click="removeEntry(props.rowIndex)"
@@ -654,35 +626,7 @@ export default {
           this.fail(this.getErrorMessage(err));
         });
     },
-    // postEntries() {
-    //   this.entries.forEach((entry) => {
-    //     entry.clientId = this.clientId;
-    //     entry.creditorId = this.creditorId;
-    //     entry.ledgerId = this.ledgerId;
-    //     entry.projectId = this.selectedProjectId;
-    //     entry.date = this.creditEntryDate;
-    //     if (this.updatePayments) {
-    //       entry.entryType = "DEBIT";
-    //     } else {
-    //       entry.entryType = "CREDIT";
-    //     }
-    //   });
-    //   console.log(JSON.stringify(this.entries));
-    //   AccountingService.postEntries(this.entries)
-    //     .then((status) => {
-    //       if (status) {
-    //         this.entries = [];
-    //         this.entries.push(this.newEntry());
-    //         this.$q.notify({
-    //           message: "All entries updated successfully !",
-    //           color: "secondary",
-    //         });
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       this.fail(this.getErrorMessage(err));
-    //     });
-    // },
+
     getProjects() {
       ProjectService.getProjectList(this.clientId)
         .then((response) => {

@@ -102,15 +102,253 @@
             }}
           </q-td>
         </template>
+        <template v-slot:body-cell-action="props">
+          <q-icon
+            color="grey"
+            class="q-mr-sm pointer"
+            :name="icons.edit"
+            size="10px"
+            @click="editEntry(props.row)"
+          />
+          <q-icon
+            color="grey"
+            class="q-mr-sm pointer"
+            :name="icons.copy"
+            size="10px"
+            @click="copyEntry(props.row.id)"
+          />
+          <q-icon
+            color="red"
+            class="pointer"
+            :name="icons.delete"
+            size="10px"
+            @click="confirmAndDelete(props.row.id)"
+          />
+        </template>
       </q-table>
+    </div>
+    <div>
+      <q-dialog
+        v-model="showEditEntryModal"
+        @hide="cancelUpdate"
+        persistent
+        ref="editEntryModalRef"
+      >
+        <q-card style="width: fit-content; max-width: 80vw">
+          <q-bar
+            class="bg-secondary text-white text-weight-light text-subtitle2"
+          >
+            {{ "Update Entry" }}
+            <q-space />
+            <q-btn dense flat icon="close" v-close-popup>
+              <q-tooltip>Close</q-tooltip>
+            </q-btn>
+          </q-bar>
+          <q-card-section v-if="entry.entryType === 'CREDIT'">
+            <div class="row">
+              <div class="col-3 q-mr-sm">Date</div>
+              <div class="col-3">Project</div>
+            </div>
+            <div class="row">
+              <div class="col-3 q-mr-sm">
+                <q-input
+                  class="custom-small-input"
+                  hide-bottom-space
+                  dense
+                  outlined
+                  v-model="entry.date"
+                  :rules="['DD-MM-YYYY']"
+                  placeholder="dd-mm-yyyy"
+                >
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy
+                        ref="qDateProxy"
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date
+                          v-model="entry.date"
+                          mask="DD-MM-YYYY"
+                          minimal
+                        />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+
+              <div class="col-6">
+                <q-select
+                  :disable="disable"
+                  class="custom-small-select"
+                  dense
+                  outlined
+                  hide-bottom-space
+                  label-color="secondary"
+                  :options="projectOptions"
+                  v-model="entry.projectId"
+                  option-disable="inactive"
+                  emit-value
+                  map-options
+                  use-input
+                  input-debounce="0"
+                  @filter="filterProject"
+                  :placeholder="
+                    entry.projectId === null ? 'select project' : ''
+                  "
+                >
+                  <template #label
+                    ><span class="text-subtitle2"
+                      >Select Project</span
+                    ></template
+                  >
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-red">
+                        No Creditor Matched
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </div>
+            </div>
+
+            <div class="row q-mt-lg">
+              <div class="col q-mr-sm">Receipt</div>
+              <div class="col q-mr-sm">Item</div>
+              <div class="col q-mr-sm">Qty.</div>
+              <div class="col q-mr-sm">Rate</div>
+              <div class="col q-mr-sm">Vehicle</div>
+              <div class="col q-mr-sm">Note</div>
+              <div class="col q-mr-sm">Total</div>
+            </div>
+            <div class="row q-mt-sm">
+              <div class="col q-mr-sm">
+                <q-input
+                  class="custom-small-input"
+                  style="max-width: 100px"
+                  v-model="entry.receipt"
+                  dense
+                  outlined
+                  :placeholder="'challan'"
+                  @blur="validateChallan($event.target.value)"
+                />
+              </div>
+              <div class="col q-mr-sm">
+                <q-select
+                  class="custom-small-select"
+                  style="max-width: 150px"
+                  dense
+                  outlined
+                  option-label="name"
+                  option-value="name"
+                  :options="itemOptions"
+                  v-model="entry.item"
+                  option-disable="inactive"
+                  emit-value
+                  map-options
+                  use-input
+                  input-debounce="0"
+                  @filter="filterItem"
+                  @update:model-value="setRow(entry)"
+                  hide-dropdown-icon
+                >
+                </q-select>
+              </div>
+              <div class="col q-mr-sm">
+                <q-input
+                  class="custom-small-input"
+                  type="number"
+                  style="max-width: 100px"
+                  v-model="entry.quantity"
+                  dense
+                  outlined
+                  placeholder="qty"
+                  @update:model-value="
+                    entry.credit = entry.rate * entry.quantity
+                  "
+                >
+                  <template v-slot:append>
+                    <q-avatar>
+                      {{ entry.unit }}
+                    </q-avatar>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col q-mr-sm">
+                <q-input
+                  class="custom-small-input"
+                  type="number"
+                  style="max-width: 100px"
+                  v-model="entry.rate"
+                  dense
+                  outlined
+                  placeholder="rate"
+                  @update:model-value="
+                    entry.credit = entry.rate * entry.quantity
+                  "
+                />
+              </div>
+              <div class="col q-mr-sm">
+                <q-input
+                  class="custom-small-input"
+                  style="max-width: 100px"
+                  v-model="entry.vehicle"
+                  dense
+                  outlined
+                  placeholder="vehicle"
+                />
+              </div>
+              <div class="col q-mr-sm">
+                <q-input
+                  class="custom-small-input"
+                  style="max-width: 100px"
+                  v-model="entry.remark"
+                  dense
+                  outlined
+                  placeholder="remark"
+                />
+              </div>
+              <div class="col text-bold">
+                {{
+                  (entry.quantity * entry.rate).toLocaleString("en-IN") + ".00"
+                }}
+              </div>
+            </div>
+          </q-card-section>
+          <q-card-section v-if="entry.entryType === 'DEBTI'"> </q-card-section>
+          <q-card-actions
+            ><q-btn
+              color="secondary"
+              class="text-secondary q-ml-md float-right"
+              label="Save"
+              size="10px"
+              @click="postEntries" />
+            <q-btn
+              class="text-secondary q-ml-md float-right"
+              label="Cancel"
+              size="10px"
+              @click="cancelUpdate"
+          /></q-card-actions>
+        </q-card>
+      </q-dialog>
     </div>
   </q-layout>
 </template>
 
 <script>
+import { copyToClipboard } from "quasar";
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
-import { fasFilePdf } from "@quasar/extras/fontawesome-v5";
+import ProjectService from "src/services/ProjectService";
+import {
+  fasCopy,
+  fasEdit,
+  fasFilePdf,
+  fasTrash,
+} from "@quasar/extras/fontawesome-v5";
 import { date } from "quasar";
 // import jsPDF from "jspdf";
 // import html2canvas from "html2canvas";
@@ -134,7 +372,11 @@ export default {
       default: null,
     },
   },
-  mounted() {},
+  mounted() {
+    this.getProjects();
+    this.getItems();
+  },
+
   beforeUnmount() {},
   components: {},
   watch: {
@@ -160,6 +402,9 @@ export default {
     return {
       icons: {
         pdf: fasFilePdf,
+        delete: fasTrash,
+        copy: fasCopy,
+        edit: fasEdit,
       },
       creditColumns: [
         { name: "date", align: "left", label: "Date", field: "date" },
@@ -182,6 +427,7 @@ export default {
         },
         { name: "receipt", align: "left", label: "Receipt", field: "receipt" },
         { name: "vehicle", align: "left", label: "Vehicle", field: "vehicle" },
+        { name: "action", align: "left", label: "", field: "action" },
       ],
       debitColumns: [
         { name: "date", align: "left", label: "Date", field: "date" },
@@ -218,6 +464,7 @@ export default {
           field: "total",
           format: (val) => `${val.toLocaleString("en-IN") + ".00"}`,
         },
+        { name: "action", align: "left", label: "", field: "action" },
       ],
       allColumns: [
         { name: "date", align: "left", label: "Date", field: "date" },
@@ -278,6 +525,7 @@ export default {
           field: "total",
           format: (val) => `${val.toLocaleString("en-IN") + ".00"}`,
         },
+        { name: "action", align: "left", label: "", field: "action" },
       ],
     };
   },
@@ -293,9 +541,153 @@ export default {
       subtitle: null,
       creditor: null,
       openingBalance: null,
+      entry: null,
+      itemOptions: [],
+      items: [],
+      projects: [],
+      projectOptions: [],
+      showEditEntryModal: false,
     };
   },
   methods: {
+    postEntries() {
+      let entries = [this.entry];
+      AccountingService.postEntries(entries)
+        .then((status) => {
+          if (status) {
+            this.getEntries();
+            this.showEditEntryModal = false;
+          }
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
+    },
+    validateChallan(val) {
+      let req = {
+        clientId: this.clientId,
+        creditorId: this.creditorId,
+        date: entry.date,
+        receipt: val,
+      };
+      AccountingService.findEntryByDateAndChallan(req)
+        .then((response) => {
+          if (response.id !== null) {
+            this.$q.notify({
+              type: "warning",
+              message: "Duplicate Entry Found For Receipt: " + response.receipt,
+              timeout: 0,
+              caption:
+                "Date: " +
+                response.date +
+                ", Item: " +
+                response.item +
+                ", Qty: " +
+                response.quantity,
+              actions: [
+                {
+                  icon: "close",
+                  color: "white",
+                  round: true,
+                  handler: () => {
+                    /* ... */
+                  },
+                },
+              ],
+            });
+          }
+        })
+        .catch((err) => {});
+    },
+    filterProject(input, update, abort) {
+      update(() => {
+        const value = input.toLowerCase();
+        this.projectOptions = this.projects.filter((project) => {
+          return project.label.toLowerCase().indexOf(value) > -1;
+        });
+      });
+    },
+    getProjects() {
+      ProjectService.getProjectList(this.clientId)
+        .then((response) => {
+          this.projects.splice(0, this.projects.length);
+          this.projectOptions.splice(0, this.projectOptions.length);
+          this.projects = response.list;
+          this.projectOptions = response.list;
+        })
+        .catch((err) => {});
+    },
+    filterItem(input, update, abort) {
+      update(() => {
+        const value = input.toLowerCase();
+        this.itemOptions = this.items.filter((item) => {
+          return item.name.toLowerCase().indexOf(value) > -1;
+        });
+      });
+    },
+    getItems() {
+      AccountingService.getMaterials(this.clientId, this.creditorId)
+        .then((response) => {
+          this.itemOptions.splice(0, this.itemOptions.length);
+          this.items.splice(0, this.items.length);
+          this.itemOptions = JSON.parse(response);
+          this.items = JSON.parse(response);
+        })
+        .catch((err) => {});
+    },
+    setRow(row) {
+      let item = this.items.find(
+        (item) => item.name.toLowerCase() === row.item.toLowerCase()
+      );
+
+      row.rate = Number(item.rate);
+      row.unit = item.unit;
+    },
+    copyEntry(id) {
+      copyToClipboard(id)
+        .then(() => {
+          this.$q.notify({ type: "positive", message: "Entry Id Copied!" });
+        })
+        .catch(() => {
+          this.$q.notify({ type: "negative", message: "Copy failed" });
+        });
+    },
+    cancelUpdate() {
+      this.showEditEntryModal = false;
+      this.entry = null;
+    },
+    editEntry(row) {
+      this.entry = JSON.parse(JSON.stringify(row));
+
+      this.showEditEntryModal = true;
+    },
+    confirmAndDelete(id) {
+      this.$q
+        .dialog({
+          title: "Are You Sure?",
+          cardClasses: "q-pa-xs text-small",
+          message: "",
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          AccountingService.deleteEntry(
+            this.clientId,
+            this.creditorId,
+            this.ledgerId,
+            id
+          )
+            .then((response) => {
+              if (response) {
+                this.getEntries();
+              }
+            })
+            .catch((err) => {});
+        })
+        .onOk(() => {})
+        .onCancel(() => {})
+        .onDismiss(() => {});
+    },
     getCreditor() {
       AccountingService.getCreditor(this.clientId, this.creditorId)
         .then((response) => {
@@ -308,9 +700,11 @@ export default {
       let title = this.creditor.name;
       let address = this.creditor.address;
       let period = this.fromDate + " To: " + this.toDate;
-      this.generatePDF(name, title, address, period);
+      let pdfColumns = this.columns.filter((col) => col.name !== "action");
+      this.generatePDF(name, title, address, period, pdfColumns);
     },
-    generatePDF(name, title, address, period) {
+    generatePDF(name, title, address, period, columns) {
+      console.log(JSON.stringify(columns));
       pdfMake.vfs = pdfFonts.vfs;
 
       // Convert rows to table body
@@ -318,13 +712,13 @@ export default {
 
       // Add table headers
       body.push(
-        this.columns.map((col) => ({ text: col.label, style: "tableHeader" }))
+        columns.map((col) => ({ text: col.label, style: "tableHeader" }))
       );
 
       // Add table rows
       this.entries.forEach((row) => {
         body.push(
-          this.columns.map((col) => ({
+          columns.map((col) => ({
             text:
               row[col.name] === null || Number(row[col.name]) === 0.0
                 ? ""
@@ -339,7 +733,7 @@ export default {
           }))
         );
       });
-      body.push(this.columns.map((col) => ({ text: "" })));
+      body.push(columns.map((col) => ({ text: "" })));
 
       const docDefinition = {
         pageSize: "A4",
@@ -364,7 +758,7 @@ export default {
             table: {
               headerRows: 1,
 
-              widths: this.columns.map(() => "auto"), // Distribute widths evenly
+              widths: columns.map(() => "auto"), // Distribute widths evenly
               body: body,
             },
             layout: "lightHorizontalLines", // Optional: adds styling
@@ -428,30 +822,6 @@ export default {
       pdfMake.createPdf(docDefinition).download(name);
     },
 
-    //   const tableElement = this.$refs.myTable.$el; // Get the QTable's root element
-    //   const canvas = await html2canvas(tableElement);
-    //   const imgData = canvas.toDataURL("image/png");
-
-    //   const pdf = new jsPDF("p", "mm", "a4");
-    //   const imgWidth = 210; // A4 width in mm
-    //   const pageHeight = 297; // A4 height in mm
-    //   const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    //   let heightLeft = imgHeight;
-
-    //   let position = 0;
-
-    //   pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    //   heightLeft -= pageHeight;
-
-    //   while (heightLeft >= 0) {
-    //     position = heightLeft - imgHeight;
-    //     pdf.addPage();
-    //     pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    //     heightLeft -= pageHeight;
-    //   }
-
-    //   pdf.save("quasar_table.pdf");
-    // },
     getEntries() {
       this.getCreditor();
       let request = {
