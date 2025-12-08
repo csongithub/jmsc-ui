@@ -171,6 +171,8 @@
                   :rules="[
                     (val) => (val && val.length > 0) || 'enter calling name',
                   ]"
+                  maxlength="15"
+                  counter
                 />
               </div>
             </div>

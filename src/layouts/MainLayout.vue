@@ -213,7 +213,7 @@
               <q-item-section>Loans</q-item-section>
             </q-item>
           </q-expansion-item>
-          <q-expansion-item
+          <!-- <q-expansion-item
             dense
             dense-toggle
             expand-separator
@@ -226,7 +226,7 @@
               </q-item-section>
               <q-item-section>Project</q-item-section>
             </q-item>
-          </q-expansion-item>
+          </q-expansion-item> -->
           <q-item exact clickable v-ripple to="/einvoice">
             <q-item-section avatar>
               <q-icon :name="icons.invoice" />
