@@ -16,7 +16,6 @@
             <q-input
               bg-color="secondary"
               filled
-              :disable="disable"
               class="custom-small-input"
               style="max-width: 150px"
               hide-bottom-space
@@ -44,7 +43,6 @@
               </template>
             </q-input>
             <q-select
-              :disable="disable"
               bg-color="secondary"
               filled
               class="q-ml-sm custom-small-select"
@@ -77,21 +75,13 @@
           <template v-slot:top-left> </template>
           <template v-slot:bottom>
             <q-btn
-              :disable="
-                disable ||
-                creditEntryDate === null ||
-                selectedProjectId === null
-              "
+              :disable="disable"
               class="text-secondary"
               label="add (Alt + a)"
               @click="addNewEntry"
               size="10px"
             /><q-btn
-              :disable="
-                disable ||
-                creditEntryDate === null ||
-                selectedProjectId === null
-              "
+              :disable="disable"
               class="text-secondary dense q-ml-sm"
               label="duplicate (Alt + c)"
               @click="addDuplicateNewEntry"
@@ -99,11 +89,7 @@
             />
             <q-space />
             <q-btn
-              :disable="
-                disable ||
-                creditEntryDate === null ||
-                selectedProjectId === null
-              "
+              :disable="disable"
               color="secondary"
               class="text-secondary q-ml-md float-right"
               label="Post"
@@ -117,11 +103,7 @@
             <q-tr :props="props" :ref="'itemRow-' + props.rowIndex">
               <q-td key="receipt" :props="props">
                 <q-input
-                  :disable="
-                    disable ||
-                    creditEntryDate === null ||
-                    selectedProjectId === null
-                  "
+                  :disable="disable"
                   class="custom-small-input"
                   style="max-width: 100px"
                   v-model="props.row.receipt"
@@ -136,11 +118,7 @@
 
               <q-td key="item">
                 <q-select
-                  :disable="
-                    disable ||
-                    creditEntryDate === null ||
-                    selectedProjectId === null
-                  "
+                  :disable="disable"
                   class="custom-small-select"
                   style="max-width: 150px"
                   dense
@@ -164,11 +142,7 @@
 
               <q-td key="quantity" :props="props">
                 <q-input
-                  :disable="
-                    disable ||
-                    creditEntryDate === null ||
-                    selectedProjectId === null
-                  "
+                  :disable="disable"
                   class="custom-small-input"
                   type="number"
                   style="max-width: 100px"
@@ -187,11 +161,7 @@
               </q-td>
               <q-td key="rate" :props="props">
                 <q-input
-                  :disable="
-                    disable ||
-                    creditEntryDate === null ||
-                    selectedProjectId === null
-                  "
+                  :disable="disable"
                   class="custom-small-input"
                   type="number"
                   style="max-width: 100px"
@@ -204,11 +174,7 @@
               </q-td>
               <q-td key="vehicle" :props="props">
                 <q-input
-                  :disable="
-                    disable ||
-                    creditEntryDate === null ||
-                    selectedProjectId === null
-                  "
+                  :disable="disable"
                   class="custom-small-input"
                   style="max-width: 100px"
                   v-model="props.row.vehicle"
@@ -219,11 +185,7 @@
               </q-td>
               <q-td key="remark" :props="props">
                 <q-input
-                  :disable="
-                    disable ||
-                    creditEntryDate === null ||
-                    selectedProjectId === null
-                  "
+                  :disable="disable"
                   class="custom-small-input"
                   style="max-width: 100px"
                   v-model="props.row.remark"
@@ -267,7 +229,6 @@
             <q-input
               bg-color="secondary"
               filled
-              :disable="disable"
               class="custom-small-input"
               style="max-width: 150px"
               hide-bottom-space
@@ -295,7 +256,6 @@
               </template>
             </q-input>
             <q-select
-              :disable="disable"
               bg-color="secondary"
               filled
               class="q-ml-sm custom-small-select"
@@ -330,7 +290,7 @@
           <template v-slot:top-left> </template>
           <template v-slot:bottom>
             <q-btn
-              :disable="disable || creditEntryDate === null"
+              :disable="creditEntryDate === null"
               class="text-secondary"
               label="add (Alt + a)"
               @click="addNewEntry"
@@ -338,7 +298,7 @@
             />
             <q-space />
             <q-btn
-              :disable="disable || creditEntryDate === null"
+              :disable="creditEntryDate === null"
               color="secondary"
               class="text-secondary q-ml-md float-right"
               label="Post"
@@ -353,7 +313,7 @@
               <q-td key="debit" :props="props">
                 <q-input
                   type="number"
-                  :disable="disable || creditEntryDate === null"
+                  :disable="creditEntryDate === null"
                   class="custom-small-input"
                   style="max-width: 150px"
                   v-model="props.row.debit"
@@ -364,7 +324,7 @@
               </q-td>
               <q-td key="paymentMode">
                 <q-select
-                  :disable="disable || creditEntryDate === null"
+                  :disable="creditEntryDate === null"
                   class="custom-small-select"
                   dense
                   outlined
@@ -379,7 +339,7 @@
 
               <q-td key="paymentRefNo" :props="props">
                 <q-input
-                  :disable="disable || creditEntryDate === null"
+                  :disable="creditEntryDate === null"
                   class="custom-small-input"
                   style="max-width: 200px"
                   v-model="props.row.paymentRefNo"
@@ -391,7 +351,7 @@
 
               <q-td key="remark" :props="props">
                 <q-input
-                  :disable="disable || creditEntryDate === null"
+                  :disable="creditEntryDate === null"
                   class="custom-small-input"
                   style="max-width: 300px"
                   v-model="props.row.remark"
@@ -457,6 +417,12 @@ export default {
       return (
         this.isNullOrUndefined(this.creditorId) ||
         this.isNullOrUndefined(this.ledgerId)
+      );
+    },
+    disable() {
+      return (
+        this.isNullOrUndefined(this.creditEntryDate) ||
+        this.isNullOrUndefined(this.selectedProjectId)
       );
     },
   },
@@ -569,7 +535,6 @@ export default {
       itemOptions: [],
       items: [],
       keysPressed: null,
-      disable: true,
       debitEntries: this.initiate(),
     };
   },
