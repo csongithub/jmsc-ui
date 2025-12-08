@@ -413,14 +413,12 @@
           </template>
         </q-table>
       </div>
-      <q-page-container
-        class="q-mt-xl"
-        v-if="creditEntryDate === null || selectedProjectId === null"
-      >
-        <q-page class="row text-red justify-center text-uppercase">
-          {{ "Select Date & Project" }}
-        </q-page>
-      </q-page-container>
+
+      <q-inner-loading :showing="enableScreen">
+        <div class="text-red text-bold bg-white q-pa-xl">
+          Please select creditor and ledger
+        </div>
+      </q-inner-loading>
     </div>
   </q-layout>
 </template>
@@ -452,6 +450,14 @@ export default {
     updatePayments: {
       type: Boolean,
       default: false,
+    },
+  },
+  computed: {
+    enableScreen() {
+      return (
+        this.isNullOrUndefined(this.creditorId) ||
+        this.isNullOrUndefined(this.ledgerId)
+      );
     },
   },
   mounted() {
@@ -549,7 +555,6 @@ export default {
   },
   data() {
     return {
-      show: true,
       clientId: this.getClientId(),
       user: this.isAdmin()
         ? "admin"

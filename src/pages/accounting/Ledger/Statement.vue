@@ -385,6 +385,11 @@
         </q-card>
       </q-dialog>
     </div>
+    <q-inner-loading :showing="enableScreen">
+      <div class="text-red text-bold bg-white q-pa-xl">
+        Please select creditor and ledger
+      </div>
+    </q-inner-loading>
   </q-layout>
 </template>
 
@@ -417,6 +422,14 @@ export default {
     startDate: {
       type: Date,
       default: null,
+    },
+  },
+  computed: {
+    enableScreen() {
+      return (
+        this.isNullOrUndefined(this.creditorId) ||
+        this.isNullOrUndefined(this.ledgerId)
+      );
     },
   },
   mounted() {
