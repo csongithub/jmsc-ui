@@ -84,8 +84,10 @@
                   <div class="col">{{ ":" + selectedLedger.code }}</div>
                 </div>
                 <div class="row">
-                  <div class="col">Start Date</div>
-                  <div class="col">{{ ":" + selectedLedger.startDate }}</div>
+                  <div class="col">Opening Date</div>
+                  <div class="col text-red">
+                    {{ ":" + selectedLedger.startDate }}
+                  </div>
                 </div>
                 <div class="row">
                   <div class="col">Creation Date</div>
@@ -128,9 +130,9 @@
             narrow-indicator
             :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
           >
-            <q-tab name="entry" label="Entry" />
+            <q-tab name="entry" label="Entry" :disable="disableTab" />
 
-            <q-tab name="statement" label="Statement" />
+            <q-tab name="statement" label="Statement" :disable="disableTab" />
           </q-tabs>
 
           <q-separator />
@@ -445,6 +447,14 @@ export default {
   beforeUnmount() {
     // Remove event listener before the component is unmounted to prevent memory leaks
     window.removeEventListener("keydown", this.altKeyDownHandler);
+  },
+  computed: {
+    disableTab() {
+      return (
+        this.isNullOrUndefined(this.selectedCreditorId) ||
+        this.isNullOrUndefined(this.selectedLedger)
+      );
+    },
   },
   beforeUnmount() {},
   setup() {

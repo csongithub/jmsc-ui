@@ -62,32 +62,6 @@
                   class="q-gutter-md"
                 >
                   <div>
-                    <q-input
-                      dense
-                      outlined
-                      v-model="creditor.name"
-                      label="Creditor Name"
-                      lazy-rules
-                      :rules="[
-                        (val) =>
-                          (val && val.length > 0) || 'Enter Creditor name',
-                      ]"
-                    />
-                  </div>
-                  <div>
-                    <q-input
-                      dense
-                      outlined
-                      v-model="creditor.address"
-                      label="Creditor Address"
-                      lazy-rules
-                      :rules="[
-                        (val) =>
-                          (val && val.length > 0) || 'Enter creditor address',
-                      ]"
-                    />
-                  </div>
-                  <div>
                     <q-select
                       dense
                       outlined=""
@@ -115,6 +89,32 @@
                         </q-item>
                       </template>
                     </q-select>
+                  </div>
+                  <div>
+                    <q-input
+                      dense
+                      outlined
+                      v-model="creditor.name"
+                      label="Creditor Name"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Enter Creditor name',
+                      ]"
+                    />
+                  </div>
+                  <div>
+                    <q-input
+                      dense
+                      outlined
+                      v-model="creditor.address"
+                      label="Creditor Address"
+                      lazy-rules
+                      :rules="[
+                        (val) =>
+                          (val && val.length > 0) || 'Enter creditor address',
+                      ]"
+                    />
                   </div>
 
                   <div>

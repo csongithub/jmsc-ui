@@ -308,9 +308,7 @@
                 />
               </div>
               <div class="col text-bold">
-                {{
-                  (entry.quantity * entry.rate).toLocaleString("en-IN") + ".00"
-                }}
+                {{ entry.credit.toLocaleString("en-IN") }}
               </div>
             </div>
           </q-card-section>
@@ -435,6 +433,7 @@ export default {
   mounted() {
     this.getProjects();
     this.getItems();
+    this.getEntriesOnMount();
   },
 
   beforeUnmount() {},
@@ -478,14 +477,14 @@ export default {
           align: "left",
           label: "Amount",
           field: "credit",
-          format: (val) => `${val.toLocaleString("en-IN") + ".00"}`,
+          format: (val) => `${val.toLocaleString("en-IN")}`,
         },
         {
           name: "total",
           align: "left",
           label: "Total",
           field: "total",
-          format: (val) => `${val.toLocaleString("en-IN") + ".00"}`,
+          format: (val) => `${val.toLocaleString("en-IN")}`,
         },
         { name: "receipt", align: "left", label: "Receipt", field: "receipt" },
         { name: "vehicle", align: "left", label: "Vehicle", field: "vehicle" },
@@ -517,14 +516,14 @@ export default {
           align: "left",
           label: "Amount",
           field: "debit",
-          format: (val) => `${val.toLocaleString("en-IN") + ".00"}`,
+          format: (val) => `${val.toLocaleString("en-IN")}`,
         },
         {
           name: "total",
           align: "left",
           label: "Total",
           field: "total",
-          format: (val) => `${val.toLocaleString("en-IN") + ".00"}`,
+          format: (val) => `${val.toLocaleString("en-IN")}`,
         },
         { name: "action", align: "left", label: "", field: "action" },
       ],
@@ -562,11 +561,7 @@ export default {
           label: "Debit",
           field: "debit",
           format: (val) =>
-            `${
-              val === 0 || val === null
-                ? ""
-                : val.toLocaleString("en-IN") + ".00"
-            }`,
+            `${val === 0 || val === null ? "" : val.toLocaleString("en-IN")}`,
         },
         {
           name: "credit",
@@ -574,18 +569,14 @@ export default {
           label: "Credit",
           field: "credit",
           format: (val) =>
-            `${
-              val === 0 || val === null
-                ? ""
-                : val.toLocaleString("en-IN") + ".00"
-            }`,
+            `${val === 0 || val === null ? "" : val.toLocaleString("en-IN")}`,
         },
         {
           name: "total",
           align: "left",
           label: "Total",
           field: "total",
-          format: (val) => `${val.toLocaleString("en-IN") + ".00"}`,
+          format: (val) => `${val.toLocaleString("en-IN")}`,
         },
         { name: "action", align: "left", label: "", field: "action" },
       ],
@@ -708,13 +699,14 @@ export default {
         })
         .catch((err) => {});
     },
-    setRow(row) {
+    setRow(entry) {
       let item = this.items.find(
-        (item) => item.name.toLowerCase() === row.item.toLowerCase()
+        (item) => item.name.toLowerCase() === entry.item.toLowerCase()
       );
 
-      row.rate = Number(item.rate);
-      row.unit = item.unit;
+      entry.rate = Number(item.rate);
+      entry.unit = item.unit;
+      entry.credit = entry.rate * entry.quantity;
     },
 
     cancelUpdate() {
@@ -790,9 +782,9 @@ export default {
                 : col.name === "quantity"
                 ? row[col.name] + " " + row["unit"]
                 : col.name === "total" && Number(row[col.name]) > 0
-                ? Number(row[col.name]).toLocaleString("en-IN") + ".00" + " Cr"
+                ? Number(row[col.name]).toLocaleString("en-IN") + " Cr"
                 : col.name === "total" && Number(row[col.name]) < 0
-                ? Number(row[col.name]).toLocaleString("en-IN") + ".00" + " Dr"
+                ? Number(row[col.name]).toLocaleString("en-IN") + " Dr"
                 : row[col.name],
             style: "table_body",
           }))
@@ -814,8 +806,7 @@ export default {
             ? {
                 text:
                   "Opengin Balance: " +
-                  this.openingBalance.toLocaleString("en-IN") +
-                  ".00",
+                  this.openingBalance.toLocaleString("en-IN"),
                 style: "ob",
               }
             : null,
@@ -886,9 +877,25 @@ export default {
       // Generate and download the PDF
       pdfMake.createPdf(docDefinition).download(name);
     },
+    getEntriesOnMount() {
+      const today = new Date();
 
+      const day =
+        Math.abs(Number(today.getDate())) < 10
+          ? "0" + today.getDate()
+          : today.getDate(); // 1–31
+      const month = today.getMonth() + 1; // 1–12 (because 0-based)
+      const year = today.getFullYear(); // 2025
+
+      this.fromDate = "01" + "-" + month + "-" + year;
+      this.toDate = day + "-" + month + "-" + year;
+      this.entryType = "ALL";
+
+      this.getEntries();
+    },
     getEntries() {
       this.getCreditor();
+
       let request = {
         clientId: this.clientId,
         creditorId: this.creditorId,

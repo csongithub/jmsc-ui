@@ -430,6 +430,7 @@ export default {
     // this.$emit("ledger-entry-init");
     this.disable = !(this.creditorId !== null && this.ledgerId !== null);
     this.getProjects();
+    // this.getItems();
     window.addEventListener("keydown", this.keyDownHandlerForEntry);
     // this.$q.loading.show({
     //   message: "Some important process  is in progress. Hang on...",
@@ -616,7 +617,6 @@ export default {
           this.fail(this.getErrorMessage(err));
         });
     },
-
     getProjects() {
       ProjectService.getProjectList(this.clientId)
         .then((response) => {
@@ -628,7 +628,7 @@ export default {
         .catch((err) => {});
     },
     keyDownHandlerForEntry(event) {
-      console.log(" keydown:", event.key);
+      // console.log(" keydown:", event.key);
       if (this.keysPressed !== "Alt") this.keysPressed = event.key;
       if (this.keysPressed === "Alt" && event.key === "a") {
         this.keysPressed = null;
