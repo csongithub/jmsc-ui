@@ -265,7 +265,7 @@
 </template>
 
 <script>
-import PartyService from "../../../services/PartyService";
+import PartyService from "../../../services/main/PartyService";
 import PartyAccountService from "../../../services/PartyAccountService";
 import { commonMixin } from "../../../mixin/common";
 import { ref } from "vue";

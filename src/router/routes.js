@@ -94,10 +94,7 @@ const routes = [
         component: () => import("src/pages/main/einvoice/EInvoice.vue"),
         meta: {
           moduleName: "Banking",
-          breadcrumbs: [
-            { label: "eInvoice", routName: "" },
-            { label: "eInvoice", routName: "einvoice" },
-          ],
+          breadcrumbs: [{ label: "eInvoice", routName: "einvoice" }],
         },
       },
       {
@@ -207,6 +204,18 @@ const routes = [
         },
       },
       {
+        name: "project",
+        path: "/project",
+        component: () => import("pages/main/project/Project.vue"),
+        meta: {
+          moduleName: "Project",
+          breadcrumbs: [
+            { label: "Accounting", routName: "" },
+            { label: "Projects", routName: "project" },
+          ],
+        },
+      },
+      {
         name: "profile",
         path: "/profile",
         component: () => import("src/pages/auth/Profile.vue"),
@@ -294,6 +303,7 @@ const routes = [
           breadcrumbs: [{ label: "Sites & Projects", routName: "site" }],
         },
       },
+
       {
         name: "party",
         path: "/party",
@@ -420,6 +430,12 @@ const routes = [
         },
       },
     ],
+  },
+  {
+    path: "/accounting",
+    name: "accounting",
+    component: () => import("layouts/AccountingLayout.vue"),
+    children: [],
   },
   {
     path: "/login",

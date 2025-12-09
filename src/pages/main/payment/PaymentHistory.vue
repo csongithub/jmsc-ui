@@ -397,7 +397,7 @@
 import { commonMixin } from "../../../mixin/common";
 import Payment from "../payment/Payment.vue";
 import PaymentService2 from "../../../services/PaymentService2";
-import BankAccountService from "../../../services/BankAccountService";
+import BankAccountService from "../../../services/main/BankAccountService";
 import PartyAccountService from "../../../services/PartyAccountService";
 import ExportTable from "src/components/ExportTable.vue";
 import {

@@ -37,11 +37,11 @@ export default boot(({ app }) => {
     //console.log(JSON.stringify(token))
     if (auth && auth.token) {
       config.headers.Authorization = "Bearer " + auth.token;
-      console.log(JSON.stringify(config));
+      // console.log(JSON.stringify(config));
     }
-    console.log(
-      "axios.interceptors.request common header " + JSON.stringify(config)
-    );
+    // console.log(
+    //   "axios.interceptors.request common header " + JSON.stringify(config)
+    // );
     return config;
   });
 
@@ -49,10 +49,10 @@ export default boot(({ app }) => {
     const auth = LocalStorage.getItem("auth");
     //console.log(JSON.stringify(token))
     config.headers.Authorization = "Bearer " + auth.token;
-    console.log(JSON.stringify(config));
-    console.log(
-      "axios.interceptors.request common header " + JSON.stringify(config)
-    );
+    // console.log(JSON.stringify(config));
+    // console.log(
+    //   "axios.interceptors.request common header " + JSON.stringify(config)
+    // );
     return config;
   });
 
@@ -65,14 +65,14 @@ export default boot(({ app }) => {
   //
   api.interceptors.response.use(
     function (response) {
-      console.log("==============================" + JSON.stringify(response));
+      // console.log("==============================" + JSON.stringify(response));
       return response;
     },
     function (error) {
       if (401 === error.response.status) {
-        window.alert("Previous session expired, Please login again");
-        LocalStorage.clear();
+        // window.alert("Previous session expired, Please login again");
         this.$router.push({ name: "login" });
+        LocalStorage.clear();
       } else {
         return Promise.reject(error);
       }

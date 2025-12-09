@@ -1,0 +1,551 @@
+<template>
+  <div>
+    <q-table
+      class="my-sticky-header-table"
+      dense
+      bordered
+      flat
+      :rows="projects"
+      :columns="columns"
+      :visible-columns="visibleColumns"
+      row-key="id"
+      :loading="loading"
+      :pagination="project_pagination"
+      :filter="filter"
+      wrap-cells
+    >
+      <template v-slot:loading>
+        <q-inner-loading
+          v-if="loading"
+          showing
+          color="primary"
+          label="Loading..."
+          size="sm"
+        />
+      </template>
+      <template v-slot:top-left>
+        <q-btn
+          class="q-mt-sm q-mr-sm text-capitalize"
+          color="primary"
+          label="New Project"
+          size="sm"
+          glossy
+          @click="openDialog('add', null)"
+          :icon="icons.add"
+        />
+      </template>
+      <template v-slot:top-right>
+        <q-select
+          v-model="visibleColumns"
+          multiple
+          outlined
+          dense
+          options-dense
+          :display-value="$q.lang.table.columns"
+          emit-value
+          map-options
+          :options="columns"
+          option-value="name"
+          options-cover
+          style="min-width: 150px"
+        />
+
+        <q-input
+          class="q-ml-sm"
+          borderless
+          dense
+          outlined
+          debounce="300"
+          v-model="filter"
+          placeholder="Search projects"
+        >
+          <template v-slot:append>
+            <q-icon name="search" />
+          </template>
+        </q-input>
+      </template>
+      <template v-slot:header="props">
+        <q-tr :props="props">
+          <q-th v-for="col in props.cols" :key="col.name" :props="props">
+            {{ col.label }}
+          </q-th>
+        </q-tr>
+      </template>
+      <template v-slot:body="props">
+        <q-tr :props="props">
+          <q-td key="clientName" :props="props">{{
+            props.row.clientName
+          }}</q-td>
+          <q-td key="nickName" :props="props">{{ props.row.nickName }}</q-td>
+          <q-td key="fullName" :props="props">{{ props.row.fullName }}</q-td>
+          <q-td key="packageNo" :props="props">{{ props.row.packageNo }}</q-td>
+          <q-td key="agreementNo" :props="props">{{
+            props.row.agreementNo
+          }}</q-td>
+          <q-td key="agreementDate" :props="props">{{
+            props.row.agreementDate
+          }}</q-td>
+
+          <q-td key="agreementAmount" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.agreementAmount.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td key="constructionAmount" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.constructionAmount.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td key="maintenanceAmount" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.maintenanceAmount.toLocaleString("en-IN")
+            }}</q-td
+          >
+          <q-td key="securityAmount" :props="props"
+            ><q-icon :name="icons.rupee" />{{
+              props.row.securityAmount.toLocaleString("en-IN")
+            }}</q-td
+          >
+
+          <q-td>
+            <q-icon
+              color="primary"
+              class="q-ma-none q-pa-none pointer"
+              :name="icons.edit"
+              @click="editProject(props.row)"
+            />
+          </q-td>
+        </q-tr>
+      </template>
+    </q-table>
+    <q-dialog
+      v-model="open"
+      persistent
+      @before-show="beforeShow"
+      @hide="onHide"
+      ref="neweProjectRef"
+    >
+      <q-card style="width: 700px; max-width: 80vw">
+        <q-bar
+          class="bg-primary glossy text-white text-weight-light text-subtitle2"
+        >
+          {{ dialog_label }}
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip>Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+
+        <q-card-section>
+          <q-form
+            @submit="createOrUpdate"
+            @reset="resetProject"
+            class="q-gutter-md"
+          >
+            <div class="row">
+              <div class="col">Client Name</div>
+              <div class="col">
+                <q-input
+                  dense
+                  outlined
+                  v-model="project.clientName"
+                  label=""
+                  full-width
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'enter client name',
+                  ]"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">Project Calling Name</div>
+              <div class="col">
+                <q-input
+                  dense
+                  outlined
+                  v-model="project.nickName"
+                  label=""
+                  full-width
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'enter calling name',
+                  ]"
+                  maxlength="15"
+                  counter
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">Project Full Name</div>
+              <div class="col">
+                <q-input
+                  dense
+                  outlined
+                  v-model="project.fullName"
+                  label=""
+                  full-width
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'enter full name',
+                  ]"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">Project Package No</div>
+              <div class="col">
+                <q-input
+                  dense
+                  outlined
+                  v-model="project.packageNo"
+                  label=""
+                  full-width
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'enter package no',
+                  ]"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">Project Agreement No</div>
+              <div class="col">
+                <q-input
+                  dense
+                  outlined
+                  v-model="project.agreementNo"
+                  label=""
+                  full-width
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val.length > 0) || 'enter agreement no',
+                  ]"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">Project Agreement Date</div>
+              <div class="col">
+                <q-input
+                  dense
+                  outlined
+                  v-model="project.agreementDate"
+                  :rules="['DD-MM-YYYY']"
+                  label="Agreement Date"
+                  placeholder="dd-mm-yyyy"
+                >
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy
+                        ref="qDateProxy"
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date
+                          v-model="project.agreementDate"
+                          mask="DD-MM-YYYY"
+                          minimal
+                        />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">Project Agreement Amount</div>
+              <div class="col">
+                <q-input
+                  type="number"
+                  dense
+                  outlined
+                  v-model="project.agreementAmount"
+                  label=""
+                  full-width
+                  lazy-rules
+                  :rules="[
+                    (val) => (val && val > 0) || 'enter agreement amount',
+                  ]"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">Project Const. Amount</div>
+              <div class="col">
+                <q-input
+                  type="number"
+                  dense
+                  outlined
+                  v-model="project.constructionAmount"
+                  label=""
+                  full-width
+                  lazy-rules
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">Project Maint. Amount</div>
+              <div class="col">
+                <q-input
+                  type="number"
+                  dense
+                  outlined
+                  v-model="project.maintenanceAmount"
+                  label=""
+                  full-width
+                  lazy-rules
+                />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">Project Security Amount</div>
+              <div class="col">
+                <q-input
+                  type="number"
+                  dense
+                  outlined
+                  v-model="project.securityAmount"
+                  label=""
+                  full-width
+                  lazy-rules
+                />
+              </div>
+            </div>
+
+            <div>
+              <q-space />
+              <q-btn
+                dense
+                glossy
+                size="sm"
+                :label="mode === 'add' ? 'Create' : 'Update'"
+                type="submit"
+                color="primary"
+                class="text-capitalize q-px-md"
+              />
+
+              <q-btn
+                v-if="mode === 'add'"
+                dense
+                glossy
+                size="sm"
+                label="Reset"
+                type="reset"
+                class="text-capitalize q-px-md q-mx-sm"
+              />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+  </div>
+</template>
+
+<script>
+import ProjectService from "src/services/ProjectService";
+import { commonMixin } from "../../../mixin/common";
+import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
+import { matCurrencyRupee, matDelete } from "@quasar/extras/material-icons";
+import { date } from "quasar";
+import { ref } from "vue";
+export default {
+  name: "Project",
+  mixins: [commonMixin],
+  setup() {
+    return {
+      selected: ref([]),
+      visibleColumns: ref([
+        "clientName",
+        "nickName",
+        "fullName",
+        "packageNo",
+        "agreementNo",
+        "agreementDate",
+      ]),
+      columns: [
+        {
+          name: "clientName",
+          align: "left",
+          label: "Client",
+          field: "clientName",
+          sortable: true,
+        },
+        {
+          name: "nickName",
+          required: true,
+          label: "Name",
+          align: "left",
+          field: (row) => row.nickName,
+          format: (val) => `${val}`,
+          sortable: true,
+        },
+        {
+          name: "fullName",
+          align: "left",
+          label: "Complete Name",
+          field: "fullName",
+          sortable: true,
+        },
+        {
+          name: "packageNo",
+          align: "left",
+          label: "Package No",
+          field: "packageNo",
+          sortable: true,
+        },
+        {
+          name: "agreementNo",
+          align: "left",
+          label: "Agreement No",
+          field: "agreementNo",
+          sortable: true,
+        },
+        {
+          name: "agreementDate",
+          align: "left",
+          label: "Agreement Date",
+          field: "agreementDate",
+          sortable: true,
+        },
+        {
+          name: "agreementAmount",
+          align: "left",
+          label: "Agreement Value",
+          field: "agreementAmount",
+          sortable: true,
+        },
+        {
+          name: "constructionAmount",
+          align: "left",
+          label: "Construcrtion Value",
+          field: "constructionAmount",
+          sortable: true,
+        },
+        {
+          name: "maintenanceAmount",
+          align: "left",
+          label: "Maintenance Value",
+          field: "maintenanceAmount",
+          sortable: true,
+        },
+        {
+          name: "securityAmount",
+          align: "left",
+          label: "Security Deposit",
+          field: "securityAmount",
+          sortable: true,
+        },
+
+        // {
+        //   name: "actions",
+        //   align: "left",
+        //   required: true,
+        //   label: "Actions",
+        //   field: "actions",
+        // },
+      ],
+      icons: {
+        plus: fasPlus,
+        edit: fasEdit,
+        delete: matDelete,
+        rupee: matCurrencyRupee,
+      },
+    };
+  },
+  components: {},
+  created() {},
+  mounted() {
+    this.getAllProjects();
+  },
+  data() {
+    return {
+      client_id: this.getClientId(),
+      project_pagination: { rowsPerPage: 20 },
+      admin: this.isAdmin(),
+      filter: "",
+      loading: true,
+      projects: [],
+      project: this.newProject(),
+      open: false,
+      mode: "add",
+      dialog_label: "New Project",
+    };
+  },
+  methods: {
+    newProject() {
+      return {
+        id: null,
+        clientId: this.client_id,
+        nickName: "",
+        fullName: "",
+        packageNo: "",
+        agreementNo: "",
+        agreementDate: null,
+        agreementAmount: 0,
+        constructionAmount: 0,
+        maintenanceAmount: 0,
+        otherAmount: 0,
+        securityAmount: 0,
+      };
+    },
+    getAllProjects() {
+      this.loading = true;
+      ProjectService.all(this.client_id)
+        .then((response) => {
+          this.projects.splice(0, this.projects.length);
+          this.projects = response;
+          this.loading = false;
+        })
+        .catch((err) => {
+          this.loading = false;
+          this.fail(this.getErrorMessage(err));
+        });
+    },
+    createOrUpdate() {
+      this.project.clientId = this.client_id;
+      ProjectService.create(this.project)
+        .then((response) => {
+          if (this.mode === "add") {
+            this.projects.unshift(response);
+            this.success("Project create Successfully");
+          } else if (this.mode === "edit") {
+            this.success("Project Updated Successfully");
+          }
+          this.open = false;
+          this.getAllProjects();
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
+    },
+    editProject(row) {
+      // console.log(JSON.stringify(row));
+      this.project = row;
+      console.log(JSON.stringify(this.project));
+      this.dialog_label = "Update Project";
+      this.open = true;
+      this.mode = "edit";
+    },
+    beforeShow() {
+      // this.resetProject();
+    },
+    openDialog(mode, row) {
+      this.mode = mode;
+      if (this.mode === "add") {
+        this.dialog_label = "New Project";
+      }
+      this.open = true;
+    },
+    onHide() {
+      this.resetProject();
+      this.mode = "add";
+    },
+    resetProject() {
+      this.project = this.newProject();
+    },
+  },
+};
+</script>
