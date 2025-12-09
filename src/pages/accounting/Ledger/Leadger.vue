@@ -84,25 +84,29 @@
                   <div class="col">{{ ":" + selectedLedger.code }}</div>
                 </div>
                 <div class="row">
-                  <div class="col">Opening Date</div>
-                  <div class="col text-red">
-                    {{ ":" + selectedLedger.startDate }}
-                  </div>
-                </div>
-                <div class="row">
                   <div class="col">Creation Date</div>
                   <div class="col">
                     {{ ":" + selectedLedger.createdTimestamp }}
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col">OB</div>
-                  <div class="col">
-                    {{ ":" + selectedLedger.openingBalance }}
+                  <div class="col">Opening Date</div>
+                  <div class="col text-red">
+                    {{ ":" + selectedLedger.startDate }}
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col">Opengin Balance</div>
+                  <div class="col text-red">
+                    {{
+                      ":" +
+                      selectedLedger.openingBalance.toLocaleString("en-IN")
+                    }}
                   </div>
                 </div>
               </q-card-section>
-              <q-card-actions>
+              <!-- <q-card-actions>
                 <q-toggle
                   class="q-ml-sm"
                   dense
@@ -112,7 +116,7 @@
                   color="green"
                   unchecked-icon="clear"
                   label="Debit Entry"
-              /></q-card-actions>
+              /></q-card-actions> -->
             </q-card>
           </div>
         </div>
@@ -146,6 +150,7 @@
                   selectedLedger !== null ? selectedLedger.startDate : null
                 "
                 :updatePayments="updatePayments"
+                @changeMode="updatePayments = !updatePayments"
               ></LedgerEntry
             ></q-tab-panel>
 

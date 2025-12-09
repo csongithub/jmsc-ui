@@ -71,6 +71,14 @@
                 </q-item>
               </template>
             </q-select>
+            <q-space />
+            <q-btn
+              class="text-capitalize"
+              text-color="primary"
+              label="Switch to Payment"
+              size="10px"
+              @click="switchEntryMode"
+            />
           </template>
           <template v-slot:top-left> </template>
           <template v-slot:bottom>
@@ -78,7 +86,7 @@
               :disable="disable"
               class="text-secondary"
               label="add (Alt + a)"
-              @click="addNewEntry"
+              @click="addNewEntry()"
               size="10px"
             /><q-btn
               :disable="disable"
@@ -286,6 +294,14 @@
                 </q-item>
               </template>
             </q-select>
+            <q-space />
+            <q-btn
+              @click="switchEntryMode"
+              class="text-capitalize"
+              text-color="primary"
+              label="Switch to Purchase"
+              size="10px"
+            />
           </template>
           <template v-slot:top-left> </template>
           <template v-slot:bottom>
@@ -540,6 +556,9 @@ export default {
     };
   },
   methods: {
+    switchEntryMode() {
+      this.$emit("changeMode");
+    },
     initiate() {
       let list = [];
       list.push(this.newEntry());
