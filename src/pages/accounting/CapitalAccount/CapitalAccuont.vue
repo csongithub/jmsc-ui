@@ -124,6 +124,7 @@
 
             <div classs="row">
               <q-select
+                :disable="mode === 'edit'"
                 class="full-width"
                 dense
                 outlined
@@ -141,7 +142,9 @@
             </div>
             <div class="row">
               <q-input
-                :disable="account.accountType === 'Bank Account'"
+                :disable="
+                  account.accountType === 'Bank Account' || mode === 'edit'
+                "
                 type="number"
                 class="full-width"
                 hide-bottom-space
