@@ -184,7 +184,10 @@ export const commonMixin = {
       return !this.isNullOrUndefined(obj);
     },
     getErrorMessage(err) {
-      return err.response.data.message;
+      console.log(JSON.stringify(err));
+      return this.isNotNullOrUndefined(err.response)
+        ? err.response.data.message
+        : "";
     },
     notify(message) {
       this.$q.notify({

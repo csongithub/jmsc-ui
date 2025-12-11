@@ -1,6 +1,8 @@
 import { boot } from "quasar/wrappers";
 import axios from "axios";
 import { LocalStorage } from "quasar";
+// import routes from "../router/routes";
+import { Router } from "src/router";
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -70,8 +72,7 @@ export default boot(({ app }) => {
     },
     function (error) {
       if (401 === error.response.status) {
-        // window.alert("Previous session expired, Please login again");
-        this.$router.push({ name: "login" });
+        Router.push("/login");
         LocalStorage.clear();
       } else {
         return Promise.reject(error);
