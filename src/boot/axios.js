@@ -58,6 +58,11 @@ export default boot(({ app }) => {
     return config;
   });
 
+  function redirectToLogin() {
+    Router.push("/login");
+    LocalStorage.clear();
+  }
+
   api.interceptors.response.use(
     (response) => response,
 
@@ -70,16 +75,16 @@ export default boot(({ app }) => {
         !originalRequest._retry
       ) {
         if (isRefreshing) {
+          redirectToLogin();
           //Check if current refresh token is also expired
-          //if yes
-          const currentToken = LocalStorage.getItem("auth").refreshToken;
+          //if yes redirect to the login page
+
           if (
-            originalRequest.headers.Authorization ===
-            "Bearer " + currentToken
+            !LocalStorage.getItem("auth") ||
+            LocalStorage.getItem("auth").refreshToken ===
+              originalRequest.headers.Authorization
           ) {
-            window.alert("refresh token expied, redirecting to login page");
-            Router.push("/login");
-            LocalStorage.clear();
+            redirectToLogin;
             return;
           }
 
@@ -104,6 +109,7 @@ export default boot(({ app }) => {
         };
 
         try {
+          window.alert("refreshing token");
           const refreshResponse = await api.post("/v1/auth/refresh", request);
 
           const newAccessToken = refreshResponse.data.token;
