@@ -126,10 +126,8 @@ export default boot(({ app }) => {
           return api(originalRequest); // 🔁 retry original API
         } catch (err) {
           processQueue(err, null);
-
           // optional: logout user
-          Router.push("/login");
-          LocalStorage.clear();
+          redirectToLogin;
           return Promise.reject(err);
         } finally {
           isRefreshing = false;
