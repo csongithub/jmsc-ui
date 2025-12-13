@@ -2,6 +2,8 @@ import { boot } from "quasar/wrappers";
 import axios from "axios";
 import { LocalStorage } from "quasar";
 
+import { Router } from "src/router";
+
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -48,15 +50,11 @@ export default boot(({ app }) => {
   //
   api.interceptors.request.use(function (config) {
     const auth = LocalStorage.getItem("auth");
-    //console.log(JSON.stringify(token))
+
     if (auth && auth.token) {
       config.headers.Authorization =
         "Bearer " + (isRefreshing ? auth.refreshToken : auth.token);
-      // console.log(JSON.stringify(config));
     }
-    // console.log(
-    //   "axios.interceptors.request common header " + JSON.stringify(config)
-    // );
     return config;
   });
 
@@ -72,6 +70,19 @@ export default boot(({ app }) => {
         !originalRequest._retry
       ) {
         if (isRefreshing) {
+          //Check if current refresh token is also expired
+          //if yes
+          const currentToken = LocalStorage.getItem("auth").refreshToken;
+          if (
+            originalRequest.headers.Authorization ===
+            "Bearer " + currentToken
+          ) {
+            window.alert("refresh token expied, redirecting to login page");
+            Router.push("/login");
+            LocalStorage.clear();
+            return;
+          }
+
           return new Promise(function (resolve, reject) {
             failedQueue.push({ resolve, reject });
           }).then((token) => {
@@ -85,10 +96,11 @@ export default boot(({ app }) => {
         const clientId = LocalStorage.getItem("auth").client.id;
         const refreshToken = LocalStorage.getItem("auth").refreshToken;
         const user = LocalStorage.getItem("auth").client.logonId;
+        const isAdmin = LocalStorage.getItem("auth").admin;
         let request = {
           clientId: clientId,
           refreshToken: refreshToken,
-          user: user,
+          user: isAdmin ? user : LocalStorage.getItem("auth").user.logonId,
         };
 
         try {
@@ -103,9 +115,6 @@ export default boot(({ app }) => {
           LocalStorage.set("auth", auth);
           isRefreshing = false;
 
-          // api.defaults.headers.common.Authorization =
-          //   "Bearer " + newAccessToken;
-
           processQueue(null, newAccessToken);
 
           return api(originalRequest); // 🔁 retry original API
@@ -113,9 +122,8 @@ export default boot(({ app }) => {
           processQueue(err, null);
 
           // optional: logout user
-          localStorage.clear();
-          window.location.href = "/login";
-
+          Router.push("/login");
+          LocalStorage.clear();
           return Promise.reject(err);
         } finally {
           isRefreshing = false;
@@ -128,110 +136,11 @@ export default boot(({ app }) => {
 
   downloadAPI.interceptors.request.use(function (config) {
     const auth = LocalStorage.getItem("auth");
-    //console.log(JSON.stringify(token))
     config.headers.Authorization = "Bearer " + auth.token;
-    // console.log(JSON.stringify(config));
-    // console.log(
-    //   "axios.interceptors.request common header " + JSON.stringify(config)
-    // );
     return config;
   });
 
-  // api.interceptors.response.use(
-  //   (response) => response,
-  //   async (error) => {
-  //     const originalRequest = error.config;
-
-  //     // If request already retried, stop infinite loop
-  //     if (error.response?.status === 401 && !originalRequest._retry) {
-  //       if (isRefreshing) {
-  //         // Queue failed requests until refresh is done
-  //         return new Promise(function (resolve, reject) {
-  //           failedQueue.push({ resolve, reject });
-  //         })
-  //           .then(function (token) {
-  //             originalRequest.headers["Authorization"] = "Bearer " + token;
-  //             return api(originalRequest);
-  //           })
-  //           .catch((err) => Promise.reject(err));
-  //       }
-
-  //       originalRequest._retry = true;
-  //       isRefreshing = true;
-
-  //       const refreshToken = LocalStorage.getItem("auth").refreshToken;
-  //       // originalRequest.headers["Authorization"] = "Bearer " + refreshToken;
-  //       if (!refreshToken) {
-  //         // Redirect to login
-  //         // window.location = "/login"; CHAT GPT WAy
-
-  //         Router.push("/login");
-  //         LocalStorage.clear();
-  //         return Promise.reject(error);
-  //       }
-
-  //       let request = {
-  //         clientId: LocalStorage.getItem("auth").client.id,
-  //         refreshToken: refreshToken,
-  //       };
-
-  //       try {
-  //         const response = await api.post("/v1/auth/refresh", {
-  //           request,
-  //         });
-
-  //         const newAccessToken = response.data.token;
-  //         const newRefreshToken = response.data.refreshToken;
-
-  //         let auth = LocalStorage.getItem("auth");
-  //         auth.token = newAccessToken;
-  //         auth.refreshToken = newRefreshToken;
-
-  //         LocalStorage.set("auth", auth);
-
-  //         api.defaults.headers["Authorization"] = "Bearer " + newAccessToken;
-
-  //         processQueue(null, newAccessToken);
-  //         return api(originalRequest);
-  //       } catch (err) {
-  //         processQueue(err, null);
-  //         LocalStorage.clear();
-  //         window.location = "/login";
-  //         return Promise.reject(err);
-  //       } finally {
-  //         isRefreshing = false;
-  //       }
-  //     }
-
-  //     return Promise.reject(error);
-  //   }
-  // );
-
-  //
-  // create a response interceptor so that for every call coming back
-  // we will potentially stop a progress bar to show network communication is done
-  // We are using vuex "loading" store to track how many outgoing and how many
-  // incoming request are being done.   When the request hit 0 the progress
-  // should disappear.
-  //
-
-  // api.interceptors.response.use(
-  //   function (response) {
-  //     // console.log("==============================" + JSON.stringify(response));
-  //     return response;
-  //   },
-  //   function (error) {
-  //     if (401 === error.response.status) {
-  //       Router.push("/login");
-  //       LocalStorage.clear();
-  //     } else {
-  //       return Promise.reject(error);
-  //     }
-  //   }
-  // );
-
   downloadAPI.interceptors.response.use(function (config) {
-    //console.log("axios.interceptors.response common header " + JSON.stringify(config))
     return config;
   });
 });
