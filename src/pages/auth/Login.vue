@@ -170,6 +170,7 @@ export default {
             ? this.loginResponse.userDTO
             : null,
         token: this.loginResponse.token,
+        refreshToken: this.loginResponse.refreshToken,
         admin: this.loginResponse.admin,
         newlogin: true,
         permissions: this.loginResponse.permissions,
