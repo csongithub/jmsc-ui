@@ -641,6 +641,7 @@ export default {
       document.ontouchstart = resetTimer;
       document.onclick = resetTimer; // touchpad clicks
       document.onkeydown = resetTimer; // onkeypress is deprectaed
+
       document.addEventListener("scroll", resetTimer, true); // improved; see comments
 
       function handleLogout() {

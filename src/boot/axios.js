@@ -75,16 +75,14 @@ export default boot(({ app }) => {
         !originalRequest._retry
       ) {
         if (isRefreshing) {
-          redirectToLogin();
           //Check if current refresh token is also expired
           //if yes redirect to the login page
-
-          if (
-            !LocalStorage.getItem("auth") ||
-            LocalStorage.getItem("auth").refreshToken ===
-              originalRequest.headers.Authorization
-          ) {
-            redirectToLogin;
+          const currentRefreshToken = LocalStorage.getItem("auth")
+            ? "Bearer " + LocalStorage.getItem("auth").refreshToken
+            : null;
+          if (currentRefreshToken === originalRequest.headers.Authorization) {
+            window.alert("Your current session has expired, please re-login");
+            redirectToLogin();
             return;
           }
 
@@ -109,7 +107,7 @@ export default boot(({ app }) => {
         };
 
         try {
-          window.alert("refreshing token");
+          window.alert("Refreshing Token...");
           const refreshResponse = await api.post("/v1/auth/refresh", request);
 
           const newAccessToken = refreshResponse.data.token;
@@ -127,7 +125,7 @@ export default boot(({ app }) => {
         } catch (err) {
           processQueue(err, null);
           // optional: logout user
-          redirectToLogin;
+          redirectToLogin();
           return Promise.reject(err);
         } finally {
           isRefreshing = false;
