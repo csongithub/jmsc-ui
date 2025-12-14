@@ -5,6 +5,14 @@
         <q-toolbar-title class="text-white text-bold">
           {{ "JMSC-ACCOUNTING" }}
         </q-toolbar-title>
+        <q-space />
+        <q-icon
+          :name="icons.logout"
+          color="white"
+          style="cursor: pointer"
+          size="sm"
+          @click="logout"
+        ></q-icon>
       </q-toolbar>
     </q-header>
     <q-page-container>
@@ -52,12 +60,14 @@
 </template>
 
 <script>
+import { LocalStorage } from "quasar";
 import { commonMixin } from "../mixin/common";
 import Dashboard from "../pages/accounting/Dashboard.vue";
 import Project from "../pages/accounting/project/Project.vue";
 import Creditor from "../pages/accounting/Creditor/Creditor.vue";
 import Leadger from "../pages/accounting/Ledger/Leadger.vue";
 import CapitalAccount from "src/pages/accounting/CapitalAccount/CapitalAccuont.vue";
+import { fasPowerOff } from "@quasar/extras/fontawesome-v5";
 
 import { ref } from "vue";
 
@@ -75,12 +85,20 @@ export default {
   setup() {
     return {
       tab: ref("dashboard"),
+      icons: {
+        logout: fasPowerOff,
+      },
     };
   },
   data() {
     return {};
   },
-  methods: {},
+  methods: {
+    logout() {
+      LocalStorage.clear();
+      this.openLoginLayout();
+    },
+  },
 };
 </script>
 
