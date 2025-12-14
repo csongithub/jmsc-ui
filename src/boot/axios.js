@@ -2,6 +2,22 @@ import { boot } from "quasar/wrappers";
 import axios from "axios";
 import { LocalStorage } from "quasar";
 
+import { Router } from "src/router";
+
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
 // If any client changes this (global) instance, it might be a
@@ -34,52 +50,99 @@ export default boot(({ app }) => {
   //
   api.interceptors.request.use(function (config) {
     const auth = LocalStorage.getItem("auth");
-    //console.log(JSON.stringify(token))
+
     if (auth && auth.token) {
-      config.headers.Authorization = "Bearer " + auth.token;
-      // console.log(JSON.stringify(config));
+      config.headers.Authorization =
+        "Bearer " + (isRefreshing ? auth.refreshToken : auth.token);
     }
-    // console.log(
-    //   "axios.interceptors.request common header " + JSON.stringify(config)
-    // );
     return config;
   });
+
+  function redirectToLogin() {
+    Router.push("/login");
+    LocalStorage.clear();
+  }
+
+  api.interceptors.response.use(
+    (response) => response,
+
+    async (error) => {
+      const originalRequest = error.config;
+
+      if (
+        error.response &&
+        error.response.status === 401 &&
+        !originalRequest._retry
+      ) {
+        if (isRefreshing) {
+          //Check if current refresh token is also expired
+          //if yes redirect to the login page
+          const currentRefreshToken = LocalStorage.getItem("auth")
+            ? "Bearer " + LocalStorage.getItem("auth").refreshToken
+            : null;
+          if (currentRefreshToken === originalRequest.headers.Authorization) {
+            window.alert("Your current session has expired, please re-login");
+            redirectToLogin();
+            return;
+          }
+
+          return new Promise(function (resolve, reject) {
+            failedQueue.push({ resolve, reject });
+          }).then((token) => {
+            originalRequest.headers.Authorization = "Bearer " + token;
+            return api(originalRequest);
+          });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+        const clientId = LocalStorage.getItem("auth").client.id;
+        const refreshToken = LocalStorage.getItem("auth").refreshToken;
+        const user = LocalStorage.getItem("auth").client.logonId;
+        const isAdmin = LocalStorage.getItem("auth").admin;
+        let request = {
+          clientId: clientId,
+          refreshToken: refreshToken,
+          user: isAdmin ? user : LocalStorage.getItem("auth").user.logonId,
+        };
+
+        try {
+          window.alert("Refreshing Token...");
+          const refreshResponse = await api.post("/v1/auth/refresh", request);
+
+          const newAccessToken = refreshResponse.data.token;
+          const newRefreshToken = refreshResponse.data.refreshToken;
+
+          let auth = LocalStorage.getItem("auth");
+          auth.token = newAccessToken;
+          auth.refreshToken = newRefreshToken;
+          LocalStorage.set("auth", auth);
+          isRefreshing = false;
+
+          processQueue(null, newAccessToken);
+
+          return api(originalRequest); // 🔁 retry original API
+        } catch (err) {
+          processQueue(err, null);
+          // optional: logout user
+          redirectToLogin();
+          return Promise.reject(err);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      return Promise.reject(error);
+    }
+  );
 
   downloadAPI.interceptors.request.use(function (config) {
     const auth = LocalStorage.getItem("auth");
-    //console.log(JSON.stringify(token))
     config.headers.Authorization = "Bearer " + auth.token;
-    // console.log(JSON.stringify(config));
-    // console.log(
-    //   "axios.interceptors.request common header " + JSON.stringify(config)
-    // );
     return config;
   });
 
-  //
-  // create a response interceptor so that for every call coming back
-  // we will potentially stop a progress bar to show network communication is done
-  // We are using vuex "loading" store to track how many outgoing and how many
-  // incoming request are being done.   When the request hit 0 the progress
-  // should disappear.
-  //
-  api.interceptors.response.use(
-    function (response) {
-      // console.log("==============================" + JSON.stringify(response));
-      return response;
-    },
-    function (error) {
-      if (401 === error.response.status) {
-        // window.alert("Previous session expired, Please login again");
-        this.$router.push({ name: "login" });
-        LocalStorage.clear();
-      } else {
-        return Promise.reject(error);
-      }
-    }
-  );
   downloadAPI.interceptors.response.use(function (config) {
-    //console.log("axios.interceptors.response common header " + JSON.stringify(config))
     return config;
   });
 });
