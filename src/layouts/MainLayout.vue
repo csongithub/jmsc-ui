@@ -318,7 +318,7 @@
     <q-page-container>
       <router-view />
     </q-page-container>
-    <q-dialog v-model="showWelcome" persistent @hide="reloadApp" ref="nefCfRef">
+    <!-- <q-dialog v-model="showWelcome" persistent @hide="reloadApp" ref="nefCfRef">
       <q-card class="my-card bg-primary text-white">
         <q-bar class="bg-primary">
           <q-space />
@@ -340,7 +340,7 @@
           </div>
         </q-card-section>
       </q-card>
-    </q-dialog>
+    </q-dialog> -->
   </q-layout>
 </template>
 
@@ -574,13 +574,11 @@ export default {
           return Promise.reject(err);
         });
     },
-    openWelcome() {
-      this.showWelcome = true;
-    },
-    reloadApp() {
-      this.showWelcome = false;
-      this.$router.go();
-    },
+
+    // reloadApp() {
+    //   this.showWelcome = false;
+    //   this.$router.go();
+    // },
     getClient() {
       //Check if client has already logged in, then get client form local storage
       if (this.client === null && LocalStorage.getItem("auth")) {
@@ -594,7 +592,7 @@ export default {
           LocalStorage.set("auth", auth);
           let x = Math.floor(Math.random() * (this.quotes.length - 1) + 0);
           this.selectedQuote = this.quotes[x];
-          this.showWelcome = true;
+          // this.showWelcome = true;
         }
         // console.log(JSON.stringify(this.client))
         return true;
