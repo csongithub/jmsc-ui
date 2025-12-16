@@ -404,6 +404,7 @@ import {
 import { date } from "quasar";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
+import { projectStore } from "src/pinia_stores/ProjectStore";
 
 export default {
   name: "Statement",
@@ -671,15 +672,9 @@ export default {
         });
       });
     },
-    getProjects() {
-      ProjectService.getProjectList(this.clientId)
-        .then((response) => {
-          this.projects.splice(0, this.projects.length);
-          this.projectOptions.splice(0, this.projectOptions.length);
-          this.projects = response.list;
-          this.projectOptions = response.list;
-        })
-        .catch((err) => {});
+    async getProjects() {
+      this.projects = await projectStore().loadProjects(this.clientId, false);
+      this.projectOptions = this.projects;
     },
     filterItem(input, update, abort) {
       update(() => {

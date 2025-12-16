@@ -182,9 +182,23 @@ export default {
         return Promise.reject(err);
       });
   },
-  getAllCapitalAccounts(clientId) {
+  async getAllCapitalAccounts(clientId) {
     return api
       .get("/v1/accounting/capital_account/" + clientId)
+      .then((response) => {
+        let accounts = response.data;
+        return accounts;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting capital accounts: " + JSON.stringify(err)
+        );
+        return Promise.reject(err);
+      });
+  },
+  async getAllCapitalAccountList(clientId) {
+    return await api
+      .get("/v1/accounting/capital_account/list/" + clientId)
       .then((response) => {
         let accounts = response.data;
         return accounts;

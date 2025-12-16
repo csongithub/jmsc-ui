@@ -336,13 +336,14 @@ import {
   fasTrash,
 } from "@quasar/extras/fontawesome-v5";
 import { reset } from "numeral";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
 
 export default {
   name: "Creditors",
   mixins: [commonMixin],
   components: {},
   mounted() {
-    this.getAllCreditors();
+    this.getAllCreditors(false);
     this.getParties();
     window.addEventListener("keydown", this.globalKeyDownHandler);
   },
@@ -441,19 +442,17 @@ export default {
         .then((response) => {
           if (event !== "item saved")
             this.success("Creditor Saved Successfully");
-          this.getAllCreditors();
+          this.getAllCreditors(true);
           this.showCreate = false;
           this.disableSelectCreditor = false;
         })
         .catch((err) => {});
     },
-    getAllCreditors() {
-      AccountingService.getAllCreditors(this.clientId)
-        .then((response) => {
-          this.options = response.list;
-          this.creditors = response.list;
-        })
-        .catch((err) => {});
+    async getAllCreditors(refresh) {
+      this.creditors = await creditorStore().loadCreditors(
+        this.clientId,
+        refresh
+      );
     },
     getParties() {
       PartyService.list(this.clientId)

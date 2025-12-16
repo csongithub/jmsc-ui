@@ -222,6 +222,8 @@ import { commonMixin } from "../../../mixin/common";
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 
 import { ref } from "vue";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
+import { capitalAccountStore } from "src/pinia_stores/CapitalAccountStore";
 export default {
   name: "Project",
   mixins: [commonMixin],
@@ -268,7 +270,7 @@ export default {
   components: {},
   created() {},
   mounted() {
-    this.getAllAccounts();
+    this.getAllAccounts(false);
   },
   beforeUnmount() {},
   data() {
@@ -298,9 +300,9 @@ export default {
         lastUpdated: null,
       };
     },
-    getAllAccounts() {
+    async getAllAccounts(refresh) {
       this.loading = true;
-      AccountingService.getAllCapitalAccounts(this.client_id)
+      await AccountingService.getAllCapitalAccounts(this.client_id)
         .then((response) => {
           this.accounts.splice(0, this.accounts.length);
           this.accounts = response;
@@ -310,18 +312,22 @@ export default {
           this.loading = false;
           this.fail(this.getErrorMessage(err));
         });
+      if (refresh)
+        await capitalAccountStore().loadCapitalAccounts(
+          this.client_id,
+          refresh
+        );
     },
-    create() {
+    async create() {
       this.account.clientId = this.client_id;
       AccountingService.createCapitalAccount(this.account)
         .then((response) => {
           if (this.mode === "add") {
-            this.accounts.unshift(response);
             this.success("Account create Successfully");
           } else if (this.mode === "edit") {
             this.success("Account Updated Successfully");
-            this.getAllAccounts();
           }
+          this.getAllAccounts(true);
           this.open = false;
         })
         .catch((err) => {

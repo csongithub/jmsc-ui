@@ -32,8 +32,8 @@
             <q-tab name="project" label="Projects" />
             <q-tab name="capitalaccount" label="Capitals" />
             <q-tab name="creditor" label="Creditors" />
-            <q-tab name="suppliers" label="Leadger" />
-            <q-tab name="entry" label="Entry" />
+            <q-tab name="ledger" label="Leadger" />
+            <q-tab name="voucher" label="Voucher" />
           </q-tabs>
           <q-separator />
           <q-tab-panels v-model="tab" animated>
@@ -49,8 +49,11 @@
             <q-tab-panel name="creditor">
               <Creditor></Creditor>
             </q-tab-panel>
-            <q-tab-panel name="suppliers">
+            <q-tab-panel name="ledger">
               <Leadger></Leadger>
+            </q-tab-panel>
+            <q-tab-panel name="voucher">
+              <Voucher></Voucher>
             </q-tab-panel>
           </q-tab-panels>
         </q-card>
@@ -66,6 +69,7 @@ import Dashboard from "../pages/accounting/Dashboard.vue";
 import Project from "../pages/accounting/project/Project.vue";
 import Creditor from "../pages/accounting/Creditor/Creditor.vue";
 import Leadger from "../pages/accounting/Ledger/Leadger.vue";
+import Voucher from "src/pages/accounting/Voucher/Voucher.vue";
 import CapitalAccount from "src/pages/accounting/CapitalAccount/CapitalAccuont.vue";
 import { fasPowerOff } from "@quasar/extras/fontawesome-v5";
 
@@ -78,6 +82,7 @@ export default {
     Project,
     Creditor,
     Leadger,
+    Voucher,
     CapitalAccount,
   },
   created() {},

@@ -350,6 +350,7 @@ import { commonMixin } from "../../../mixin/common";
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
 import { matCurrencyRupee, matDelete } from "@quasar/extras/material-icons";
 import { ref } from "vue";
+import { projectStore } from "src/pinia_stores/ProjectStore";
 export default {
   name: "Project",
   mixins: [commonMixin],
@@ -458,7 +459,7 @@ export default {
   created() {},
   mounted() {
     window.addEventListener("keydown", this.globalKeyDownHandler);
-    this.getAllProjects();
+    this.getAllProjects(false);
   },
   beforeUnmount() {
     // Remove event listener before the component is unmounted to prevent memory leaks
@@ -504,7 +505,7 @@ export default {
         securityAmount: 0,
       };
     },
-    getAllProjects() {
+    async getAllProjects(refresh) {
       this.loading = true;
       ProjectService.all(this.client_id)
         .then((response) => {
@@ -516,19 +517,19 @@ export default {
           this.loading = false;
           this.fail(this.getErrorMessage(err));
         });
+      await projectStore().loadProjects(this.client_id, refresh);
     },
-    createOrUpdate() {
+    async createOrUpdate() {
       this.project.clientId = this.client_id;
-      ProjectService.create(this.project)
+      await ProjectService.create(this.project)
         .then((response) => {
           if (this.mode === "add") {
-            this.projects.unshift(response);
             this.success("Project create Successfully");
           } else if (this.mode === "edit") {
             this.success("Project Updated Successfully");
           }
           this.open = false;
-          this.getAllProjects();
+          this.getAllProjects(true);
         })
         .catch((err) => {
           this.fail(this.getErrorMessage(err));

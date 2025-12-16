@@ -289,7 +289,7 @@
               <template v-slot:no-option>
                 <q-item>
                   <q-item-section class="text-red">
-                    No Creditor Matched
+                    No Project Matched
                   </q-item-section>
                 </q-item>
               </template>
@@ -406,6 +406,7 @@ import AccountingService from "src/services/accounting/AccountingService";
 import ProjectService from "src/services/ProjectService";
 import { date } from "quasar";
 import { ref } from "vue";
+import { projectStore } from "src/pinia_stores/ProjectStore";
 AccountingService;
 export default {
   name: "Credit",
@@ -636,15 +637,8 @@ export default {
           this.fail(this.getErrorMessage(err));
         });
     },
-    getProjects() {
-      ProjectService.getProjectList(this.clientId)
-        .then((response) => {
-          this.projects.splice(0, this.projects.length);
-          this.projectOptions.splice(0, this.projectOptions.length);
-          this.projects = response.list;
-          this.projectOptions = response.list;
-        })
-        .catch((err) => {});
+    async getProjects() {
+      this.projects = await projectStore().loadProjects(this.clientId, false);
     },
     keyDownHandlerForEntry(event) {
       // console.log(" keydown:", event.key);

@@ -20,7 +20,7 @@
                 input-debounce="0"
                 @filter="filterCreditor"
                 @update:model-value="
-                  getLedgers();
+                  getLedgers(false);
                   detectPayments();
                 "
               >
@@ -440,6 +440,7 @@ import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
 import LedgerEntry from "./LedgerEntry.vue";
 import Statement from "./Statement.vue";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
 
 export default {
   name: "Ledger",
@@ -563,7 +564,7 @@ export default {
       AccountingService.createLedger(this.ledger)
         .then((response) => {
           if (this.selectedCreditorId === response.creditorId) {
-            this.getLedgers();
+            this.getLedgers(true);
           }
           this.closeCreateLedger();
           this.success("Ledger Created");
@@ -584,25 +585,23 @@ export default {
     resetLedger() {
       this.ledger = this.newLedger();
     },
-    getAllCreditors() {
-      AccountingService.getAllCreditors(this.clientId)
-        .then((response) => {
-          this.creditorsOptions = response.list;
-          this.creditors = response.list;
-        })
-        .catch((err) => {});
+    async getAllCreditors() {
+      this.creditors = await creditorStore().loadCreditors(
+        this.clientId,
+        false
+      );
     },
 
-    getLedgers() {
+    async getLedgers(refresh) {
       this.ledgers = [];
       this.ledgersOptions = [];
       this.selectedLedger = null;
       this.updatePayments = false;
-      AccountingService.getLedgers(this.clientId, this.selectedCreditorId)
-        .then((response) => {
-          this.ledgers = response;
-        })
-        .catch((err) => {});
+      this.ledgers = await creditorStore().loadLedgers(
+        this.clientId,
+        this.selectedCreditorId,
+        refresh
+      );
     },
 
     detectPayments() {

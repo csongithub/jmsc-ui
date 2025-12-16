@@ -1,0 +1,59 @@
+import { defineStore } from "pinia";
+import AccountingService from "src/services/accounting/AccountingService";
+
+export const creditorStore = defineStore("creditorStore", {
+  state: () => ({
+    creditors: [], //Array [{"label":"AV FUELS","value":10}]
+    ledgersCache: [], //[{ creditorid: 2, ledgerList: [{id:2, name:'main'}] }],
+  }),
+
+  actions: {
+    async loadCreditors(client_id, force_refresh = true) {
+      if (this.creditors.length === 0 || force_refresh) {
+        try {
+          const response = await AccountingService.getAllCreditors(client_id);
+          this.creditors = response.list;
+
+          return this.creditors;
+        } catch (err) {
+          console.error("Failed to load capital accounts", err);
+          this.creditors = [];
+          throw err;
+        } finally {
+        }
+      } else {
+        return this.creditors;
+      }
+    },
+
+    async loadLedgers(client_id, creditor_id, force_refresh = true) {
+      var ledgers = null;
+      var index = null;
+
+      for (var i = 0; i < this.ledgersCache.length; i++) {
+        if (creditor_id === this.ledgersCache[i].creditorId) {
+          ledgers = this.ledgersCache[i].ledgers;
+          index = i;
+          break;
+        }
+      }
+
+      if (!force_refresh && ledgers) {
+        return ledgers;
+      }
+      if (index) this.ledgersCache.splice(index, 1);
+
+      const ledgerList = await AccountingService.getLedgers(
+        client_id,
+        creditor_id
+      );
+
+      this.ledgersCache.push({
+        creditorId: Number(creditor_id),
+        ledgers: ledgerList,
+      });
+
+      return ledgerList;
+    },
+  },
+});
