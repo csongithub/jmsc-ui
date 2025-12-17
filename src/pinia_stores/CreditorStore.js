@@ -26,6 +26,24 @@ export const creditorStore = defineStore("creditorStore", {
       }
     },
 
+    async getLedgerList(client_id, creditor_id, force_refresh = true) {
+      const list = [];
+      const ledgers = await this.loadLedgers(
+        client_id,
+        creditor_id,
+        force_refresh
+      );
+      if (ledgers.length > 0) {
+        for (let ledger of ledgers) {
+          list.push({
+            label: ledger.name,
+            value: ledger.id,
+          });
+        }
+      }
+      return list;
+    },
+
     async loadLedgers(client_id, creditor_id, force_refresh = true) {
       var ledgers = null;
       var index = null;

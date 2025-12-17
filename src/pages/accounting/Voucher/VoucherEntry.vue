@@ -1,117 +1,263 @@
 <template>
   <q-layout>
-    <q-table
-      ref="myTable"
-      flat
-      dense
-      bordered
-      :rows="items"
-      :columns="columns"
-      row-key="name"
-      binary-state-sort
-      :pagination="pagination"
-    >
-      <template v-slot:top="">
-        <q-input
-          class="custom-small-input"
-          label="Voucher No"
-          style="max-width: 200px"
-          v-model="voucher.voucherNo"
-          dense
-          outlined
-          placeholder="voucher no"
-        />
-        <q-input
-          filled
-          class="custom-small-input q-ml-sm"
-          style="max-width: 150px"
-          hide-bottom-space
-          dense
-          outlined
-          label="Voucher Date"
-          v-model="voucher.date"
-          :rules="['DD-MM-YYYY']"
-          placeholder="dd-mm-yyyy"
-        >
-          <template v-slot:append>
-            <q-icon name="event" class="cursor-pointer">
-              <q-popup-proxy
-                ref="qDateProxy"
-                cover
-                transition-show="scale"
-                transition-hide="scale"
+    <q-form @submit="saveVoucher" class="q-gutter-md" ref="myForm">
+      <q-table
+        ref="myTable"
+        flat
+        dense
+        bordered
+        :rows="items"
+        :columns="columns"
+        row-key="name"
+        binary-state-sort
+        :pagination="pagination"
+      >
+        <template v-slot:top="">
+          <q-input
+            style="max-width: 200px"
+            v-model="voucher.voucherNo"
+            dense
+            outlined
+            placeholder="Voucher No."
+            lazy-rules
+            :rules="[(val) => (val && val.length > 0) || 'required']"
+            hide-bottom-space
+          />
+          <q-input
+            filled
+            class="q-ml-sm"
+            style="max-width: 150px"
+            hide-bottom-space
+            dense
+            outlined
+            label="Voucher Date"
+            v-model="voucher.date"
+            :rules="[
+              (val) => !!val || 'Date is required',
+              (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || 'Invalid date format',
+            ]"
+            placeholder="dd-mm-yyyy"
+          >
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer">
+                <q-popup-proxy
+                  ref="qDateProxy"
+                  cover
+                  transition-show="scale"
+                  transition-hide="scale"
+                >
+                  <q-date
+                    v-model="voucher.date"
+                    mask="DD-MM-YYYY"
+                    minimal
+                    lazy-rules
+                    @update:model-value="$refs.qDateProxy.hide()"
+                  />
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
+          <q-select
+            label="Project"
+            filled
+            class="q-ml-sm"
+            dense
+            outlined
+            hide-bottom-space
+            :options="projectOptions"
+            v-model="voucher.projectId"
+            option-disable="inactive"
+            emit-value
+            map-options
+            use-input
+            input-debounce="0"
+            @filter="filterProject"
+            hide-dropdown-icon
+            lazy-rules
+            :rules="[(val) => val > 0 || 'required']"
+          >
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-red">
+                  No Project Matched
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+          <q-select
+            label="Capital"
+            filled
+            class="q-ml-sm"
+            dense
+            outlined
+            hide-bottom-space
+            :options="capitalOptions"
+            v-model="voucher.capitalAccountId"
+            option-disable="inactive"
+            emit-value
+            map-options
+            use-input
+            input-debounce="0"
+            @filter="filterCapital"
+            hide-dropdown-icon
+            lazy-rules
+            :rules="[(val) => val > 0 || 'required']"
+          >
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-red">
+                  No Capital Account Matched
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+        </template>
+        <template v-slot:bottom>
+          <q-btn
+            class="text-secondary"
+            label="add"
+            @click="addItem"
+            size="10px"
+          />
+          <q-space />
+          <q-btn
+            color="secondary"
+            class="text-secondary q-ml-md float-right"
+            label="Save"
+            size="10px"
+            type="submit"
+          />
+        </template>
+        <template v-slot:body="props">
+          <q-tr :props="props" ref="itmesRef">
+            <q-td key="item" :props="props">
+              <q-input
+                class="custom-small-input"
+                v-model="props.row.item"
+                dense
+                outlined
+                placeholder="i.e. milk or vegetables"
+                hide-bottom-space
+                lazy-rules
+                :rules="[(val) => (val && val.length > 0) || '']"
+                style="width: 300px"
+              />
+            </q-td>
+            <q-td key="amount" :props="props">
+              <q-input
+                class="custom-small-input"
+                ref="rateRef"
+                type="number"
+                v-model="props.row.amount"
+                dense
+                outlined
+                placeholder="i.e. 250"
+                hide-bottom-space
+                lazy-rules
+                :rules="[(val) => val > 0 || 'required']"
+                style="max-width: 100px"
+              />
+            </q-td>
+            <q-td key="group" :props="props">
+              <q-select
+                class="custom-small-select"
+                dense
+                outlined
+                hide-bottom-space
+                :options="groupOptions"
+                v-model="props.row.group"
+                option-disable="inactive"
+                emit-value
+                map-options
+                use-input
+                input-debounce="0"
+                @filter="filterList"
+                lazy-rules
+                :rules="[(val) => val.length > 0 || 'required']"
+                hide-dropdown-icon
               >
-                <q-date v-model="voucher.date" mask="DD-MM-YYYY" minimal />
-              </q-popup-proxy>
-            </q-icon>
-          </template>
-        </q-input>
-        <q-select
-          label="Project"
-          filled
-          class="q-ml-sm custom-small-select"
-          dense
-          outlined
-          hide-bottom-space
-          :options="projectOptions"
-          v-model="voucher.projectId"
-          option-disable="inactive"
-          emit-value
-          map-options
-          use-input
-          input-debounce="0"
-          @filter="filterProject"
-        >
-          <template v-slot:no-option>
-            <q-item>
-              <q-item-section class="text-red">
-                No Project Matched
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-        <q-select
-          label="Capital"
-          filled
-          class="q-ml-sm custom-small-select"
-          dense
-          outlined
-          hide-bottom-space
-          :options="capitalOptions"
-          v-model="voucher.capitalAccountId"
-          option-disable="inactive"
-          emit-value
-          map-options
-          use-input
-          input-debounce="0"
-          @filter="filterCapital"
-        >
-          <template v-slot:no-option>
-            <q-item>
-              <q-item-section class="text-red">
-                No Capital Account Matched
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-      </template>
-      <template v-slot:bottom>
-        <q-btn
-          class="text-secondary"
-          label="add"
-          @click="addItem"
-          size="10px"
-        />
-        <q-space />
-        <q-btn
-          color="secondary"
-          class="text-secondary q-ml-md float-right"
-          label="Save"
-          size="10px"
-          @click="saveVoucher"
-        />
-      </template>
-    </q-table>
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-red">
+                      No Creditor Matched
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </q-td>
+            <q-td key="creditorId" :props="props">
+              <q-select
+                :disable="props.row.group !== 'Party Advance'"
+                class="custom-small-select"
+                dense
+                outlined
+                hide-bottom-space
+                :options="creditorOptions"
+                v-model="props.row.creditorId"
+                option-disable="inactive"
+                emit-value
+                map-options
+                use-input
+                input-debounce="0"
+                @filter="filterCreditor"
+                @update:model-value="getLedgers(props.row)"
+                hide-dropdown-icon
+                lazy-rules
+                :rules="[(val) => val > 0 || 'required']"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-red">
+                      No Creditor Matched
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </q-td>
+            <q-td key="ledgerId" :props="props">
+              <q-select
+                :disable="isNullOrUndefined(props.row.creditorId)"
+                class="custom-small-select"
+                dense
+                outlined
+                hide-bottom-space
+                :options="props.row.ledgerOptions"
+                v-model="props.row.ledgerId"
+                option-disable="inactive"
+                emit-value
+                map-options
+                use-input
+                input-debounce="0"
+                @filter="
+                  (val, update, abort) =>
+                    filterLedger(val, update, abort, props.row)
+                "
+                hide-dropdown-icon
+                lazy-rules
+                :rules="[(val) => val > 0 || 'required']"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-red">
+                      No Ledger Matched
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </q-td>
+            <q-td key="action" :props="props">
+              <q-icon
+                color="red"
+                class="pointer"
+                :name="icons.delete"
+                size="10px"
+                @click="deleteItem(props.rowIndex)"
+              />
+            </q-td>
+          </q-tr>
+        </template>
+      </q-table>
+    </q-form>
   </q-layout>
 </template>
 
@@ -119,9 +265,11 @@
 import { ref } from "vue";
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
-import { filter } from "../Utils/filterUtils";
+import { filter, filterFn } from "../Utils/filterUtils";
 import { projectStore } from "../../../pinia_stores/ProjectStore";
 import { capitalAccountStore } from "src/pinia_stores/CapitalAccountStore";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
+import { fasTrash } from "@quasar/extras/fontawesome-v5";
 
 export default {
   name: "VoucherEntry",
@@ -145,6 +293,12 @@ export default {
           format: (val) => `${val.toLocaleString("en-IN")}`,
         },
         {
+          name: "group",
+          align: "left",
+          label: "Category",
+          field: "group",
+        },
+        {
           name: "creditorId",
           align: "left",
           label: "Creditor",
@@ -156,13 +310,11 @@ export default {
           label: "Ledger",
           field: "ledgerId",
         },
-        {
-          name: "group",
-          align: "left",
-          label: "Category",
-          field: "group",
-        },
+        { name: "action", align: "left", label: "", field: "action" },
       ],
+      icons: {
+        delete: fasTrash,
+      },
     };
   },
   data() {
@@ -194,6 +346,33 @@ export default {
       capitals: [],
       projectOptions: [],
       capitalOptions: [],
+
+      creditors: [],
+      creditorOptions: [],
+
+      groupOptions: [],
+      groups: [
+        "Party Advance",
+        "BikeRent",
+        "Vehicle Maintenace.",
+        "Car Rent",
+        "Diesel",
+        "Water",
+        "Equipment Purchage",
+        "Food & Snacks",
+        "Ration",
+        "House Rent",
+        "House HoldItem",
+        "Mobile Recharge",
+        "Milk",
+        "Vegetables",
+        "MachineRent",
+        "Petrol",
+        "Personal Grooming",
+        "Personal Item",
+        "Personal Payment",
+        "SiteMaterial",
+      ],
     };
   },
   methods: {
@@ -207,6 +386,11 @@ export default {
         this.getClientId(),
         false
       );
+
+      this.creditors = await creditorStore().loadCreditors(
+        this.getClientId(),
+        false
+      );
     },
 
     filterProject(input, update, abort) {
@@ -215,6 +399,25 @@ export default {
     filterCapital(input, update, abort) {
       this.capitalOptions = filter(input, update, this.capitals);
     },
+    filterCreditor(input, update, abort) {
+      this.creditorOptions = filter(input, update, this.creditors);
+    },
+    filterLedger(input, update, abort, row) {
+      row.ledgerOptions = filter(input, update, row.ledgers);
+    },
+    async getLedgers(row) {
+      row.ledgers = await creditorStore().getLedgerList(
+        this.getClientId(),
+        row.creditorId,
+        false
+      );
+      window.alert(JSON.stringify(row.ledgers));
+      row.ledgerOptions = [];
+    },
+    filterList(input, update, abort) {
+      this.groupOptions = filterFn(input, update, this.groups);
+    },
+
     newitem() {
       return {
         item: null,
@@ -227,6 +430,55 @@ export default {
     addItem() {
       this.items.push(this.newitem());
     },
+    deleteItem(index) {
+      this.items.splice(index, 1);
+      if (this.items.length === 0) {
+        this.items.push({
+          item: null,
+          amount: 0,
+          group: null,
+          creditorId: null,
+          ledgerId: null,
+        });
+      }
+    },
+    async saveVoucher() {
+      const isValid = await this.$refs.myForm.validate();
+      window.alert(isValid);
+      if (!isValid) {
+        window.alert("pleasecheck all entry carefully");
+        return;
+      }
+      window.alert(JSON.stringify(this.items));
+    },
   },
 };
 </script>
+<style lang="scss" scoped>
+.hint-red .q-field__messages {
+  color: red !important;
+}
+.custom-small-input,
+.custom-small-select {
+  // Target the control and marginal areas for height adjustment
+  :deep(.q-field__control),
+  :deep(.q-field__marginal) {
+    height: 32px !important; // Adjust height as needed
+    min-height: 32px !important; // Ensure minimum height
+  }
+  // Adjust padding for the native input element
+  :deep(.q-field__control),
+  :deep(.q-field__native) {
+    padding: 0 4px; // Adjust padding as needed
+  }
+  // Adjust font size for the native input text
+  :deep(.q-field__native) {
+    font-size: 12px; // Adjust font size as needed
+    min-height: 32px !important; // Ensure minimum height for native element
+  }
+  // Adjust label position for smaller inputs
+  :deep(.q-field__label) {
+    top: 6px !important; // Adjust label position
+  }
+}
+</style>
