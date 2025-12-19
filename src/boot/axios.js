@@ -69,6 +69,10 @@ export default boot(({ app }) => {
     async (error) => {
       const originalRequest = error.config;
 
+      if (!error.response && error.message.includes("Network Error")) {
+        window.alert("server not available, please try after sometime");
+      }
+
       if (
         error.response &&
         error.response.status === 401 &&
@@ -83,7 +87,9 @@ export default boot(({ app }) => {
             : null;
           if (currentRefreshToken === originalRequest.headers.Authorization) {
             logout = true;
-            window.alert("Session expired, please login again.");
+            window.alert(
+              "Current session was inactive for too long, please login again"
+            );
             redirectToLogin();
           }
           if (!logout) {
@@ -108,7 +114,7 @@ export default boot(({ app }) => {
           };
 
           try {
-            window.alert("Refreshing Token");
+            // window.alert("Refreshing Token");
             const refreshResponse = await api.post("/v1/auth/refresh", request);
 
             const newAccessToken = refreshResponse.data.token;

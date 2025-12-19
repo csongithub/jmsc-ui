@@ -225,4 +225,18 @@ export default {
         return Promise.reject(err);
       });
   },
+  createVoucher(voucher) {
+    return api
+      .post("/v1/accounting/vlucher/create", voucher)
+      .then((response) => {
+        let voucher = response.data;
+        return voucher;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in creating voucher: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
 };

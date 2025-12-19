@@ -74,6 +74,7 @@
               class="q-ma-none q-pa-none pointer"
               :name="icons.edit"
               @click="editAccount(props.row)"
+              size="10px"
             />
           </q-td>
         </q-tr>
@@ -87,6 +88,7 @@
       @hide="onHide"
       @before-show="beforeShow"
       ref="newCapitalAccountRef"
+      position="right"
     >
       <q-card style="width: 300px; max-width: 80vw">
         <q-bar class="bg-secondary text-white text-weight-light text-subtitle2">
@@ -109,9 +111,7 @@
                 label="Account Name"
                 full-width
                 lazy-rules
-                :rules="[
-                  (val) => (val && val.length > 0) || 'enter account name',
-                ]"
+                :rules="[(val) => (val && val.length > 0) || '']"
                 maxlength="20"
                 counter
                 @update:model-value="
@@ -135,9 +135,7 @@
                 v-model="account.accountType"
                 option-disable="inactive"
                 lazy-rules
-                :rules="[
-                  (val) => (val && val.length > 0) || 'select account type',
-                ]"
+                :rules="[(val) => (val && val.length > 0) || '']"
               />
             </div>
             <div class="row">
@@ -154,19 +152,21 @@
                 label="Openeing Balance"
                 full-width
                 lazy-rules
-                :rules="[
-                  (val) => (val && val >= 0) || 'engter openeing balance',
-                ]"
+                :rules="[(val) => (val && val >= 0) || '']"
               />
             </div>
             <div class="row">
               <q-input
+                :disable="mode === 'edit'"
                 class="full-width"
                 hide-bottom-space
                 dense
                 outlined
                 v-model="account.lastUpdated"
-                :rules="['DD-MM-YYYY']"
+                :rules="[
+                  (val) => !!val || '',
+                  (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || '',
+                ]"
                 label="Latest Transation"
                 placeholder="dd-mm-yyyy"
               >
@@ -187,6 +187,21 @@
                   </q-icon>
                 </template>
               </q-input>
+            </div>
+            <div class="row">
+              <q-select
+                class="full-width"
+                dense
+                outlined
+                hide-bottom-space
+                label="Status"
+                label-color="secondary"
+                :options="['ACTIVE', 'INACTIVE']"
+                v-model="account.status"
+                option-disable="inactive"
+                lazy-rules
+                :rules="[(val) => (val && val.length > 0) || '']"
+              />
             </div>
 
             <div>
@@ -270,7 +285,7 @@ export default {
   components: {},
   created() {},
   mounted() {
-    this.getAllAccounts(false);
+    this.getAllAccounts(true);
   },
   beforeUnmount() {},
   data() {

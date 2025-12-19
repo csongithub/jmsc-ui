@@ -1,6 +1,11 @@
 <template>
   <q-layout>
-    <q-form @submit="saveVoucher" class="q-gutter-md" ref="myForm">
+    <q-form
+      @submit="saveVoucher"
+      @reset="reset"
+      class="q-gutter-md"
+      ref="myForm"
+    >
       <q-table
         ref="myTable"
         flat
@@ -33,7 +38,7 @@
             label="Voucher Date"
             v-model="voucher.date"
             :rules="[
-              (val) => !!val || 'Date is required',
+              (val) => !!val || 'required',
               (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || 'Invalid date format',
             ]"
             placeholder="dd-mm-yyyy"
@@ -122,10 +127,16 @@
           <q-space />
           <q-btn
             color="secondary"
-            class="text-secondary q-ml-md float-right"
+            class="text-secondary text-capitalize q-ml-md float-right"
             label="Save"
             size="10px"
             type="submit"
+          />
+          <q-btn
+            size="10px"
+            label="Reset"
+            type="reset"
+            class="text-capitalize q-ml-sm"
           />
         </template>
         <template v-slot:body="props">
@@ -154,7 +165,7 @@
                 placeholder="i.e. 250"
                 hide-bottom-space
                 lazy-rules
-                :rules="[(val) => val > 0 || 'required']"
+                :rules="[(val) => val > 0 || '']"
                 style="max-width: 100px"
               />
             </q-td>
@@ -167,13 +178,11 @@
                 :options="groupOptions"
                 v-model="props.row.group"
                 option-disable="inactive"
-                emit-value
-                map-options
                 use-input
                 input-debounce="0"
                 @filter="filterList"
                 lazy-rules
-                :rules="[(val) => val.length > 0 || 'required']"
+                :rules="[(val) => val !== null || '']"
                 hide-dropdown-icon
               >
                 <template v-slot:no-option>
@@ -203,7 +212,7 @@
                 @update:model-value="getLedgers(props.row)"
                 hide-dropdown-icon
                 lazy-rules
-                :rules="[(val) => val > 0 || 'required']"
+                :rules="[(val) => val > 0 || '']"
               >
                 <template v-slot:no-option>
                   <q-item>
@@ -234,7 +243,7 @@
                 "
                 hide-dropdown-icon
                 lazy-rules
-                :rules="[(val) => val > 0 || 'required']"
+                :rules="[(val) => val > 0 || '']"
               >
                 <template v-slot:no-option>
                   <q-item>
@@ -278,8 +287,13 @@ export default {
   async mounted() {
     this.initiateData();
   },
+
   beforeUnmount() {},
-  computed: {},
+  computed: {
+    totalVaoucherAmount() {
+      return this.items.reduce((sum, i) => sum + Number(i.amount), 0);
+    },
+  },
   setup() {
     return {
       tab: ref("entry"),
@@ -323,25 +337,8 @@ export default {
       pagination: { rowsPerPage: 100 },
       voucherDate: null,
       voucherProject: null,
-      voucher: {
-        clientId: this.getClientId(),
-        id: null,
-        voucherNo: null,
-        date: null,
-        amount: null,
-        capitalAccountId: null,
-        projectId: null,
-        items: null,
-      },
-      items: [
-        {
-          item: null,
-          amount: 0,
-          group: null,
-          creditorId: null,
-          ledgerId: null,
-        },
-      ],
+      voucher: this.newVoucher(),
+      items: this.emptyItems(),
       projects: [],
       capitals: [],
       projectOptions: [],
@@ -359,23 +356,50 @@ export default {
         "Diesel",
         "Water",
         "Equipment Purchage",
+        "Electricity Bill",
         "Food & Snacks",
         "Ration",
         "House Rent",
         "House HoldItem",
+        "Labour",
         "Mobile Recharge",
-        "Milk",
-        "Vegetables",
+        "Milk & Vegetables",
         "MachineRent",
         "Petrol",
         "Personal Grooming",
-        "Personal Item",
         "Personal Payment",
-        "SiteMaterial",
+        "Site Material",
+        "Salary",
+        "Khoraki",
+        "Other",
       ],
     };
   },
   methods: {
+    newVoucher() {
+      return {
+        clientId: this.getClientId(),
+        id: null,
+        voucherNo: null,
+        date: null,
+        items: null,
+        list: null,
+        amount: null,
+        capitalAccountId: null,
+        projectId: null,
+      };
+    },
+    emptyItems() {
+      return [
+        {
+          item: null,
+          amount: 0,
+          group: null,
+          creditorId: null,
+          ledgerId: null,
+        },
+      ];
+    },
     async initiateData() {
       this.projects = await projectStore().loadProjects(
         this.getClientId(),
@@ -411,7 +435,6 @@ export default {
         row.creditorId,
         false
       );
-      window.alert(JSON.stringify(row.ledgers));
       row.ledgerOptions = [];
     },
     filterList(input, update, abort) {
@@ -442,14 +465,28 @@ export default {
         });
       }
     },
+    reset() {
+      this.voucher = this.newVoucher();
+      this.items = this.emptyItems();
+      this.$refs.myForm.resetValidation();
+    },
     async saveVoucher() {
-      const isValid = await this.$refs.myForm.validate();
-      window.alert(isValid);
-      if (!isValid) {
-        window.alert("pleasecheck all entry carefully");
-        return;
-      }
-      window.alert(JSON.stringify(this.items));
+      this.items.forEach((item) => {
+        item.date = this.voucher.date;
+        if (this.isNotNullOrUndefined(item.ledgerOptions))
+          delete item.ledgerOptions;
+        if (this.isNotNullOrUndefined(item.ledgers)) delete item.ledgers;
+      });
+      console.log(JSON.stringify(this.items));
+      this.voucher.amount = this.totalVaoucherAmount;
+      this.voucher.list = this.items;
+      this.voucher.items = JSON.stringify(this.items);
+      AccountingService.createVoucher(this.voucher)
+        .then((response) => {
+          window.alert("Voucher Created: " + JSON.stringify(response));
+          this.reset();
+        })
+        .catch((err) => {});
     },
   },
 };

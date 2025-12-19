@@ -378,6 +378,57 @@
                 v-model="payment_reason"
               />
             </div>
+            <!-- <div class="col-4" v-if="payment_reason === 'capital'">
+              <q-select
+                label="Capital"
+                outlined
+                class="q-ml-sm"
+                dense
+                hide-bottom-space
+                :options="capitalOptions"
+                v-model="selected_capital_id"
+                option-disable="inactive"
+                emit-value
+                map-options
+                use-input
+                input-debounce="0"
+                @filter="filterCapital"
+                hide-dropdown-icon
+                lazy-rules
+                :rules="[(val) => val > 0 || 'required']"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-red">
+                      No Capital Account Matched
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div> -->
+            <div class="col-4" v-if="payment_reason === 'capital'">
+              <q-select
+                label="Select Capital"
+                behavior="menu"
+                dense
+                outlined
+                v-model="selected_capital"
+                :options="capitalOptions"
+                option-label="label"
+                option-value="value"
+                use-input
+                input-debounce="0"
+                @filter="filterCapital"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-red">
+                      No Capital Account Matched
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
             <div class="col-4" v-if="payment_reason === 'site'">
               <q-select
                 label="Select Site"
@@ -455,6 +506,8 @@ import {
   matExpandLess,
 } from "@quasar/extras/material-icons";
 import { ref } from "vue";
+import { capitalAccountStore } from "src/pinia_stores/CapitalAccountStore";
+import { filter } from "src/pages/accounting/Utils/filterUtils";
 export default {
   name: "PaymentDraft",
   mixins: [commonMixin],
@@ -490,19 +543,26 @@ export default {
     payment_reason(val) {
       if (val === "site") {
         this.selected_machine = null;
+        this.selected_capital = null;
       } else if (val === "machine") {
         this.selected_site = null;
+        this.selected_capital = null;
+      } else if (val === "capital") {
+        this.selected_site = null;
+        this.selected_machine = null;
       } else {
         this.selected_machine = null;
         this.selected_site = null;
+        this.selected_capital = null;
       }
     },
   },
   created() {},
-  mounted() {
+  async mounted() {
     this.getAllSites();
     this.getAllMachines();
     this.getAllDrafts();
+    await this.initiateData();
   },
   data() {
     return {
@@ -614,6 +674,7 @@ export default {
       payment_remark: null,
       payment_reason: "",
       payment_reason_options: [
+        { label: "Capital Funding (*New)", value: "capital", color: "red" },
         { label: "Site", value: "site" },
         { label: "Machine/Vehicle", value: "machine" },
         { label: "Personal", value: "personal" },
@@ -629,9 +690,21 @@ export default {
       print_list: [],
       open: false,
       payments: [],
+      capitalOptions: [],
+      capitals: [],
+      selected_capital: null,
     };
   },
   methods: {
+    async initiateData() {
+      this.capitals = await capitalAccountStore().loadCapitalAccounts(
+        this.getClientId(),
+        false
+      );
+    },
+    filterCapital(input, update, abort) {
+      this.capitalOptions = filter(input, update, this.capitals);
+    },
     getAmountInWords(mode) {
       if (this.sum > 0)
         this.in_words = PaymentService2.convertNumberToWords(this.sum) + "Only";
@@ -789,6 +862,7 @@ export default {
           this.payment_reason = this.tempPayment.payment_reason;
           this.selected_site = this.tempPayment.site;
           this.selected_machine = this.tempPayment.machine;
+          this.selected_capital = this.tempPayment.cpital_account;
         })
         .catch((err) => {
           this.fail(this.getErrorMessage(err));
@@ -858,6 +932,7 @@ export default {
         payment_mode: this.payment_mode,
         transaction_ref: this.transaction_ref,
         payment_remark: this.payment_remark,
+        cpital_account: this.selected_capital,
       };
 
       let payment_summary = {
@@ -888,6 +963,13 @@ export default {
         }
         payment_summary.reasonId = this.selected_machine.id;
         payment_summary.reason_name = this.selected_machine.name;
+      } else if (this.payment_reason === "capital") {
+        if (this.selected_capital === null) {
+          this.fail("Please select machine");
+          return;
+        }
+        payment_summary.reasonId = this.selected_capital.value;
+        payment_summary.reason_name = this.selected_capital.label;
       }
 
       payment.payment = JSON.stringify(payment_details);

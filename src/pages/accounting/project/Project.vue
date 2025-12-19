@@ -26,10 +26,9 @@
       <template v-slot:top-left>
         <q-btn
           class="q-mt-sm q-mr-sm text-capitalize"
-          color="primary"
+          color="secondary"
           label="New Project"
-          size="sm"
-          glossy
+          size="10px"
           @click="openDialog('add', null)"
           :icon="icons.add"
         />
@@ -109,10 +108,11 @@
 
           <q-td>
             <q-icon
-              color="primary"
+              color="grey"
               class="q-ma-none q-pa-none pointer"
               :name="icons.edit"
               @click="editProject(props.row)"
+              size="10px"
             />
           </q-td>
         </q-tr>
@@ -124,11 +124,10 @@
       @before-show="beforeShow"
       @hide="onHide"
       ref="neweProjectRef"
+      position="right"
     >
-      <q-card style="width: 700px; max-width: 80vw">
-        <q-bar
-          class="bg-primary glossy text-white text-weight-light text-subtitle2"
-        >
+      <q-card style="width: 300px; max-width: 80vw">
+        <q-bar class="bg-secondary text-white text-weight-light text-subtitle2">
           {{ dialog_label }}
           <q-space />
           <q-btn dense flat icon="close" v-close-popup>
@@ -143,97 +142,90 @@
             class="q-gutter-md"
           >
             <div class="row">
-              <div class="col">Client Name</div>
               <div class="col">
                 <q-input
+                  label="Client Name"
                   dense
                   outlined
                   v-model="project.clientName"
-                  label=""
                   full-width
                   lazy-rules
-                  :rules="[
-                    (val) => (val && val.length > 0) || 'enter client name',
-                  ]"
+                  :rules="[(val) => (val && val.length > 0) || '']"
+                  hide-bottom-space
                 />
               </div>
             </div>
             <div class="row">
-              <div class="col">Project Calling Name</div>
               <div class="col">
                 <q-input
                   dense
                   outlined
                   v-model="project.nickName"
-                  label=""
+                  label="Calling or Nick Name"
                   full-width
                   lazy-rules
-                  :rules="[
-                    (val) => (val && val.length > 0) || 'enter calling name',
-                  ]"
+                  :rules="[(val) => (val && val.length > 0) || '']"
                   maxlength="15"
                   counter
+                  hide-bottom-space
                 />
               </div>
             </div>
             <div class="row">
-              <div class="col">Project Full Name</div>
               <div class="col">
                 <q-input
                   dense
                   outlined
                   v-model="project.fullName"
-                  label=""
+                  label="Full Name"
                   full-width
                   lazy-rules
-                  :rules="[
-                    (val) => (val && val.length > 0) || 'enter full name',
-                  ]"
+                  :rules="[(val) => (val && val.length > 0) || '']"
+                  hide-bottom-space
                 />
               </div>
             </div>
             <div class="row">
-              <div class="col">Project Package No</div>
               <div class="col">
                 <q-input
                   dense
                   outlined
                   v-model="project.packageNo"
-                  label=""
+                  label="Package No"
                   full-width
                   lazy-rules
-                  :rules="[
-                    (val) => (val && val.length > 0) || 'enter package no',
-                  ]"
+                  :rules="[(val) => (val && val.length > 0) || '']"
+                  hide-bottom-space
                 />
               </div>
             </div>
             <div class="row">
-              <div class="col">Project Agreement No</div>
               <div class="col">
                 <q-input
                   dense
                   outlined
                   v-model="project.agreementNo"
-                  label=""
+                  label="Agreement No."
                   full-width
                   lazy-rules
-                  :rules="[
-                    (val) => (val && val.length > 0) || 'enter agreement no',
-                  ]"
+                  :rules="[(val) => (val && val.length > 0) || '']"
+                  hide-bottom-space
                 />
               </div>
             </div>
             <div class="row">
-              <div class="col">Project Agreement Date</div>
               <div class="col">
                 <q-input
                   dense
                   outlined
                   v-model="project.agreementDate"
-                  :rules="['DD-MM-YYYY']"
                   label="Agreement Date"
+                  :rules="[
+                    (val) => !!val || '',
+                    (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || '',
+                  ]"
                   placeholder="dd-mm-yyyy"
+                  hide-bottom-space
                 >
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
@@ -255,62 +247,60 @@
               </div>
             </div>
             <div class="row">
-              <div class="col">Project Agreement Amount</div>
               <div class="col">
                 <q-input
                   type="number"
                   dense
                   outlined
                   v-model="project.agreementAmount"
-                  label=""
+                  label="Agreement Amount"
                   full-width
                   lazy-rules
-                  :rules="[
-                    (val) => (val && val > 0) || 'enter agreement amount',
-                  ]"
+                  :rules="[(val) => (val && val > 0) || '']"
+                  hide-bottom-space
                 />
               </div>
             </div>
             <div class="row">
-              <div class="col">Project Const. Amount</div>
               <div class="col">
                 <q-input
                   type="number"
                   dense
                   outlined
                   v-model="project.constructionAmount"
-                  label=""
+                  label="Construction Amount"
                   full-width
                   lazy-rules
+                  hide-bottom-space
                 />
               </div>
             </div>
             <div class="row">
-              <div class="col">Project Maint. Amount</div>
               <div class="col">
                 <q-input
                   type="number"
                   dense
                   outlined
                   v-model="project.maintenanceAmount"
-                  label=""
+                  label="Maintenance Amount"
                   full-width
                   lazy-rules
+                  hide-bottom-space
                 />
               </div>
             </div>
 
             <div class="row">
-              <div class="col">Project Security Amount</div>
               <div class="col">
                 <q-input
                   type="number"
                   dense
                   outlined
                   v-model="project.securityAmount"
-                  label=""
+                  label="Security Amount"
                   full-width
                   lazy-rules
+                  hide-bottom-space
                 />
               </div>
             </div>
@@ -319,19 +309,17 @@
               <q-space />
               <q-btn
                 dense
-                glossy
-                size="sm"
+                size="10px"
                 :label="mode === 'add' ? 'Create' : 'Update'"
                 type="submit"
-                color="primary"
+                color="secondary"
                 class="text-capitalize q-px-md"
               />
 
               <q-btn
                 v-if="mode === 'add'"
                 dense
-                glossy
-                size="sm"
+                size="10px"
                 label="Reset"
                 type="reset"
                 class="text-capitalize q-px-md q-mx-sm"
