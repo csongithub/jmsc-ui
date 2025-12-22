@@ -77,7 +77,9 @@
                   {{ Number(props.row.amount).toLocaleString("en-IN") }}
                 </q-td>
                 <q-td key="creditorId" :props="props">{{
-                  props.row.creditorId
+                  props.row.creditorId !== null
+                    ? getCreditorNameFromStore(props.row.creditorId)
+                    : ""
                 }}</q-td>
                 <q-td key="ledgerId" :props="props">{{
                   props.row.ledgerId
@@ -92,12 +94,12 @@
 </template>
 
 <script>
-// import { storeMixin } from "src/mixin/storeMixin";
+import { storeMixin } from "src/mixin/storeMixin";
 
 // import AccountingService from "src/services/accounting/AccountingService";
 export default {
   name: "VoucherView",
-  // mixins: [storeMixin],
+  mixins: [storeMixin],
 
   props: {
     voucher: {
@@ -118,7 +120,12 @@ export default {
   mounted() {},
   beforeUnmount() {},
   setup() {
+    return {};
+  },
+  computed: {},
+  data() {
     return {
+      openView: false,
       columns: [
         {
           name: "item",
@@ -137,7 +144,7 @@ export default {
           name: "creditorId",
           align: "left",
           label: "Creditor",
-          field: "creditorId",
+          field: (row) => "chandan",
         },
         {
           name: "ledgerId",
@@ -146,12 +153,6 @@ export default {
           field: "ledgerId",
         },
       ],
-    };
-  },
-  computed: {},
-  data() {
-    return {
-      openView: false,
     };
   },
   methods: {

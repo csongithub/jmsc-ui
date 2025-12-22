@@ -8,14 +8,10 @@ export const storeMixin = {
     };
   },
   methods: {
-    async getCreditorNameFromStore(creditorId) {
-      window.alert(this.clientId);
-      window.alert(clientId);
-      return await creditorStore().getCreditorName(
-        this.clientId,
-        creditorId,
-        false
-      );
+    getCreditorNameFromStore(creditorId) {
+      //   window.alert(this.clientId);
+      //   window.alert(clientId);
+      return creditorStore().getCreditorName(this.clientId, creditorId, false);
     },
   },
 };

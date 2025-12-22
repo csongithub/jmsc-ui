@@ -12,10 +12,10 @@ export const creditorStore = defineStore("creditorStore", {
       const response = await AccountingService.getAllCreditors(client_id);
       this.creditors = response.list;
     },
-    async getCreditorName(clientId, creditor_id, force_refresh = true) {
-      window.alert(clientId);
+    getCreditorName(clientId, creditor_id, force_refresh = true) {
+      // window.alert(clientId);
       if (this.creditors.length === 0 || force_refresh) {
-        await this.fetchCreditorsFromBackend(clientId);
+        this.fetchCreditorsFromBackend(clientId);
       }
       var creditor = null;
       for (let c of this.creditors) {
