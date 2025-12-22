@@ -19,18 +19,8 @@
       >
         <template v-slot:top="">
           <q-input
-            style="max-width: 200px"
-            v-model="voucher.voucherNo"
-            dense
-            outlined
-            placeholder="Voucher No."
-            lazy-rules
-            :rules="[(val) => (val && val.length > 0) || 'required']"
-            hide-bottom-space
-          />
-          <q-input
             filled
-            class="q-ml-sm"
+            class=""
             style="max-width: 150px"
             hide-bottom-space
             dense
@@ -62,6 +52,46 @@
               </q-icon>
             </template>
           </q-input>
+          <q-input
+            class="q-ml-sm"
+            filled
+            style="max-width: 200px"
+            v-model="voucher.voucherNo"
+            dense
+            outlined
+            placeholder="Voucher No."
+            lazy-rules
+            :rules="[(val) => (val && val.length > 0) || 'required']"
+            hide-bottom-space
+          />
+          <q-select
+            class="q-ml-sm"
+            label="Capital"
+            filled
+            dense
+            outlined
+            hide-bottom-space
+            :options="capitalOptions"
+            v-model="voucher.capitalAccountId"
+            option-disable="inactive"
+            emit-value
+            map-options
+            use-input
+            input-debounce="0"
+            @filter="filterCapital"
+            hide-dropdown-icon
+            lazy-rules
+            :rules="[(val) => val > 0 || 'required']"
+          >
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-red">
+                  No Capital Account Matched
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+
           <q-select
             label="Project"
             filled
@@ -85,33 +115,6 @@
               <q-item>
                 <q-item-section class="text-red">
                   No Project Matched
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
-          <q-select
-            label="Capital"
-            filled
-            class="q-ml-sm"
-            dense
-            outlined
-            hide-bottom-space
-            :options="capitalOptions"
-            v-model="voucher.capitalAccountId"
-            option-disable="inactive"
-            emit-value
-            map-options
-            use-input
-            input-debounce="0"
-            @filter="filterCapital"
-            hide-dropdown-icon
-            lazy-rules
-            :rules="[(val) => val > 0 || 'required']"
-          >
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-red">
-                  No Capital Account Matched
                 </q-item-section>
               </q-item>
             </template>
@@ -387,6 +390,9 @@ export default {
         amount: null,
         capitalAccountId: null,
         projectId: null,
+        status: "CREATED",
+        creator: null,
+        approver: null,
       };
     },
     emptyItems() {
@@ -481,12 +487,21 @@ export default {
       this.voucher.amount = this.totalVaoucherAmount;
       this.voucher.list = this.items;
       this.voucher.items = JSON.stringify(this.items);
+      this.voucher.status = "APPROVED";
+      this.voucher.creator = this.isAdmin()
+        ? this.getclientLogonId()
+        : this.getUserLogonId();
+      this.voucher.approver = this.isAdmin()
+        ? this.getclientLogonId()
+        : this.getUserLogonId();
       AccountingService.createVoucher(this.voucher)
         .then((response) => {
-          window.alert("Voucher Created: " + JSON.stringify(response));
+          // window.alert("Voucher Created: " + JSON.stringify(response));
           this.reset();
         })
-        .catch((err) => {});
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
     },
   },
 };

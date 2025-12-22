@@ -8,12 +8,32 @@ export const creditorStore = defineStore("creditorStore", {
   }),
 
   actions: {
+    async fetchCreditorsFromBackend(client_id) {
+      const response = await AccountingService.getAllCreditors(client_id);
+      this.creditors = response.list;
+    },
+    async getCreditorName(clientId, creditor_id, force_refresh = true) {
+      window.alert(clientId);
+      if (this.creditors.length === 0 || force_refresh) {
+        await this.fetchCreditorsFromBackend(clientId);
+      }
+      var creditor = null;
+      for (let c of this.creditors) {
+        if (Number(c.value) === Number(creditor_id)) {
+          creditor = c;
+          break;
+        }
+      }
+      if (creditor !== null) {
+        return creditor.label;
+      } else {
+        return this.getCreditorName(clientId, creditor_id, true);
+      }
+    },
     async loadCreditors(client_id, force_refresh = true) {
       if (this.creditors.length === 0 || force_refresh) {
         try {
-          const response = await AccountingService.getAllCreditors(client_id);
-          this.creditors = response.list;
-
+          this.fetchCreditorsFromBackend(client_id);
           return this.creditors;
         } catch (err) {
           console.error("Failed to load capital accounts", err);

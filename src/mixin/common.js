@@ -123,14 +123,7 @@ export const commonMixin = {
       if (pref && pref.selectedFY) return pref.selectedFY;
       else return null;
     },
-    getUser() {
-      let auth = LocalStorage.getItem("auth");
-      if (auth && auth.user) {
-        return auth.user;
-      } else {
-        return null;
-      }
-    },
+
     getPermissions() {
       let auth = LocalStorage.getItem("auth");
       if (auth && auth.permissions) {
@@ -150,10 +143,24 @@ export const commonMixin = {
         return client.id;
       }
     },
-    getLogonId() {
+    getclientLogonId() {
       let client = this.getClient();
       if (client !== null) {
         return client.logonId;
+      }
+    },
+    getUser() {
+      let auth = LocalStorage.getItem("auth");
+      if (auth && auth.user) {
+        return auth.user;
+      } else {
+        return null;
+      }
+    },
+    getUserLogonId() {
+      let user = this.getUser();
+      if (user !== null) {
+        return user.logonId;
       }
     },
     getToken() {

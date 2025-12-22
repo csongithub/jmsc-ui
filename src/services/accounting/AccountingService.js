@@ -225,9 +225,24 @@ export default {
         return Promise.reject(err);
       });
   },
+  capitalAccountStatement(request) {
+    return api
+      .post("/v1/accounting/capital_account/statement", request)
+      .then((response) => {
+        let records = response.data;
+        return records;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting capital account records: " +
+            JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
   createVoucher(voucher) {
     return api
-      .post("/v1/accounting/vlucher/create", voucher)
+      .post("/v1/accounting/voucher/create", voucher)
       .then((response) => {
         let voucher = response.data;
         return voucher;
@@ -235,6 +250,27 @@ export default {
       .catch((err) => {
         console.log(
           "Error in creating voucher: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
+  async getVoucher(clientId, voucherId, accountId) {
+    return api
+      .get(
+        "/v1/accounting/voucher/get/" +
+          clientId +
+          "/" +
+          voucherId +
+          "/" +
+          accountId
+      )
+      .then((response) => {
+        let voucher = response.data;
+        return voucher;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting voucher: " + JSON.stringify(err.response.data)
         );
         return Promise.reject(err);
       });

@@ -55,9 +55,9 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td key="accountName" :props="props">{{
-            props.row.accountName
-          }}</q-td>
+          <q-td key="accountName" :props="props">
+            {{ props.row.accountName }}
+          </q-td>
           <q-td key="accountType" :props="props">{{
             props.row.accountType
           }}</q-td>
@@ -67,6 +67,7 @@
           <q-td key="lastUpdated" :props="props">{{
             props.row.lastUpdated
           }}</q-td>
+          <q-td key="status" :props="props">{{ props.row.status }}</q-td>
 
           <q-td>
             <q-icon
@@ -76,6 +77,12 @@
               @click="editAccount(props.row)"
               size="10px"
             />
+            <!-- <span
+              class="q-ml-sm text-blue"
+              style="cursor: pointer"
+              @click="openStatement(props.row)"
+              >view</span
+            > -->
           </q-td>
         </q-tr>
       </template>
@@ -138,6 +145,40 @@
                 :rules="[(val) => (val && val.length > 0) || '']"
               />
             </div>
+
+            <div class="row">
+              <q-input
+                :disable="mode === 'edit'"
+                class="full-width"
+                hide-bottom-space
+                dense
+                outlined
+                v-model="account.accountOpeningDate"
+                :rules="[
+                  (val) => !!val || '',
+                  (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || '',
+                ]"
+                label="Account Opening Date"
+                placeholder="dd-mm-yyyy"
+              >
+                <template v-slot:append>
+                  <q-icon name="event" class="cursor-pointer">
+                    <q-popup-proxy
+                      ref="qDateProxy"
+                      cover
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
+                      <q-date
+                        v-model="account.accountOpeningDate"
+                        mask="DD-MM-YYYY"
+                        minimal
+                      />
+                    </q-popup-proxy>
+                  </q-icon>
+                </template>
+              </q-input>
+            </div>
             <div class="row">
               <q-input
                 :disable="
@@ -154,39 +195,6 @@
                 lazy-rules
                 :rules="[(val) => (val && val >= 0) || '']"
               />
-            </div>
-            <div class="row">
-              <q-input
-                :disable="mode === 'edit'"
-                class="full-width"
-                hide-bottom-space
-                dense
-                outlined
-                v-model="account.lastUpdated"
-                :rules="[
-                  (val) => !!val || '',
-                  (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || '',
-                ]"
-                label="Latest Transation"
-                placeholder="dd-mm-yyyy"
-              >
-                <template v-slot:append>
-                  <q-icon name="event" class="cursor-pointer">
-                    <q-popup-proxy
-                      ref="qDateProxy"
-                      cover
-                      transition-show="scale"
-                      transition-hide="scale"
-                    >
-                      <q-date
-                        v-model="account.lastUpdated"
-                        mask="DD-MM-YYYY"
-                        minimal
-                      />
-                    </q-popup-proxy>
-                  </q-icon>
-                </template>
-              </q-input>
             </div>
             <div class="row">
               <q-select
@@ -235,9 +243,7 @@
 import AccountingService from "src/services/accounting/AccountingService";
 import { commonMixin } from "../../../mixin/common";
 import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
-
 import { ref } from "vue";
-import { creditorStore } from "src/pinia_stores/CreditorStore";
 import { capitalAccountStore } from "src/pinia_stores/CapitalAccountStore";
 export default {
   name: "Project",
@@ -275,6 +281,12 @@ export default {
           label: "Last Transaction",
           field: "lastUpdated",
         },
+        {
+          name: "status",
+          align: "left",
+          label: "Status",
+          field: "status",
+        },
       ],
       icons: {
         plus: fasPlus,
@@ -305,6 +317,12 @@ export default {
     };
   },
   methods: {
+    openStatement(row) {
+      this.$router.push({
+        name: "capAccountState",
+        params: { account: row },
+      });
+    },
     newAccount() {
       return {
         id: null,
@@ -313,6 +331,7 @@ export default {
         accountType: null,
         balance: null,
         lastUpdated: null,
+        accountOpeningDate: null,
       };
     },
     async getAllAccounts(refresh) {
@@ -327,11 +346,8 @@ export default {
           this.loading = false;
           this.fail(this.getErrorMessage(err));
         });
-      if (refresh)
-        await capitalAccountStore().loadCapitalAccounts(
-          this.client_id,
-          refresh
-        );
+
+      await capitalAccountStore().loadCapitalAccounts(this.client_id, refresh);
     },
     async create() {
       this.account.clientId = this.client_id;

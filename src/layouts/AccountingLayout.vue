@@ -44,7 +44,7 @@
               <Project></Project>
             </q-tab-panel>
             <q-tab-panel name="capitalaccount">
-              <CapitalAccount></CapitalAccount>
+              <CapitalAccountWrapper></CapitalAccountWrapper>
             </q-tab-panel>
             <q-tab-panel name="creditor">
               <Creditor></Creditor>
@@ -70,7 +70,7 @@ import Project from "../pages/accounting/project/Project.vue";
 import Creditor from "../pages/accounting/Creditor/Creditor.vue";
 import Leadger from "../pages/accounting/Ledger/Leadger.vue";
 import Voucher from "src/pages/accounting/Voucher/Voucher.vue";
-import CapitalAccount from "src/pages/accounting/CapitalAccount/CapitalAccuont.vue";
+import CapitalAccountWrapper from "src/pages/accounting/CapitalAccount/CapitalAccountWrapper.vue";
 import { fasPowerOff } from "@quasar/extras/fontawesome-v5";
 
 import { ref } from "vue";
@@ -83,7 +83,7 @@ export default {
     Creditor,
     Leadger,
     Voucher,
-    CapitalAccount,
+    CapitalAccountWrapper,
   },
   created() {},
   mounted() {},
