@@ -20,7 +20,7 @@
                 input-debounce="0"
                 @filter="filterCreditor"
                 @update:model-value="
-                  getLedgers(false);
+                  getLedgers(true);
                   detectPayments();
                 "
               >

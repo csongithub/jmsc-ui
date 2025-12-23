@@ -10,8 +10,8 @@
       narrow-indicator
       :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
     >
-      <q-tab name="entry" label="Entry" :disable="disableTab" />
-      <q-tab name="statement" label="Statement" :disable="disableTab" />
+      <q-tab name="entry" label="Create" :disable="disableTab" />
+      <q-tab name="statement" label="Recent Vouchers" :disable="disableTab" />
     </q-tabs>
     <q-separator />
     <q-tab-panels v-model="tab" animated class="">

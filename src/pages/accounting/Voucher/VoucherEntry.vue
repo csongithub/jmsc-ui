@@ -65,6 +65,7 @@
             hide-bottom-space
           />
           <q-select
+            style="max-width: 200px"
             class="q-ml-sm"
             label="Capital"
             filled
@@ -93,6 +94,7 @@
           </q-select>
 
           <q-select
+            style="max-width: 250px"
             label="Project"
             filled
             class="q-ml-sm"
@@ -353,14 +355,17 @@ export default {
       groupOptions: [],
       groups: [
         "Party Advance",
+        "Bank",
         "BikeRent",
         "Vehicle Maintenace.",
         "Car Rent",
         "Diesel",
+        "Departmenatal",
         "Water",
         "Equipment Purchage",
         "Electricity Bill",
         "Food & Snacks",
+        "GST",
         "Ration",
         "House Rent",
         "House HoldItem",

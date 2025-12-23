@@ -23,6 +23,7 @@
       <template v-slot:top="">
         <!-- <span class="q-mr-sm">Select Capital:</span> -->
         <q-select
+          style="max-width: 200px"
           filled
           label="Select Capital"
           dense

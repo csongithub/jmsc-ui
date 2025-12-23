@@ -1,5 +1,11 @@
 <template>
-  <q-layout> </q-layout>
+  <q-layout>
+    <q-page-container>
+      <q-page class="row justify-center items-center bg-white text-bold">
+        {{ "Coming Soon" }}
+      </q-page>
+    </q-page-container></q-layout
+  >
 </template>
 
 <script>

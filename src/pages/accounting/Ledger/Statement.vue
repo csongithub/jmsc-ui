@@ -395,6 +395,7 @@
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
 import ProjectService from "src/services/ProjectService";
+import { filter } from "../Utils/filterUtils";
 import {
   fasCopy,
   fasEdit,
@@ -443,7 +444,9 @@ export default {
     creditorId(val) {
       this.getItems();
     },
-    ledgerId(val) {},
+    ledgerId(val) {
+      this.entries = [];
+    },
     entryType(val) {
       this.columns = [];
       this.entries = [];
@@ -665,16 +668,10 @@ export default {
         .catch((err) => {});
     },
     filterProject(input, update, abort) {
-      update(() => {
-        const value = input.toLowerCase();
-        this.projectOptions = this.projects.filter((project) => {
-          return project.label.toLowerCase().indexOf(value) > -1;
-        });
-      });
+      this.projectOptions = filter(input, update, this.projects);
     },
     async getProjects() {
       this.projects = await projectStore().loadProjects(this.clientId, false);
-      this.projectOptions = this.projects;
     },
     filterItem(input, update, abort) {
       update(() => {
