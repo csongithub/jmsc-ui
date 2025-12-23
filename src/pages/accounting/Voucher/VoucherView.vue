@@ -6,7 +6,7 @@
       ref="voucherViewRef"
       position="right"
     >
-      <q-card style="width: 600px; max-width: 80vw">
+      <q-card style="width: 700px; max-width: 80vw">
         <q-bar class="bg-secondary text-white text-weight-light text-subtitle2">
           {{ "Voucher Details" }}
           <q-space />
@@ -18,32 +18,32 @@
         <q-card-section v-if="voucher !== null">
           <div class="row q-mb-sm">
             <div class="col-3 tetx-title2 text-bold">Project</div>
-            <div class="col-2">{{ ":" + project }}</div>
+            <div class="col-3">{{ ":" + project }}</div>
             <div class="col-3 tetx-title2 text-bold">Account</div>
-            <div class="col-2">{{ ":" + account }}</div>
+            <div class="col-3">{{ ":" + account }}</div>
           </div>
           <div class="row">
             <div class="col-3 tetx-title2 text-bold">Voucher No.</div>
-            <div class="col-2">{{ ":" + voucher.voucherNo }}</div>
+            <div class="col-3">{{ ":" + voucher.voucherNo }}</div>
             <div class="col-3 tetx-title2 text-bold">Voucher Date</div>
-            <div class="col-2">{{ ":" + voucher.date }}</div>
+            <div class="col-3">{{ ":" + voucher.date }}</div>
           </div>
 
           <div class="row q-mb-sm">
             <div class="col-3 tetx-title2 text-bold">Voucher Amount</div>
-            <div class="col-2">
+            <div class="col-3">
               {{ ":" + voucher.amount.toLocaleString("en-IN") }}
             </div>
             <div class="col-3 tetx-title2 text-bold">Creator</div>
-            <div class="col-2">{{ ":" + voucher.creator }}</div>
+            <div class="col-3">{{ ":" + voucher.creator }}</div>
           </div>
           <div class="row">
             <div class="col-3 tetx-title2 text-bold">Openeing Balance</div>
-            <div class="col-2">
+            <div class="col-3">
               {{ ":" + voucher.openingBalance.toLocaleString("en-IN") }}
             </div>
             <div class="col-3 tetx-title2 text-bold">Closing Balance</div>
-            <div class="col-2">
+            <div class="col-3">
               {{ ":" + voucher.closingBalance.toLocaleString("en-IN") }}
             </div>
           </div>
