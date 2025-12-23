@@ -164,6 +164,7 @@ import { ref } from "vue";
 import { capitalAccountStore } from "src/pinia_stores/CapitalAccountStore";
 import { filter } from "../Utils/filterUtils";
 import VoucherView from "../Voucher/VoucherView.vue";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
 export default {
   name: "CapitalAccountStatement",
   mixins: [commonMixin],
@@ -211,8 +212,11 @@ export default {
   components: { VoucherView },
   created() {},
   async mounted() {
-    await this.loadCreditors();
+    await this.loadCapitalAccounts();
+    this.ledgers = creditorStore().ledgersCache;
+    this.creditors = creditorStore().creditors;
   },
+
   beforeUnmount() {},
   data() {
     return {
@@ -226,12 +230,15 @@ export default {
       records: [],
       showVoucher: false,
       voucher: null,
+      ledgers: [],
+      creditors: [],
     };
   },
   methods: {
-    async loadCreditors() {
+    async loadCapitalAccounts() {
       this.capitals = await capitalAccountStore().loadCapitalAccounts(
-        this.getClientId()
+        this.getClientId(),
+        false
       );
     },
     filterCapital(input, update, abort) {
@@ -268,12 +275,15 @@ export default {
         transaction.accountId
       )
         .then((response) => {
-          this.voucher = response;
-          this.voucher.list = JSON.parse(response.items);
-          this.voucher.openingBalance =
+          // console.log(JSON.stringify(response));
+          var data = response;
+          data.list = JSON.parse(data.items);
+
+          data.openingBalance =
             Number(transaction.debit) + Number(transaction.balance);
-          this.voucher.closingBalance = Number(transaction.balance);
-          console.log(JSON.stringify(this.voucher.list));
+          data.closingBalance = Number(transaction.balance);
+
+          this.voucher = data;
         })
         .catch((err) => {
           this.fail(this.getErrorMessage(err));

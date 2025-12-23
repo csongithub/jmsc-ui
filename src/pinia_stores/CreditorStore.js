@@ -4,7 +4,7 @@ import AccountingService from "src/services/accounting/AccountingService";
 export const creditorStore = defineStore("creditorStore", {
   state: () => ({
     creditors: [], //Array [{"label":"AV FUELS","value":10}]
-    ledgersCache: [], //[{ creditorid: 2, ledgerList: [{id:2, name:'main'}] }],
+    ledgersCache: new Map(), //[{ creditorid: 2, ledgerList: [{id:2, name:'main'}] }],
   }),
 
   actions: {
@@ -12,10 +12,10 @@ export const creditorStore = defineStore("creditorStore", {
       const response = await AccountingService.getAllCreditors(client_id);
       this.creditors = response.list;
     },
-    getCreditorName(clientId, creditor_id, force_refresh = true) {
+    async getCreditorName(clientId, creditor_id, force_refresh = true) {
       // window.alert(clientId);
       if (this.creditors.length === 0 || force_refresh) {
-        this.fetchCreditorsFromBackend(clientId);
+        await this.fetchCreditorsFromBackend(clientId);
       }
       var creditor = null;
       for (let c of this.creditors) {
@@ -26,8 +26,6 @@ export const creditorStore = defineStore("creditorStore", {
       }
       if (creditor !== null) {
         return creditor.label;
-      } else {
-        return this.getCreditorName(clientId, creditor_id, true);
       }
     },
     async loadCreditors(client_id, force_refresh = true) {
@@ -68,30 +66,52 @@ export const creditorStore = defineStore("creditorStore", {
       var ledgers = null;
       var index = null;
 
-      for (var i = 0; i < this.ledgersCache.length; i++) {
-        if (creditor_id === this.ledgersCache[i].creditorId) {
-          ledgers = this.ledgersCache[i].ledgers;
-          index = i;
-          break;
-        }
+      var isLedgerpresent = this.ledgersCache.has(creditor_id);
+      if (isLedgerpresent) {
+        ledgers = ledgersCache.get(creditor_id);
       }
 
-      if (!force_refresh && ledgers) {
+      if (!force_refresh && ledgers !== null) {
         return ledgers;
       }
-      if (index) this.ledgersCache.splice(index, 1);
+      if (isLedgerpresent) this.ledgersCache.delete(creditor_id);
 
       const ledgerList = await AccountingService.getLedgers(
         client_id,
         creditor_id
       );
 
-      this.ledgersCache.push({
-        creditorId: Number(creditor_id),
-        ledgers: ledgerList,
-      });
+      this.ledgersCache.set(creditor_id, ledgerList);
 
       return ledgerList;
+    },
+    async getLedgerName(client_id, creditor_id, ledger_id, forece_refresh) {
+      var ledgers = null;
+
+      if (this.ledgersCache.has(creditor_id))
+        ledgers = this.ledgersCache.get(creditor_id);
+
+      if (ledgers !== null && ledgers.length > 0) {
+        for (let l of ledgers) {
+          if (l.id === ledger_id) {
+            return l.name;
+          }
+        }
+      }
+
+      const ledgerList = await AccountingService.getLedgers(
+        client_id,
+        creditor_id
+      );
+      this.ledgersCache.set(creditor_id, ledgerList);
+
+      if (ledgerList !== null && ledgerList.length > 0) {
+        for (let l of ledgerList) {
+          if (l.id === ledger_id) {
+            return l.name;
+          }
+        }
+      }
     },
   },
 });

@@ -29,5 +29,14 @@ export const capitalAccountStore = defineStore("capitalAccountStore", {
         return this.capitalAccounts;
       }
     },
+
+    async getAccountName(client_id, account_id, force_refresh) {
+      if (this.capitalAccounts.length === 0 || force_refresh)
+        this.loadCapitalAccounts(client_id, true);
+
+      for (let a of this.capitalAccounts) {
+        if (Number(a.value) === Number(account_id)) return a.label;
+      }
+    },
   },
 });

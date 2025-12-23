@@ -23,5 +23,14 @@ export const projectStore = defineStore("projectStore", {
         return this.projectsList;
       }
     },
+
+    async getProjectName(client_id, project_id, force_refresh = true) {
+      if (this.projectsList.length === 0 || force_refresh)
+        await this.loadProjects(client_id, true);
+
+      for (let p of this.projectsList) {
+        if (Number(p.value) === Number(project_id)) return p.label;
+      }
+    },
   },
 });

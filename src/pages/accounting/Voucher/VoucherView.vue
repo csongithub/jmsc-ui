@@ -14,7 +14,14 @@
             <q-tooltip>Close</q-tooltip>
           </q-btn>
         </q-bar>
+
         <q-card-section v-if="voucher !== null">
+          <div class="row q-mb-sm">
+            <div class="col-3 tetx-title2 text-bold">Project</div>
+            <div class="col-2">{{ ":" + project }}</div>
+            <div class="col-3 tetx-title2 text-bold">Account</div>
+            <div class="col-2">{{ ":" + account }}</div>
+          </div>
           <div class="row">
             <div class="col-3 tetx-title2 text-bold">Voucher No.</div>
             <div class="col-2">{{ ":" + voucher.voucherNo }}</div>
@@ -22,7 +29,7 @@
             <div class="col-2">{{ ":" + voucher.date }}</div>
           </div>
 
-          <div class="row">
+          <div class="row q-mb-sm">
             <div class="col-3 tetx-title2 text-bold">Voucher Amount</div>
             <div class="col-2">
               {{ ":" + voucher.amount.toLocaleString("en-IN") }}
@@ -46,18 +53,6 @@
             voucher !== null && voucher.list !== null && voucher.list.length > 0
           "
         >
-          <!-- <div class="row">
-            <div class="col">Item</div>
-            <div class="col">Amount</div>
-            <div class="col">Creditor</div>
-            <div class="col">Ledger</div>
-          </div>
-          <div class="row" v-for="(item, index) in voucher.list" :key="index">
-            <div class="col">{{ item.item }}</div>
-            <div class="col">{{ item.amount }}</div>
-            <div class="col">{{ item.creditorId }}</div>
-            <div class="col">{{ item.ledgerId }}</div>
-          </div> -->
           <q-table
             ref="myTable"
             flat
@@ -67,6 +62,7 @@
             :columns="columns"
             row-key="item"
             binary-state-sort
+            :pagination="pagination"
           >
             <template v-slot:body="props">
               <q-tr :props="props">
@@ -76,14 +72,10 @@
                 <q-td key="amount" :props="props">
                   {{ Number(props.row.amount).toLocaleString("en-IN") }}
                 </q-td>
-                <q-td key="creditorId" :props="props">{{
-                  props.row.creditorId !== null
-                    ? getCreditorNameFromStore(props.row.creditorId)
-                    : ""
+                <q-td key="creditor" :props="props">{{
+                  props.row.creditor
                 }}</q-td>
-                <q-td key="ledgerId" :props="props">{{
-                  props.row.ledgerId
-                }}</q-td>
+                <q-td key="ledger" :props="props">{{ props.row.ledger }}</q-td>
               </q-tr>
             </template>
           </q-table>
@@ -94,12 +86,13 @@
 </template>
 
 <script>
-import { storeMixin } from "src/mixin/storeMixin";
-
-// import AccountingService from "src/services/accounting/AccountingService";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
+import { LocalStorage } from "quasar";
+import { projectStore } from "src/pinia_stores/ProjectStore";
+import { capitalAccountStore } from "src/pinia_stores/CapitalAccountStore";
 export default {
   name: "VoucherView",
-  mixins: [storeMixin],
+  mixins: [],
 
   props: {
     voucher: {
@@ -107,17 +100,17 @@ export default {
       default: null,
     },
   },
-  computed: {
-    open() {
-      return true;
-    },
-  },
+  computed: {},
   watch: {
-    voucher(val) {
-      this.openView = val !== null ? true : false;
+    async voucher(val) {
+      if (val !== null) {
+        await this.updateData();
+      }
     },
   },
-  mounted() {},
+  mounted() {
+    // this.ledgers = creditorStore().ledgersCache;
+  },
   beforeUnmount() {},
   setup() {
     return {};
@@ -125,6 +118,8 @@ export default {
   computed: {},
   data() {
     return {
+      clientId: LocalStorage.getItem("auth").client.id,
+      pagination: { rowsPerPage: 50 },
       openView: false,
       columns: [
         {
@@ -141,29 +136,64 @@ export default {
           field: "amount",
         },
         {
-          name: "creditorId",
+          name: "creditor",
           align: "left",
           label: "Creditor",
-          field: (row) => "chandan",
+          field: "creditor",
         },
         {
-          name: "ledgerId",
+          name: "ledger",
           align: "left",
           label: "Ledger",
-          field: "ledgerId",
+          field: "ledger",
         },
       ],
+      data: null,
+      project: null,
+      account: null,
     };
   },
   methods: {
+    async updateData() {
+      this.project = await projectStore().getProjectName(
+        this.clientId,
+        this.voucher.projectId,
+        false
+      );
+
+      this.account = await capitalAccountStore().getAccountName(
+        this.clientId,
+        this.voucher.capitalAccountId,
+        false
+      );
+
+      for (let item of this.voucher.list) {
+        if (item.creditorId !== null) {
+          item["creditor"] = await creditorStore().getCreditorName(
+            this.clientId,
+            Number(item.creditorId),
+            false
+          );
+        }
+        if (item.ledgerId !== null) {
+          item["ledger"] = await creditorStore().getLedgerName(
+            this.clientId,
+            Number(item.creditorId),
+            Number(item.ledgerId),
+            false
+          );
+        }
+        this.data = this.voucher;
+        this.openView = true;
+      }
+    },
     openDialog() {},
     beforeShow() {},
     onHide() {},
     closeView() {
+      this.openView = false;
+      this.data = null;
       this.$emit("close");
-    },
-    getCreditorName() {
-      return "chandan-";
     },
   },
 };
