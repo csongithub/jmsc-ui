@@ -175,7 +175,11 @@
       @before-show="openCreateLedger"
       ref="newLedgerRef"
     >
-      <q-card style="width: 500px; max-width: 80vw">
+      <q-card
+        :style="
+          step === 1 ? 'width: 400px;' : 'width: 600px;' + 'max-width: 80vw'
+        "
+      >
         <q-bar class="bg-secondary text-white text-weight-light text-subtitle2">
           {{ "New Ledger" }}
           <q-space />
@@ -321,57 +325,70 @@
                 </div>
               </q-step>
               <q-step :name="2" title="Select Coumns" :done="step > 2">
-                <q-table
-                  ref="myTable"
-                  flat
-                  dense
-                  bordered
-                  :rows="ledgerHeaders"
-                  :columns="columns"
-                  row-key="name"
-                  binary-state-sort
-                  :pagination="pagination"
-                >
-                  <template v-slot:body="props">
-                    <q-tr :props="props">
-                      <q-td key="select" :props="props">
-                        <q-checkbox
-                          v-model="props.row.select"
-                          :disable="props.row.disable"
-                        />
-                      </q-td>
-                      <q-td key="label" :props="props">
-                        {{ props.row.label }}</q-td
-                      >
-                      <q-td key="customeLable" :props="props">
-                        <q-input
-                          class="custom-small-input"
-                          v-model="props.row.customeLable"
-                          dense
-                          outlined
-                          placeholder="new name"
-                          :maxlength="15"
-                        />
-                      </q-td>
-                      <q-td align="center">
-                        <q-btn
-                          dense
-                          flat
-                          icon="arrow_upward"
-                          @click="moveUp(props.rowIndex)"
-                          :disable="props.rowIndex === 0"
-                        />
-                        <q-btn
-                          dense
-                          flat
-                          icon="arrow_downward"
-                          @click="moveDown(props.rowIndex)"
-                          :disable="props.rowIndex === ledgerHeaders.length - 1"
-                        />
-                      </q-td>
-                    </q-tr>
-                  </template>
-                </q-table>
+                <q-card flat bordered>
+                  <!-- Header -->
+                  <div class="row text-weight-bold">
+                    <div class="col-2"></div>
+                    <div class="col-3">Select</div>
+                    <div class="col-3">Name</div>
+                    <div class="col-3 text-wrap">Customized Name</div>
+                  </div>
+
+                  <!-- <q-item dense>
+                    <q-item-section></q-item-section>
+                    <q-item-section>Select</q-item-section>
+                    <q-item-section>Name</q-item-section>
+                    <q-item-section>New Name</q-item-section>
+                  </q-item> -->
+                  <!-- Draggable rows -->
+                  <draggable
+                    v-model="ledgerHeaders"
+                    item-key="name"
+                    handle=".drag-handle"
+                    direction="vertical"
+                    animation="200"
+                  >
+                    <template #item="{ element }">
+                      <q-item dense>
+                        <!-- Drag -->
+                        <q-item-section avatar>
+                          <q-icon
+                            size="xs"
+                            name="drag_indicator"
+                            class="drag-handle cursor-pointer"
+                          />
+                        </q-item-section>
+
+                        <!-- Checkbox -->
+                        <q-item-section>
+                          <q-checkbox
+                            class="q-pa-non"
+                            size="sm"
+                            v-model="element.select"
+                            :disable="element.disable"
+                          />
+                        </q-item-section>
+
+                        <!-- Label -->
+                        <q-item-section>
+                          {{ element.label }}
+                        </q-item-section>
+
+                        <!-- Input -->
+                        <q-item-section>
+                          <q-input
+                            class="custom-small-input"
+                            v-model="element.customeLable"
+                            dense
+                            outlined
+                            placeholder="new name"
+                            :maxlength="15"
+                          />
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                  </draggable>
+                </q-card>
               </q-step>
               <template v-slot:navigation>
                 <q-stepper-navigation>
@@ -526,11 +543,12 @@ import AccountingService from "src/services/accounting/AccountingService";
 import LedgerEntry from "./LedgerEntry.vue";
 import Statement from "./Statement.vue";
 import { creditorStore } from "src/pinia_stores/CreditorStore";
+import draggable from "vuedraggable";
 
 export default {
   name: "Ledger",
   mixins: [commonMixin],
-  components: { LedgerEntry, Statement },
+  components: { LedgerEntry, Statement, draggable },
   async mounted() {
     window.addEventListener("keydown", this.altKeyDownHandler);
     await this.getAllCreditors();
@@ -547,6 +565,17 @@ export default {
       );
     },
   },
+  watch: {
+    ledgerHeaders: {
+      deep: true,
+      handler() {
+        // Optional: reassign order after drag
+        this.ledgerHeaders.forEach((r, i) => {
+          r.orderNo = i + 1;
+        });
+      },
+    },
+  },
   beforeUnmount() {},
   setup() {
     return {
@@ -556,6 +585,7 @@ export default {
       tab: ref("entry"),
 
       columns: [
+        { name: "drag", label: "", field: "" },
         {
           name: "select",
           align: "left",
@@ -575,6 +605,7 @@ export default {
           field: "customeLable",
         },
       ],
+
       paymentColumns: [
         {
           name: "date",
@@ -648,7 +679,7 @@ export default {
           name: "quantity",
           align: "left",
           label: "Qty",
-          usercustomeLabelLabel: null,
+          customeLabel: null,
           field: "quantity",
           disable: true,
         },
@@ -840,6 +871,13 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.drag-handle {
+  cursor: grab;
+}
+
+.sortable-ghost {
+  opacity: 0.4;
+}
 .hint-red .q-field__messages {
   color: red !important;
 }
