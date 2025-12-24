@@ -31,7 +31,7 @@ export const creditorStore = defineStore("creditorStore", {
     async loadCreditors(client_id, force_refresh = true) {
       if (this.creditors.length === 0 || force_refresh) {
         try {
-          this.fetchCreditorsFromBackend(client_id);
+          await this.fetchCreditorsFromBackend(client_id);
           return this.creditors;
         } catch (err) {
           console.error("Failed to load capital accounts", err);
@@ -68,7 +68,7 @@ export const creditorStore = defineStore("creditorStore", {
 
       var isLedgerpresent = this.ledgersCache.has(creditor_id);
       if (isLedgerpresent) {
-        ledgers = ledgersCache.get(creditor_id);
+        ledgers = this.ledgersCache.get(creditor_id);
       }
 
       if (!force_refresh && ledgers !== null) {
