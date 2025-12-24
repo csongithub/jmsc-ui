@@ -329,7 +329,7 @@
                   <!-- Header -->
                   <div class="row text-weight-bold">
                     <div class="col-2"></div>
-                    <div class="col-3">Select</div>
+                    <div class="col-1">Select</div>
                     <div class="col-3">Name</div>
                     <div class="col-3 text-wrap">Customized Name</div>
                   </div>
@@ -362,11 +362,17 @@
                         <!-- Checkbox -->
                         <q-item-section>
                           <q-checkbox
+                            color="secondary"
                             class="q-pa-non"
-                            size="sm"
-                            v-model="element.select"
+                            size="xs"
+                            v-model="element.selected"
                             :disable="element.disable"
                           />
+                          <!-- <q-toggle
+                            v-model="element.selected"
+                            size="xs"
+                            color="secondary"
+                          /> -->
                         </q-item-section>
 
                         <!-- Label -->
@@ -412,6 +418,7 @@
                   />
 
                   <q-btn
+                    size="10px"
                     v-if="step === 2"
                     flat
                     color="secondary"
@@ -587,10 +594,10 @@ export default {
       columns: [
         { name: "drag", label: "", field: "" },
         {
-          name: "select",
+          name: "selected",
           align: "left",
           label: "Select",
-          field: "select",
+          field: "selected",
         },
         {
           name: "label",
@@ -639,7 +646,6 @@ export default {
   },
   data() {
     return {
-      select: false,
       clientId: this.getClientId(),
       selectedCreditorId: null,
       creditorsOptions: [],
@@ -657,7 +663,7 @@ export default {
       selectedCreditorName: null,
       ledgerHeaders: [
         {
-          select: false,
+          selected: false,
           name: "receipt",
           align: "left",
           label: "Challan/Receipt",
@@ -666,7 +672,7 @@ export default {
           disable: false,
         },
         {
-          select: true,
+          selected: true,
           name: "item",
           align: "left",
           label: "Item",
@@ -675,7 +681,7 @@ export default {
           disable: true,
         },
         {
-          select: true,
+          selected: true,
           name: "quantity",
           align: "left",
           label: "Qty",
@@ -684,7 +690,7 @@ export default {
           disable: true,
         },
         {
-          select: true,
+          selected: true,
           name: "rate",
           align: "left",
           label: "Rate",
@@ -693,7 +699,7 @@ export default {
           disable: true,
         },
         {
-          select: false,
+          selected: false,
           name: "vehicle",
           align: "left",
           label: "Vehicle",
@@ -702,7 +708,7 @@ export default {
           disable: false,
         },
         {
-          select: false,
+          selected: false,
           name: "remark",
           align: "left",
           label: "Note",
@@ -711,7 +717,7 @@ export default {
           disable: false,
         },
         {
-          select: true,
+          selected: true,
           name: "credit",
           align: "left",
           label: "Total",
