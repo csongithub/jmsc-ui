@@ -175,7 +175,7 @@
       @before-show="openCreateLedger"
       ref="newLedgerRef"
     >
-      <q-card style="width: 400px; max-width: 80vw">
+      <q-card style="width: 500px; max-width: 80vw">
         <q-bar class="bg-secondary text-white text-weight-light text-subtitle2">
           {{ "New Ledger" }}
           <q-space />
@@ -351,6 +351,22 @@
                           outlined
                           placeholder="new name"
                           :maxlength="15"
+                        />
+                      </q-td>
+                      <q-td align="center">
+                        <q-btn
+                          dense
+                          flat
+                          icon="arrow_upward"
+                          @click="moveUp(props.rowIndex)"
+                          :disable="props.rowIndex === 0"
+                        />
+                        <q-btn
+                          dense
+                          flat
+                          icon="arrow_downward"
+                          @click="moveDown(props.rowIndex)"
+                          :disable="props.rowIndex === ledgerHeaders.length - 1"
                         />
                       </q-td>
                     </q-tr>
@@ -676,11 +692,20 @@ export default {
     };
   },
   methods: {
-    onToggle(name, val) {
-      const row = this.ledgerHeaders.find((r) => r.name === name);
-      if (row) {
-        row.select = val;
-      }
+    moveUp(index) {
+      if (index === 0) return;
+      this.swap(index, index - 1);
+    },
+
+    moveDown(index) {
+      if (index === this.ledgerHeaders.length - 1) return;
+      this.swap(index, index + 1);
+    },
+
+    swap(i, j) {
+      const temp = this.ledgerHeaders[i];
+      this.ledgerHeaders[i] = this.ledgerHeaders[j];
+      this.ledgerHeaders[j] = temp;
     },
     altKeyDownHandler(event) {
       console.log(" keydown:", event.key);
