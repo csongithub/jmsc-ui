@@ -212,7 +212,7 @@
                 /></template>
               </q-td>
 
-              <q-td style="max-width: 20px">
+              <q-td v-if="props.cols.length > 0" style="max-width: 20px">
                 <q-icon
                   color="red"
                   size="10px"
