@@ -406,6 +406,12 @@ import { date } from "quasar";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { projectStore } from "src/pinia_stores/ProjectStore";
+import {
+  deafaultAllCoumns,
+  defaultCreditColumns,
+  getAllColumns,
+  getCreditColumns,
+} from "./ledgerUtils";
 
 export default {
   name: "Statement",
@@ -436,6 +442,7 @@ export default {
     this.getProjects();
     this.getItems();
     this.getEntriesOnMount();
+    this.getLedgerColumns();
   },
 
   beforeUnmount() {},
@@ -446,6 +453,7 @@ export default {
     },
     ledgerId(val) {
       this.entries = [];
+      this.getLedgerColumns();
     },
     entryType(val) {
       this.columns = [];
@@ -471,29 +479,6 @@ export default {
         copy: fasCopy,
         edit: fasEdit,
       },
-      creditColumns: [
-        { name: "date", align: "left", label: "Date", field: "date" },
-        { name: "item", align: "left", label: "Item", field: "item" },
-        { name: "quantity", align: "left", label: "Qty.", field: "quantity" },
-        { name: "rate", align: "left", label: "Rate", field: "rate" },
-        {
-          name: "credit",
-          align: "left",
-          label: "Amount",
-          field: "credit",
-          format: (val) => `${val.toLocaleString("en-IN")}`,
-        },
-        {
-          name: "total",
-          align: "left",
-          label: "Total",
-          field: "total",
-          format: (val) => `${val.toLocaleString("en-IN")}`,
-        },
-        { name: "receipt", align: "left", label: "Receipt", field: "receipt" },
-        { name: "vehicle", align: "left", label: "Vehicle", field: "vehicle" },
-        { name: "action", align: "left", label: "", field: "action" },
-      ],
       debitColumns: [
         { name: "date", align: "left", label: "Date", field: "date" },
 
@@ -531,59 +516,6 @@ export default {
         },
         { name: "action", align: "left", label: "", field: "action" },
       ],
-      allColumns: [
-        { name: "date", align: "left", label: "Date", field: "date" },
-        {
-          name: "narration",
-          align: "left",
-          label: "Receipt-Vehicle",
-          field: "narration",
-        },
-        {
-          name: "item",
-          align: "left",
-          label: "Item/Payment",
-          field: "item",
-        },
-        {
-          name: "quantity",
-          align: "left",
-          label: "Qty.",
-          field: "quantity",
-          format: (val) => `${val === 0 || val === null ? "" : val}`,
-        },
-        {
-          name: "rate",
-          align: "left",
-          label: "Rate",
-          field: "rate",
-          format: (val) => `${val === 0 || val === null ? "" : val}`,
-        },
-        {
-          name: "debit",
-          align: "left",
-          label: "Debit",
-          field: "debit",
-          format: (val) =>
-            `${val === 0 || val === null ? "" : val.toLocaleString("en-IN")}`,
-        },
-        {
-          name: "credit",
-          align: "left",
-          label: "Credit",
-          field: "credit",
-          format: (val) =>
-            `${val === 0 || val === null ? "" : val.toLocaleString("en-IN")}`,
-        },
-        {
-          name: "total",
-          align: "left",
-          label: "Total",
-          field: "total",
-          format: (val) => `${val.toLocaleString("en-IN")}`,
-        },
-        { name: "action", align: "left", label: "", field: "action" },
-      ],
     };
   },
   data() {
@@ -604,9 +536,25 @@ export default {
       projects: [],
       projectOptions: [],
       showEditEntryModal: false,
+      creditColumns: [],
+      allColumns: [],
     };
   },
   methods: {
+    getLedgerColumns() {
+      AccountingService.getLedger(this.clientId, this.creditorId, this.ledgerId)
+        .then((response) => {
+          if (response.columns === null) {
+            this.creditColumns = defaultCreditColumns;
+            this.allColumns = deafaultAllCoumns;
+          } else {
+            this.creditColumns = getCreditColumns(response.columns);
+            this.allColumns = getAllColumns(response.columns);
+          }
+        })
+        .catch((err) => {});
+    },
+
     disableFutureDates(dateString) {
       const today = new Date();
       const inputDate = new Date(dateString); // QDate passes 'YYYY/MM/DD'

@@ -407,6 +407,7 @@ import ProjectService from "src/services/ProjectService";
 import { date } from "quasar";
 import { ref } from "vue";
 import { projectStore } from "src/pinia_stores/ProjectStore";
+import { filter } from "../Utils/filterUtils";
 AccountingService;
 export default {
   name: "Credit",
@@ -447,6 +448,7 @@ export default {
     // this.$emit("ledger-entry-init");
     this.disable = !(this.creditorId !== null && this.ledgerId !== null);
     this.getProjects();
+    this.getLedgerColumns();
     // this.getItems();
     window.addEventListener("keydown", this.keyDownHandlerForEntry);
     // this.$q.loading.show({
@@ -465,6 +467,7 @@ export default {
     },
     ledgerId(val) {
       this.disable = this.ledgerId === null || this.creditorId === null;
+      this.getLedgerColumns();
     },
     creditEntryDate(val) {
       const startDate = date.extractDate(this.startDate, "DD-MM-YYYY");
@@ -484,51 +487,44 @@ export default {
         add: fasPlus,
         delete: fasTrash,
       },
-      columns: [
+      defaultColumns: [
         {
-          selected: false,
           name: "receipt",
           align: "left",
           label: "Challan/Receipt",
           field: "receipt",
         },
         {
-          selected: true,
           name: "item",
           align: "left",
           label: "item",
           field: "item",
         },
         {
-          selected: true,
           name: "quantity",
           align: "left",
           label: "Qty",
           field: "quantity",
         },
         {
-          selected: true,
           name: "rate",
           align: "left",
           label: "Rate",
           field: "rate",
         },
         {
-          selected: false,
           name: "vehicle",
           align: "left",
           label: "Vehicle",
           field: "vehicle",
         },
         {
-          selected: false,
           name: "remark",
           align: "left",
           label: "Note",
           field: "remark",
         },
         {
-          selected: false,
           name: "credit",
           align: "left",
           label: "Total",
@@ -576,9 +572,31 @@ export default {
       items: [],
       keysPressed: null,
       debitEntries: this.initiate(),
+      columns: this.defaultColumns,
     };
   },
   methods: {
+    getLedgerColumns() {
+      AccountingService.getLedger(this.clientId, this.creditorId, this.ledgerId)
+        .then((response) => {
+          if (response.columns === null) {
+            this.columns = this.defaultColumns;
+          } else {
+            var temp = JSON.parse(response.columns);
+            var selectedColumns = [];
+            for (let col of temp) {
+              if (col.selected) {
+                if (col.customeLabel !== null && col.customeLabel !== "")
+                  col.label = col.customeLabel;
+                selectedColumns.push(col);
+              }
+            }
+
+            this.columns = selectedColumns;
+          }
+        })
+        .catch((err) => {});
+    },
     switchEntryMode() {
       this.$emit("changeMode");
     },
@@ -605,7 +623,6 @@ export default {
         credit: 0.0,
         entryType: null,
         debit: 0.0,
-        narration: null,
         paymentMode: null,
         paymentId: null,
         user: null,
@@ -639,8 +656,8 @@ export default {
             }
             this.$q.notify({
               message: message,
-              color: "green",
-              position: "center",
+              color: "secondary",
+              position: "bottom",
               timeout: 0,
               actions: [
                 {
@@ -708,12 +725,7 @@ export default {
       else this.debitEntries.push(this.newEntry());
     },
     filterProject(input, update, abort) {
-      update(() => {
-        const value = input.toLowerCase();
-        this.projectOptions = this.projects.filter((project) => {
-          return project.label.toLowerCase().indexOf(value) > -1;
-        });
-      });
+      this.projectOptions = filter(input, update, this.projects);
     },
     filterItem(input, update, abort) {
       update(() => {

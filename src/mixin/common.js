@@ -224,6 +224,13 @@ export const commonMixin = {
         color: "primary",
       });
     },
+    success(message, color) {
+      this.$q.notify({
+        message: message,
+        caption: "",
+        color: color,
+      });
+    },
     fail(message) {
       this.$q.notify({
         message: message,

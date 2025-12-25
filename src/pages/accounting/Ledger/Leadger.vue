@@ -274,7 +274,10 @@
                     dense
                     outlined
                     v-model="ledger.startDate"
-                    :rules="['DD-MM-YYYY']"
+                    :rules="[
+                      (val) => !!val || '',
+                      (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || '',
+                    ]"
                     label="Start Date"
                     placeholder="dd-mm-yyyy"
                   >
@@ -329,7 +332,7 @@
                   <!-- Header -->
                   <div class="row text-weight-bold">
                     <div class="col-2"></div>
-                    <div class="col-1">Select</div>
+                    <div class="col-3">Select</div>
                     <div class="col-3">Name</div>
                     <div class="col-3 text-wrap">Customized Name</div>
                   </div>
@@ -384,7 +387,7 @@
                         <q-item-section>
                           <q-input
                             class="custom-small-input"
-                            v-model="element.customeLable"
+                            v-model="element.customeLabel"
                             dense
                             outlined
                             placeholder="new name"
@@ -606,10 +609,10 @@ export default {
           field: "label",
         },
         {
-          name: "customeLable",
+          name: "customeLabel",
           align: "left",
           label: "Customized Name",
-          field: "customeLable",
+          field: "customeLabel",
         },
       ],
 
@@ -661,7 +664,12 @@ export default {
       payments: [],
       showPaymentsDetected: false,
       selectedCreditorName: null,
-      ledgerHeaders: [
+      ledgerHeaders: this.defaultColumns(),
+    };
+  },
+  methods: {
+    defaultColumns() {
+      return [
         {
           selected: false,
           name: "receipt",
@@ -711,7 +719,7 @@ export default {
           selected: false,
           name: "remark",
           align: "left",
-          label: "Note",
+          label: "Remark",
           customeLabel: null,
           field: "remark",
           disable: false,
@@ -725,10 +733,8 @@ export default {
           field: "credit",
           disable: true,
         },
-      ],
-    };
-  },
-  methods: {
+      ];
+    },
     moveUp(index) {
       if (index === 0) return;
       this.swap(index, index - 1);
@@ -788,20 +794,24 @@ export default {
     createLedger() {
       this.$refs.ledgerForm.validate().then((isValid) => {
         if (isValid) {
-          this.ledger.clientId = this.clientId;
-          AccountingService.createLedger(this.ledger)
-            .then((response) => {
-              if (this.selectedCreditorId === response.creditorId) {
-                this.getLedgers(true);
-              }
-              this.closeCreateLedger();
-              this.success("Ledger Created");
-            })
-            .catch((err) => {});
+          this.createLedgerPostValidation();
         } else {
           this.step = 1;
         }
       });
+    },
+    createLedgerPostValidation() {
+      this.ledger.clientId = this.clientId;
+      this.ledger.columns = JSON.stringify(this.ledgerHeaders);
+      AccountingService.createLedger(this.ledger)
+        .then((response) => {
+          if (this.selectedCreditorId === response.creditorId) {
+            this.getLedgers(true);
+          }
+          this.closeCreateLedger();
+          this.success("Ledger Created", "secondary");
+        })
+        .catch((err) => {});
     },
     openCreateLedger() {
       this.resetLedger();
@@ -813,6 +823,7 @@ export default {
     closeCreateLedger() {
       this.showCreateLedger = false;
       this.step = 1;
+      this.ledgerHeaders = this.defaultColumns();
       this.resetLedger();
     },
     resetLedger() {
