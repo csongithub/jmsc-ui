@@ -107,109 +107,111 @@
           </template>
 
           <template v-slot:top-right> </template>
+
           <template v-slot:body="props" v-if="items !== null">
             <q-tr :props="props" :ref="'itemRow-' + props.rowIndex">
-              <q-td key="receipt" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  style="max-width: 100px"
-                  v-model="props.row.receipt"
-                  dense
-                  outlined
-                  :placeholder="'challan'"
-                  @blur="
-                    validateChallan($event.target.value, props, props.rowIndex)
-                  "
-                />
-              </q-td>
-              <q-td key="vehicle" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  style="max-width: 100px"
-                  v-model="props.row.vehicle"
-                  dense
-                  outlined
-                  placeholder="vehicle"
-                />
-              </q-td>
-              <q-td key="item">
-                <q-select
-                  :disable="disable"
-                  class="custom-small-select"
-                  style="max-width: 150px"
-                  dense
-                  outlined
-                  option-label="name"
-                  option-value="name"
-                  :options="itemOptions"
-                  v-model="props.row.item"
-                  option-disable="inactive"
-                  emit-value
-                  map-options
-                  use-input
-                  input-debounce="0"
-                  @filter="filterItem"
-                  @update:model-value="setRow(props.row)"
-                  hide-dropdown-icon
-                  :placeholder="props.row.item === null ? 'item' : ''"
+              <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                <template v-if="col.name === 'receipt'"
+                  ><q-input
+                    :disable="disable"
+                    class="custom-small-input"
+                    style="max-width: 100px"
+                    v-model="props.row.receipt"
+                    dense
+                    outlined
+                    :placeholder="'challan'"
+                    @blur="
+                      validateChallan(
+                        $event.target.value,
+                        props,
+                        props.rowIndex
+                      )
+                    "
+                /></template>
+                <template v-else-if="col.name === 'vehicle'"
+                  ><q-input
+                    :disable="disable"
+                    class="custom-small-input"
+                    style="max-width: 100px"
+                    v-model="props.row.vehicle"
+                    dense
+                    outlined
+                    placeholder="vehicle"
+                /></template>
+                <template v-else-if="col.name === 'item'"
+                  ><q-select
+                    :disable="disable"
+                    class="custom-small-select"
+                    style="max-width: 150px"
+                    dense
+                    outlined
+                    option-label="name"
+                    option-value="name"
+                    :options="itemOptions"
+                    v-model="props.row.item"
+                    option-disable="inactive"
+                    emit-value
+                    map-options
+                    use-input
+                    input-debounce="0"
+                    @filter="filterItem"
+                    @update:model-value="setRow(props.row)"
+                    hide-dropdown-icon
+                    :placeholder="props.row.item === null ? 'item' : ''"
+                  >
+                  </q-select
+                ></template>
+                <template v-else-if="col.name === 'quantity'"
+                  ><q-input
+                    :disable="disable"
+                    class="custom-small-input"
+                    type="number"
+                    style="max-width: 100px"
+                    v-model="props.row.quantity"
+                    dense
+                    outlined
+                    placeholder="qty"
+                    @update:model-value="setTotal(props.row)"
+                  >
+                    <template v-slot:append>
+                      <q-avatar>
+                        {{ props.row.unit }}
+                      </q-avatar>
+                    </template>
+                  </q-input></template
                 >
-                </q-select>
+                <template v-else-if="col.name === 'rate'">
+                  <q-input
+                    :disable="disable"
+                    class="custom-small-input"
+                    type="number"
+                    style="max-width: 100px"
+                    v-model="props.row.rate"
+                    dense
+                    outlined
+                    placeholder="rate"
+                    @update:model-value="setTotal(props.row)"
+                  />
+                </template>
+                <template v-else-if="col.name === 'credit'"
+                  ><span
+                    class="text-bold text-red"
+                    style="width: 150px; max-width: 200px"
+                  >
+                    {{ props.row.credit.toLocaleString("en-IN") + ".00" }}</span
+                  ></template
+                ><template v-else-if="col.name === 'remark'"
+                  ><q-input
+                    :disable="disable"
+                    class="custom-small-input"
+                    style="max-width: 100px"
+                    v-model="props.row.remark"
+                    dense
+                    outlined
+                    placeholder="remark"
+                /></template>
               </q-td>
 
-              <q-td key="quantity" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  type="number"
-                  style="max-width: 100px"
-                  v-model="props.row.quantity"
-                  dense
-                  outlined
-                  placeholder="qty"
-                  @update:model-value="setTotal(props.row)"
-                >
-                  <template v-slot:append>
-                    <q-avatar>
-                      {{ props.row.unit }}
-                    </q-avatar>
-                  </template>
-                </q-input>
-              </q-td>
-              <q-td key="rate" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  type="number"
-                  style="max-width: 100px"
-                  v-model="props.row.rate"
-                  dense
-                  outlined
-                  placeholder="rate"
-                  @update:model-value="setTotal(props.row)"
-                />
-              </q-td>
-
-              <q-td
-                class="text-bold text-red"
-                key="credit"
-                :props="props"
-                style="width: 150px; max-width: 200px"
-              >
-                {{ props.row.credit.toLocaleString("en-IN") + ".00" }}
-              </q-td>
-              <q-td key="remark" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  style="max-width: 100px"
-                  v-model="props.row.remark"
-                  dense
-                  outlined
-                  placeholder="remark"
-                />
-              </q-td>
               <q-td style="max-width: 20px">
                 <q-icon
                   color="red"

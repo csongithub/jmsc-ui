@@ -671,7 +671,7 @@ export default {
   },
   methods: {
     defaultColumns() {
-      return defaultLedgerEntryColumns;
+      return JSON.parse(JSON.stringify(defaultLedgerEntryColumns));
     },
     moveUp(index) {
       if (index === 0) return;
