@@ -354,7 +354,7 @@ export default {
 
       groupOptions: [],
       groups: [
-        "Party Advance",
+        "Advance",
         "Bank",
         "BikeRent",
         "Vehicle Maintenace.",

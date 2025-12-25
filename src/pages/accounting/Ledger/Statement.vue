@@ -438,11 +438,11 @@ export default {
       );
     },
   },
-  mounted() {
+  async mounted() {
     this.getProjects();
     this.getItems();
+    await this.getLedgerColumns();
     this.getEntriesOnMount();
-    this.getLedgerColumns();
   },
 
   beforeUnmount() {},
@@ -541,8 +541,12 @@ export default {
     };
   },
   methods: {
-    getLedgerColumns() {
-      AccountingService.getLedger(this.clientId, this.creditorId, this.ledgerId)
+    async getLedgerColumns() {
+      await AccountingService.getLedger(
+        this.clientId,
+        this.creditorId,
+        this.ledgerId
+      )
         .then((response) => {
           if (response.columns === null) {
             this.creditColumns = defaultCreditColumns;

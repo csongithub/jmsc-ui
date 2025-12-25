@@ -9,7 +9,7 @@ export function filter(input, update, source) {
   return options;
 }
 
-export function filterLedger(input, update, source) {
+export function filterOnName(input, update, source) {
   var options = [];
   update(() => {
     const value = input.toLowerCase();

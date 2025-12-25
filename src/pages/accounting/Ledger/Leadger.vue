@@ -554,6 +554,7 @@ import LedgerEntry from "./LedgerEntry.vue";
 import Statement from "./Statement.vue";
 import { creditorStore } from "src/pinia_stores/CreditorStore";
 import draggable from "vuedraggable";
+import { filter, filterOnName } from "../Utils/filterUtils";
 
 export default {
   name: "Ledger",
@@ -728,9 +729,10 @@ export default {
           selected: true,
           name: "credit",
           align: "left",
-          label: "Total",
+          label: "Amount",
           customeLabel: null,
           field: "credit",
+          format: (val) => `${val.toLocaleString("en-IN")}`,
           disable: true,
         },
       ];
@@ -776,20 +778,10 @@ export default {
       };
     },
     filterCreditor(input, update, abort) {
-      update(() => {
-        const value = input.toLowerCase();
-        this.creditorsOptions = this.creditors.filter((item) => {
-          return item.label.toLowerCase().indexOf(value) > -1;
-        });
-      });
+      this.creditorsOptions = filter(input, update, this.creditors);
     },
     filterLedger(input, update, abort) {
-      update(() => {
-        const value = input.toLowerCase();
-        this.ledgersOptions = this.ledgers.filter((item) => {
-          return item.name.toLowerCase().indexOf(value) > -1;
-        });
-      });
+      this.ledgersOptions = filterOnName(input, update, this.ledgers);
     },
     createLedger() {
       this.$refs.ledgerForm.validate().then((isValid) => {

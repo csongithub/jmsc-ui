@@ -1,6 +1,8 @@
 export const defaultCreditColumns = [
   { name: "date", align: "left", label: "Date", field: "date" },
   { name: "item", align: "left", label: "Item", field: "item" },
+  { name: "receipt", align: "left", label: "Receipt", field: "receipt" },
+  { name: "vehicle", align: "left", label: "Vehicle", field: "vehicle" },
   { name: "quantity", align: "left", label: "Qty.", field: "quantity" },
   { name: "rate", align: "left", label: "Rate", field: "rate" },
   {
@@ -17,8 +19,7 @@ export const defaultCreditColumns = [
     field: "total",
     format: (val) => `${val.toLocaleString("en-IN")}`,
   },
-  { name: "receipt", align: "left", label: "Receipt", field: "receipt" },
-  { name: "vehicle", align: "left", label: "Vehicle", field: "vehicle" },
+
   { name: "action", align: "left", label: "", field: "action" },
 ];
 
@@ -101,6 +102,13 @@ export function getCreditColumns(columns) {
       selectedColumns.push(col);
     }
   }
+  selectedColumns.push({
+    name: "total",
+    align: "left",
+    label: "Total",
+    field: "total",
+    format: (val) => `${val.toLocaleString("en-IN")}`,
+  });
   return selectedColumns;
 }
 

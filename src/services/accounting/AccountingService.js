@@ -79,7 +79,7 @@ export default {
         return Promise.reject(err);
       });
   },
-  getLedger(clientId, creditorId, ledgerId) {
+  async getLedger(clientId, creditorId, ledgerId) {
     return api
       .get(
         "/v1/accounting/ledger/" + clientId + "/" + creditorId + "/" + ledgerId
