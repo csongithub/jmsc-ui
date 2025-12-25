@@ -168,7 +168,8 @@ export function getCreditColumns(columns) {
       selectedColumns.push(col);
     }
   }
-  selectedColumns.push({
+  const index = selectedColumns.findIndex((obj) => obj.name === "credit");
+  selectedColumns.splice(index + 1, 0, {
     name: "total",
     align: "left",
     label: "Total",

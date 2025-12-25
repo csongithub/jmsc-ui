@@ -123,7 +123,17 @@
                   "
                 />
               </q-td>
-
+              <q-td key="vehicle" :props="props">
+                <q-input
+                  :disable="disable"
+                  class="custom-small-input"
+                  style="max-width: 100px"
+                  v-model="props.row.vehicle"
+                  dense
+                  outlined
+                  placeholder="vehicle"
+                />
+              </q-td>
               <q-td key="item">
                 <q-select
                   :disable="disable"
@@ -180,16 +190,14 @@
                   @update:model-value="setTotal(props.row)"
                 />
               </q-td>
-              <q-td key="vehicle" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  style="max-width: 100px"
-                  v-model="props.row.vehicle"
-                  dense
-                  outlined
-                  placeholder="vehicle"
-                />
+
+              <q-td
+                class="text-bold text-red"
+                key="credit"
+                :props="props"
+                style="width: 150px; max-width: 200px"
+              >
+                {{ props.row.credit.toLocaleString("en-IN") + ".00" }}
               </q-td>
               <q-td key="remark" :props="props">
                 <q-input
@@ -201,14 +209,6 @@
                   outlined
                   placeholder="remark"
                 />
-              </q-td>
-              <q-td
-                class="text-bold text-red"
-                key="credit"
-                :props="props"
-                style="width: 150px; max-width: 200px"
-              >
-                {{ props.row.credit.toLocaleString("en-IN") + ".00" }}
               </q-td>
               <q-td style="max-width: 20px">
                 <q-icon
