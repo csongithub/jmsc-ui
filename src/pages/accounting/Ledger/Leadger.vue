@@ -555,6 +555,7 @@ import Statement from "./Statement.vue";
 import { creditorStore } from "src/pinia_stores/CreditorStore";
 import draggable from "vuedraggable";
 import { filter, filterOnName } from "../Utils/filterUtils";
+import { defaultLedgerEntryColumns } from "./ledgerUtils";
 
 export default {
   name: "Ledger",
@@ -670,72 +671,7 @@ export default {
   },
   methods: {
     defaultColumns() {
-      return [
-        {
-          selected: false,
-          name: "receipt",
-          align: "left",
-          label: "Challan/Receipt",
-          customeLabel: null,
-          field: "receipt",
-          disable: false,
-        },
-        {
-          selected: true,
-          name: "item",
-          align: "left",
-          label: "Item",
-          customeLabel: null,
-          field: "item",
-          disable: true,
-        },
-        {
-          selected: true,
-          name: "quantity",
-          align: "left",
-          label: "Qty",
-          customeLabel: null,
-          field: "quantity",
-          disable: true,
-        },
-        {
-          selected: true,
-          name: "rate",
-          align: "left",
-          label: "Rate",
-          customeLabel: null,
-          field: "rate",
-          disable: true,
-        },
-        {
-          selected: false,
-          name: "vehicle",
-          align: "left",
-          label: "Vehicle",
-          customeLabel: null,
-          field: "vehicle",
-          disable: false,
-        },
-        {
-          selected: false,
-          name: "remark",
-          align: "left",
-          label: "Remark",
-          customeLabel: null,
-          field: "remark",
-          disable: false,
-        },
-        {
-          selected: true,
-          name: "credit",
-          align: "left",
-          label: "Amount",
-          customeLabel: null,
-          field: "credit",
-          format: (val) => `${val.toLocaleString("en-IN")}`,
-          disable: true,
-        },
-      ];
+      return defaultLedgerEntryColumns;
     },
     moveUp(index) {
       if (index === 0) return;

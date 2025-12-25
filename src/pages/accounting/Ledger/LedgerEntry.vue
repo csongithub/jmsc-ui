@@ -408,6 +408,7 @@ import { date } from "quasar";
 import { ref } from "vue";
 import { projectStore } from "src/pinia_stores/ProjectStore";
 import { filter } from "../Utils/filterUtils";
+import { defaultLedgerEntryColumns } from "./ledgerUtils";
 AccountingService;
 export default {
   name: "Credit",
@@ -487,50 +488,6 @@ export default {
         add: fasPlus,
         delete: fasTrash,
       },
-      defaultColumns: [
-        {
-          name: "receipt",
-          align: "left",
-          label: "Challan/Receipt",
-          field: "receipt",
-        },
-        {
-          name: "item",
-          align: "left",
-          label: "item",
-          field: "item",
-        },
-        {
-          name: "quantity",
-          align: "left",
-          label: "Qty",
-          field: "quantity",
-        },
-        {
-          name: "rate",
-          align: "left",
-          label: "Rate",
-          field: "rate",
-        },
-        {
-          name: "vehicle",
-          align: "left",
-          label: "Vehicle",
-          field: "vehicle",
-        },
-        {
-          name: "remark",
-          align: "left",
-          label: "Note",
-          field: "remark",
-        },
-        {
-          name: "credit",
-          align: "left",
-          label: "Total",
-          field: "credit",
-        },
-      ],
       paymentColumns: [
         {
           name: "debit",
@@ -572,7 +529,7 @@ export default {
       items: [],
       keysPressed: null,
       debitEntries: this.initiate(),
-      columns: this.defaultColumns,
+      columns: [],
     };
   },
   methods: {
@@ -580,7 +537,7 @@ export default {
       AccountingService.getLedger(this.clientId, this.creditorId, this.ledgerId)
         .then((response) => {
           if (response.columns === null) {
-            this.columns = this.defaultColumns;
+            this.columns = defaultLedgerEntryColumns;
           } else {
             var temp = JSON.parse(response.columns);
             var selectedColumns = [];

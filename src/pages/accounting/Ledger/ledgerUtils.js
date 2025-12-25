@@ -1,3 +1,69 @@
+export const defaultLedgerEntryColumns = [
+  {
+    selected: false,
+    name: "receipt",
+    align: "left",
+    label: "Challan/Receipt",
+    customeLabel: null,
+    field: "receipt",
+    disable: false,
+  },
+  {
+    selected: false,
+    name: "vehicle",
+    align: "left",
+    label: "Vehicle",
+    customeLabel: null,
+    field: "vehicle",
+    disable: false,
+  },
+  {
+    selected: true,
+    name: "item",
+    align: "left",
+    label: "Item",
+    customeLabel: null,
+    field: "item",
+    disable: true,
+  },
+  {
+    selected: true,
+    name: "quantity",
+    align: "left",
+    label: "Qty",
+    customeLabel: null,
+    field: "quantity",
+    disable: true,
+  },
+  {
+    selected: true,
+    name: "rate",
+    align: "left",
+    label: "Rate",
+    customeLabel: null,
+    field: "rate",
+    disable: true,
+  },
+  {
+    selected: true,
+    name: "credit",
+    align: "left",
+    label: "Amount",
+    customeLabel: null,
+    field: "credit",
+    disable: true,
+  },
+  {
+    selected: false,
+    name: "remark",
+    align: "left",
+    label: "Remark",
+    customeLabel: null,
+    field: "remark",
+    disable: false,
+  },
+];
+
 export const defaultCreditColumns = [
   { name: "date", align: "left", label: "Date", field: "date" },
   { name: "item", align: "left", label: "Item", field: "item" },
@@ -109,11 +175,13 @@ export function getCreditColumns(columns) {
     field: "total",
     format: (val) => `${val.toLocaleString("en-IN")}`,
   });
-  return selectedColumns;
+
+  return addFormatter(selectedColumns);
 }
 
 export function getAllColumns(columns) {
   var creditColumns = JSON.parse(columns);
+  console.log("Default All Columns: " + JSON.stringify(deafaultAllCoumns));
   var allColumns = JSON.parse(JSON.stringify(deafaultAllCoumns));
 
   for (let col of creditColumns) {
@@ -131,9 +199,23 @@ export function getAllColumns(columns) {
       }
     }
   }
-  return allColumns;
+
+  return addFormatter(allColumns);
 }
 
 function isNotNullOrEmpty(text) {
   return text !== null && text !== "";
+}
+
+function addFormatter(columns) {
+  const columnsWithFormat = columns.map((col) => {
+    if (col.name === "credit" || col.name === "debit" || col.name === "total") {
+      return {
+        ...col,
+        format: (val) => (val > 0 ? val.toLocaleString("en-IN") : ""),
+      };
+    }
+    return col;
+  });
+  return columnsWithFormat;
 }
