@@ -59,8 +59,8 @@ export default boot(({ app }) => {
   });
 
   function redirectToLogin() {
-    Router.push("/login");
     LocalStorage.clear();
+    Router.push("/login");
   }
 
   api.interceptors.response.use(
@@ -69,69 +69,76 @@ export default boot(({ app }) => {
     async (error) => {
       const originalRequest = error.config;
 
+      if (!error.response && error.message.includes("Network Error")) {
+        window.alert("server not available, please try after sometime");
+      }
+
       if (
         error.response &&
         error.response.status === 401 &&
         !originalRequest._retry
       ) {
         if (isRefreshing) {
+          var logout = false;
           //Check if current refresh token is also expired
           //if yes redirect to the login page
           const currentRefreshToken = LocalStorage.getItem("auth")
             ? "Bearer " + LocalStorage.getItem("auth").refreshToken
             : null;
           if (currentRefreshToken === originalRequest.headers.Authorization) {
-            window.alert("Your current session has expired, please re-login");
+            logout = true;
+            window.alert(
+              "Current session was inactive for too long, please login again"
+            );
             redirectToLogin();
-            return;
           }
+          if (!logout) {
+            return new Promise(function (resolve, reject) {
+              failedQueue.push({ resolve, reject });
+            }).then((token) => {
+              originalRequest.headers.Authorization = "Bearer " + token;
+              return api(originalRequest);
+            });
+          }
+        } else {
+          originalRequest._retry = true;
+          isRefreshing = true;
+          const clientId = LocalStorage.getItem("auth").client.id;
+          const refreshToken = LocalStorage.getItem("auth").refreshToken;
+          const user = LocalStorage.getItem("auth").client.logonId;
+          const isAdmin = LocalStorage.getItem("auth").admin;
+          let request = {
+            clientId: clientId,
+            refreshToken: refreshToken,
+            user: isAdmin ? user : LocalStorage.getItem("auth").user.logonId,
+          };
 
-          return new Promise(function (resolve, reject) {
-            failedQueue.push({ resolve, reject });
-          }).then((token) => {
-            originalRequest.headers.Authorization = "Bearer " + token;
-            return api(originalRequest);
-          });
-        }
+          try {
+            // window.alert("Refreshing Token");
+            const refreshResponse = await api.post("/v1/auth/refresh", request);
 
-        originalRequest._retry = true;
-        isRefreshing = true;
-        const clientId = LocalStorage.getItem("auth").client.id;
-        const refreshToken = LocalStorage.getItem("auth").refreshToken;
-        const user = LocalStorage.getItem("auth").client.logonId;
-        const isAdmin = LocalStorage.getItem("auth").admin;
-        let request = {
-          clientId: clientId,
-          refreshToken: refreshToken,
-          user: isAdmin ? user : LocalStorage.getItem("auth").user.logonId,
-        };
+            const newAccessToken = refreshResponse.data.token;
+            const newRefreshToken = refreshResponse.data.refreshToken;
 
-        try {
-          window.alert("Refreshing Token...");
-          const refreshResponse = await api.post("/v1/auth/refresh", request);
+            let auth = LocalStorage.getItem("auth");
+            auth.token = newAccessToken;
+            auth.refreshToken = newRefreshToken;
+            LocalStorage.set("auth", auth);
+            isRefreshing = false;
 
-          const newAccessToken = refreshResponse.data.token;
-          const newRefreshToken = refreshResponse.data.refreshToken;
+            processQueue(null, newAccessToken);
 
-          let auth = LocalStorage.getItem("auth");
-          auth.token = newAccessToken;
-          auth.refreshToken = newRefreshToken;
-          LocalStorage.set("auth", auth);
-          isRefreshing = false;
-
-          processQueue(null, newAccessToken);
-
-          return api(originalRequest); // 🔁 retry original API
-        } catch (err) {
-          processQueue(err, null);
-          // optional: logout user
-          redirectToLogin();
-          return Promise.reject(err);
-        } finally {
-          isRefreshing = false;
+            return api(originalRequest); // 🔁 retry original API
+          } catch (err) {
+            processQueue(err, null);
+            // optional: logout user
+            redirectToLogin();
+            return Promise.reject(err);
+          } finally {
+            isRefreshing = false;
+          }
         }
       }
-
       return Promise.reject(error);
     }
   );

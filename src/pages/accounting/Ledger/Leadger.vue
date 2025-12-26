@@ -20,7 +20,7 @@
                 input-debounce="0"
                 @filter="filterCreditor"
                 @update:model-value="
-                  getLedgers();
+                  getLedgers(true);
                   detectPayments();
                 "
               >
@@ -175,7 +175,11 @@
       @before-show="openCreateLedger"
       ref="newLedgerRef"
     >
-      <q-card style="width: 300px; max-width: 80vw">
+      <q-card
+        :style="
+          step === 1 ? 'width: 400px;' : 'width: 600px;' + 'max-width: 80vw'
+        "
+      >
         <q-bar class="bg-secondary text-white text-weight-light text-subtitle2">
           {{ "New Ledger" }}
           <q-space />
@@ -185,141 +189,249 @@
         </q-bar>
 
         <q-card-section>
-          <q-form
-            @submit="createLedger"
-            @reset="resetLedger"
-            class="q-gutter-md"
-          >
-            <div class="row">
-              <q-select
-                class="full-width"
-                dense
-                outlined
-                hide-bottom-space
-                label="Select Creditors"
-                label-color="secondary"
-                :options="creditorsOptions"
-                v-model="ledger.creditorId"
-                option-disable="inactive"
-                emit-value
-                map-options
-                use-input
-                input-debounce="0"
-                @filter="filterCreditor"
-                lazy-rules
-                :rules="[(val) => (val && val > 0) || 'select creditor']"
+          <q-form ref="ledgerForm" class="q-gutter-md">
+            <q-stepper
+              v-model="step"
+              ref="stepper"
+              active-color="secondary"
+              animated
+              keep-alive
+            >
+              <q-step
+                :name="1"
+                title="Basic Detail"
+                :done="step > 1"
+                done-color="grey"
               >
-                <template v-slot:no-option>
-                  <q-item>
-                    <q-item-section class="text-red">
-                      No Creditor Matched
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
-            </div>
-            <div class="row">
-              <q-input
-                hide-bottom-space
-                class="full-width"
-                dense
-                outlined
-                v-model="ledger.code"
-                label="Ledger Code"
-                full-width
-                lazy-rules
-                :rules="[(val) => (val && val.length > 0) || 'ledger code']"
-              />
-            </div>
-            <div class="row">
-              <q-input
-                class="full-width"
-                hide-bottom-space
-                dense
-                outlined
-                v-model="ledger.name"
-                label="Ledger Name"
-                full-width
-                lazy-rules
-                :rules="[(val) => (val && val.length > 0) || 'ledger name']"
-              />
-            </div>
-            <div class="row">
-              <q-input
-                class="full-width"
-                hide-bottom-space
-                dense
-                outlined
-                v-model="ledger.startDate"
-                :rules="['DD-MM-YYYY']"
-                label="Start Date"
-                placeholder="dd-mm-yyyy"
-              >
-                <template v-slot:append>
-                  <q-icon name="event" class="cursor-pointer">
-                    <q-popup-proxy
-                      ref="qDateProxy"
-                      cover
-                      transition-show="scale"
-                      transition-hide="scale"
-                    >
-                      <q-date
-                        v-model="ledger.startDate"
-                        mask="DD-MM-YYYY"
-                        minimal
-                      />
-                    </q-popup-proxy>
-                  </q-icon>
-                </template>
-              </q-input>
-            </div>
-            <div class="row">
-              <q-input
-                class="full-width"
-                hide-bottom-space
-                type="number"
-                dense
-                outlined
-                v-model="ledger.openingBalance"
-                label="Opening Balance"
-                full-width
-                lazy-rules
-                :rules="[(val) => (val && val > 0) || 'Opening Balance']"
-              />
-            </div>
-            <div class="row">
-              <q-input
-                class="full-width"
-                hide-bottom-space
-                dense
-                outlined
-                v-model="ledger.remark"
-                label="Description"
-                full-width
-                lazy-rules
-                :rules="[(val) => (val && val.length > 0) || 'description']"
-              />
-            </div>
+                <div class="row q-mb-sm">
+                  <q-select
+                    class="full-width"
+                    dense
+                    outlined
+                    hide-bottom-space
+                    label="Select Creditors"
+                    label-color="secondary"
+                    :options="creditorsOptions"
+                    v-model="ledger.creditorId"
+                    option-disable="inactive"
+                    emit-value
+                    map-options
+                    use-input
+                    input-debounce="0"
+                    @filter="filterCreditor"
+                    lazy-rules
+                    :rules="[(val) => (val && val > 0) || 'select creditor']"
+                  >
+                    <template v-slot:no-option>
+                      <q-item>
+                        <q-item-section class="text-red">
+                          No Creditor Matched
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                  </q-select>
+                </div>
+                <div class="row q-mb-sm">
+                  <q-input
+                    hide-bottom-space
+                    class="full-width"
+                    dense
+                    outlined
+                    v-model="ledger.code"
+                    label="Ledger Code"
+                    full-width
+                    @update:model-value="
+                      (val) => {
+                        ledger.code = val.toUpperCase();
+                      }
+                    "
+                    lazy-rules
+                    :rules="[(val) => (val && val.length > 0) || 'ledger code']"
+                  />
+                </div>
+                <div class="row q-mb-sm">
+                  <q-input
+                    class="full-width"
+                    hide-bottom-space
+                    dense
+                    outlined
+                    v-model="ledger.name"
+                    label="Ledger Name"
+                    full-width
+                    @update:model-value="
+                      (val) => {
+                        ledger.name = val.toUpperCase();
+                      }
+                    "
+                    lazy-rules
+                    :rules="[(val) => (val && val.length > 0) || 'ledger name']"
+                  />
+                </div>
+                <div class="row q-mb-sm">
+                  <q-input
+                    class="full-width"
+                    hide-bottom-space
+                    dense
+                    outlined
+                    v-model="ledger.startDate"
+                    :rules="[
+                      (val) => !!val || '',
+                      (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || '',
+                    ]"
+                    label="Start Date"
+                    placeholder="dd-mm-yyyy"
+                  >
+                    <template v-slot:append>
+                      <q-icon name="event" class="cursor-pointer">
+                        <q-popup-proxy
+                          ref="qDateProxy"
+                          cover
+                          transition-show="scale"
+                          transition-hide="scale"
+                        >
+                          <q-date
+                            v-model="ledger.startDate"
+                            mask="DD-MM-YYYY"
+                            minimal
+                          />
+                        </q-popup-proxy>
+                      </q-icon>
+                    </template>
+                  </q-input>
+                </div>
+                <div class="row q-mb-sm">
+                  <q-input
+                    class="full-width"
+                    hide-bottom-space
+                    type="number"
+                    dense
+                    outlined
+                    v-model="ledger.openingBalance"
+                    label="Opening Balance"
+                    full-width
+                    lazy-rules
+                    :rules="[(val) => (val && val > 0) || 'Opening Balance']"
+                  />
+                </div>
+                <div class="row q-mb-sm">
+                  <q-input
+                    class="full-width"
+                    hide-bottom-space
+                    dense
+                    outlined
+                    v-model="ledger.remark"
+                    label="Description"
+                    full-width
+                    lazy-rules
+                    :rules="[(val) => (val && val.length > 0) || 'description']"
+                  />
+                </div>
+              </q-step>
+              <q-step :name="2" title="Select Coumns" :done="step > 2">
+                <q-card flat bordered>
+                  <!-- Header -->
+                  <div class="row text-weight-bold">
+                    <div class="col-2"></div>
+                    <div class="col-3">Select</div>
+                    <div class="col-3">Name</div>
+                    <div class="col-3 text-wrap">Customized Name</div>
+                  </div>
 
-            <div>
-              <q-space />
-              <q-btn
-                dense
-                size="sm"
-                label="Create"
-                type="submit"
-                color="secondary"
-                class="text-capitalize q-px-lg"
-              />
+                  <!-- <q-item dense>
+                    <q-item-section></q-item-section>
+                    <q-item-section>Select</q-item-section>
+                    <q-item-section>Name</q-item-section>
+                    <q-item-section>New Name</q-item-section>
+                  </q-item> -->
+                  <!-- Draggable rows -->
+                  <draggable
+                    v-model="ledgerHeaders"
+                    item-key="name"
+                    handle=".drag-handle"
+                    direction="vertical"
+                    animation="200"
+                  >
+                    <template #item="{ element }">
+                      <q-item dense>
+                        <!-- Drag -->
+                        <q-item-section avatar>
+                          <q-icon
+                            size="xs"
+                            name="drag_indicator"
+                            class="drag-handle cursor-pointer"
+                          />
+                        </q-item-section>
 
-              <q-btn
-                dense
-                size="sm"
-                label="Reset"
-                type="reset"
-                class="text-capitalize q-ml-sm q-px-lg"
-              />
-            </div>
+                        <!-- Checkbox -->
+                        <q-item-section>
+                          <q-checkbox
+                            color="secondary"
+                            class="q-pa-non"
+                            size="xs"
+                            v-model="element.selected"
+                            :disable="element.disable"
+                          />
+                          <!-- <q-toggle
+                            v-model="element.selected"
+                            size="xs"
+                            color="secondary"
+                          /> -->
+                        </q-item-section>
+
+                        <!-- Label -->
+                        <q-item-section>
+                          {{ element.label }}
+                        </q-item-section>
+
+                        <!-- Input -->
+                        <q-item-section>
+                          <q-input
+                            class="custom-small-input"
+                            v-model="element.customeLabel"
+                            dense
+                            outlined
+                            placeholder="new name"
+                            :maxlength="15"
+                          />
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                  </draggable>
+                </q-card>
+              </q-step>
+              <template v-slot:navigation>
+                <q-stepper-navigation>
+                  <q-btn
+                    v-if="step === 2"
+                    dense
+                    size="10px"
+                    label="Finish"
+                    class="text-capitalize q-px-lg"
+                    color="secondary"
+                    @click="createLedger"
+                  />
+                  <q-btn
+                    v-if="step === 1"
+                    dense
+                    size="10px"
+                    label="Next"
+                    @click="$refs.stepper.next()"
+                    class="text-capitalize q-px-lg"
+                    color="secondary"
+                  />
+
+                  <q-btn
+                    size="10px"
+                    v-if="step === 2"
+                    flat
+                    color="secondary"
+                    @click="$refs.stepper.previous()"
+                    label="Back"
+                    class="q-ml-sm"
+                  />
+                </q-stepper-navigation>
+              </template>
+            </q-stepper>
           </q-form>
         </q-card-section>
       </q-card>
@@ -440,14 +552,18 @@ import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
 import LedgerEntry from "./LedgerEntry.vue";
 import Statement from "./Statement.vue";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
+import draggable from "vuedraggable";
+import { filter, filterOnName } from "../Utils/filterUtils";
+import { defaultLedgerEntryColumns } from "../Utils/ledgerUtils";
 
 export default {
   name: "Ledger",
   mixins: [commonMixin],
-  components: { LedgerEntry, Statement },
-  mounted() {
+  components: { LedgerEntry, Statement, draggable },
+  async mounted() {
     window.addEventListener("keydown", this.altKeyDownHandler);
-    this.getAllCreditors();
+    await this.getAllCreditors();
   },
   beforeUnmount() {
     // Remove event listener before the component is unmounted to prevent memory leaks
@@ -461,11 +577,47 @@ export default {
       );
     },
   },
+  watch: {
+    ledgerHeaders: {
+      deep: true,
+      handler() {
+        // Optional: reassign order after drag
+        this.ledgerHeaders.forEach((r, i) => {
+          r.orderNo = i + 1;
+        });
+      },
+    },
+  },
   beforeUnmount() {},
   setup() {
     return {
       splitterModel: ref(20),
+      pagination: { rowsPerPage: 7 },
+      step: ref(1),
       tab: ref("entry"),
+
+      columns: [
+        { name: "drag", label: "", field: "" },
+        {
+          name: "selected",
+          align: "left",
+          label: "Select",
+          field: "selected",
+        },
+        {
+          name: "label",
+          align: "left",
+          label: "Name",
+          field: "label",
+        },
+        {
+          name: "customeLabel",
+          align: "left",
+          label: "Customized Name",
+          field: "customeLabel",
+        },
+      ],
+
       paymentColumns: [
         {
           name: "date",
@@ -514,9 +666,28 @@ export default {
       payments: [],
       showPaymentsDetected: false,
       selectedCreditorName: null,
+      ledgerHeaders: this.defaultColumns(),
     };
   },
   methods: {
+    defaultColumns() {
+      return JSON.parse(JSON.stringify(defaultLedgerEntryColumns));
+    },
+    moveUp(index) {
+      if (index === 0) return;
+      this.swap(index, index - 1);
+    },
+
+    moveDown(index) {
+      if (index === this.ledgerHeaders.length - 1) return;
+      this.swap(index, index + 1);
+    },
+
+    swap(i, j) {
+      const temp = this.ledgerHeaders[i];
+      this.ledgerHeaders[i] = this.ledgerHeaders[j];
+      this.ledgerHeaders[j] = temp;
+    },
     altKeyDownHandler(event) {
       console.log(" keydown:", event.key);
       if (this.keysPressed !== "Alt") this.keysPressed = event.key;
@@ -543,30 +714,30 @@ export default {
       };
     },
     filterCreditor(input, update, abort) {
-      update(() => {
-        const value = input.toLowerCase();
-        this.creditorsOptions = this.creditors.filter((item) => {
-          return item.label.toLowerCase().indexOf(value) > -1;
-        });
-      });
+      this.creditorsOptions = filter(input, update, this.creditors);
     },
     filterLedger(input, update, abort) {
-      update(() => {
-        const value = input.toLowerCase();
-        this.ledgersOptions = this.ledgers.filter((item) => {
-          return item.name.toLowerCase().indexOf(value) > -1;
-        });
-      });
+      this.ledgersOptions = filterOnName(input, update, this.ledgers);
     },
     createLedger() {
+      this.$refs.ledgerForm.validate().then((isValid) => {
+        if (isValid) {
+          this.createLedgerPostValidation();
+        } else {
+          this.step = 1;
+        }
+      });
+    },
+    createLedgerPostValidation() {
       this.ledger.clientId = this.clientId;
+      this.ledger.columns = JSON.stringify(this.ledgerHeaders);
       AccountingService.createLedger(this.ledger)
         .then((response) => {
           if (this.selectedCreditorId === response.creditorId) {
-            this.getLedgers();
+            this.getLedgers(true);
           }
           this.closeCreateLedger();
-          this.success("Ledger Created");
+          this.success("Ledger Created", "secondary");
         })
         .catch((err) => {});
     },
@@ -579,30 +750,30 @@ export default {
     },
     closeCreateLedger() {
       this.showCreateLedger = false;
+      this.step = 1;
+      this.ledgerHeaders = this.defaultColumns();
       this.resetLedger();
     },
     resetLedger() {
       this.ledger = this.newLedger();
     },
-    getAllCreditors() {
-      AccountingService.getAllCreditors(this.clientId)
-        .then((response) => {
-          this.creditorsOptions = response.list;
-          this.creditors = response.list;
-        })
-        .catch((err) => {});
+    async getAllCreditors() {
+      this.creditors = await creditorStore().loadCreditors(
+        this.clientId,
+        false
+      );
     },
 
-    getLedgers() {
+    async getLedgers(refresh) {
       this.ledgers = [];
       this.ledgersOptions = [];
       this.selectedLedger = null;
       this.updatePayments = false;
-      AccountingService.getLedgers(this.clientId, this.selectedCreditorId)
-        .then((response) => {
-          this.ledgers = response;
-        })
-        .catch((err) => {});
+      this.ledgers = await creditorStore().loadLedgers(
+        this.clientId,
+        this.selectedCreditorId,
+        refresh
+      );
     },
 
     detectPayments() {
@@ -645,6 +816,13 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.drag-handle {
+  cursor: grab;
+}
+
+.sortable-ghost {
+  opacity: 0.4;
+}
 .hint-red .q-field__messages {
   color: red !important;
 }

@@ -395,6 +395,7 @@
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
 import ProjectService from "src/services/ProjectService";
+import { filter } from "../Utils/filterUtils";
 import {
   fasCopy,
   fasEdit,
@@ -404,6 +405,14 @@ import {
 import { date } from "quasar";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
+import { projectStore } from "src/pinia_stores/ProjectStore";
+import {
+  deafaultAllCoumns,
+  defaultCreditColumns,
+  getAllColumns,
+  getCreditColumns,
+} from "../Utils/ledgerUtils";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
 
 export default {
   name: "Statement",
@@ -430,9 +439,10 @@ export default {
       );
     },
   },
-  mounted() {
+  async mounted() {
     this.getProjects();
     this.getItems();
+    await this.getLedgerColumns();
     this.getEntriesOnMount();
   },
 
@@ -442,7 +452,10 @@ export default {
     creditorId(val) {
       this.getItems();
     },
-    ledgerId(val) {},
+    ledgerId(val) {
+      this.entries = [];
+      this.getLedgerColumns();
+    },
     entryType(val) {
       this.columns = [];
       this.entries = [];
@@ -467,29 +480,6 @@ export default {
         copy: fasCopy,
         edit: fasEdit,
       },
-      creditColumns: [
-        { name: "date", align: "left", label: "Date", field: "date" },
-        { name: "item", align: "left", label: "Item", field: "item" },
-        { name: "quantity", align: "left", label: "Qty.", field: "quantity" },
-        { name: "rate", align: "left", label: "Rate", field: "rate" },
-        {
-          name: "credit",
-          align: "left",
-          label: "Amount",
-          field: "credit",
-          format: (val) => `${val.toLocaleString("en-IN")}`,
-        },
-        {
-          name: "total",
-          align: "left",
-          label: "Total",
-          field: "total",
-          format: (val) => `${val.toLocaleString("en-IN")}`,
-        },
-        { name: "receipt", align: "left", label: "Receipt", field: "receipt" },
-        { name: "vehicle", align: "left", label: "Vehicle", field: "vehicle" },
-        { name: "action", align: "left", label: "", field: "action" },
-      ],
       debitColumns: [
         { name: "date", align: "left", label: "Date", field: "date" },
 
@@ -527,59 +517,6 @@ export default {
         },
         { name: "action", align: "left", label: "", field: "action" },
       ],
-      allColumns: [
-        { name: "date", align: "left", label: "Date", field: "date" },
-        {
-          name: "narration",
-          align: "left",
-          label: "Receipt-Vehicle",
-          field: "narration",
-        },
-        {
-          name: "item",
-          align: "left",
-          label: "Item/Payment",
-          field: "item",
-        },
-        {
-          name: "quantity",
-          align: "left",
-          label: "Qty.",
-          field: "quantity",
-          format: (val) => `${val === 0 || val === null ? "" : val}`,
-        },
-        {
-          name: "rate",
-          align: "left",
-          label: "Rate",
-          field: "rate",
-          format: (val) => `${val === 0 || val === null ? "" : val}`,
-        },
-        {
-          name: "debit",
-          align: "left",
-          label: "Debit",
-          field: "debit",
-          format: (val) =>
-            `${val === 0 || val === null ? "" : val.toLocaleString("en-IN")}`,
-        },
-        {
-          name: "credit",
-          align: "left",
-          label: "Credit",
-          field: "credit",
-          format: (val) =>
-            `${val === 0 || val === null ? "" : val.toLocaleString("en-IN")}`,
-        },
-        {
-          name: "total",
-          align: "left",
-          label: "Total",
-          field: "total",
-          format: (val) => `${val.toLocaleString("en-IN")}`,
-        },
-        { name: "action", align: "left", label: "", field: "action" },
-      ],
     };
   },
   data() {
@@ -600,9 +537,29 @@ export default {
       projects: [],
       projectOptions: [],
       showEditEntryModal: false,
+      creditColumns: [],
+      allColumns: [],
     };
   },
   methods: {
+    async getLedgerColumns() {
+      await AccountingService.getLedger(
+        this.clientId,
+        this.creditorId,
+        this.ledgerId
+      )
+        .then((response) => {
+          if (response.columns === null) {
+            this.creditColumns = defaultCreditColumns;
+            this.allColumns = deafaultAllCoumns;
+          } else {
+            this.creditColumns = getCreditColumns(response.columns);
+            this.allColumns = getAllColumns(response.columns);
+          }
+        })
+        .catch((err) => {});
+    },
+
     disableFutureDates(dateString) {
       const today = new Date();
       const inputDate = new Date(dateString); // QDate passes 'YYYY/MM/DD'
@@ -664,22 +621,10 @@ export default {
         .catch((err) => {});
     },
     filterProject(input, update, abort) {
-      update(() => {
-        const value = input.toLowerCase();
-        this.projectOptions = this.projects.filter((project) => {
-          return project.label.toLowerCase().indexOf(value) > -1;
-        });
-      });
+      this.projectOptions = filter(input, update, this.projects);
     },
-    getProjects() {
-      ProjectService.getProjectList(this.clientId)
-        .then((response) => {
-          this.projects.splice(0, this.projects.length);
-          this.projectOptions.splice(0, this.projectOptions.length);
-          this.projects = response.list;
-          this.projectOptions = response.list;
-        })
-        .catch((err) => {});
+    async getProjects() {
+      this.projects = await projectStore().loadProjects(this.clientId, false);
     },
     filterItem(input, update, abort) {
       update(() => {
@@ -745,17 +690,26 @@ export default {
         .onCancel(() => {})
         .onDismiss(() => {});
     },
-    getCreditor() {
-      AccountingService.getCreditor(this.clientId, this.creditorId)
-        .then((response) => {
-          this.creditor = response;
-        })
-        .catch((err) => {});
-    },
-    prepAndGenerate() {
-      let name = "Statement-" + this.creditor.name + ".pdf";
-      let title = this.creditor.name;
-      let address = this.creditor.address;
+    // getCreditor() {
+    //   AccountingService.getCreditor(this.clientId, this.creditorId)
+    //     .then((response) => {
+    //       this.creditor = response;
+    //     })
+    //     .catch((err) => {});
+    // },
+    async prepAndGenerate() {
+      let creditorName = await creditorStore().getCreditorName(
+        this.clientId,
+        this.creditorId,
+        false
+      );
+      let name = "Statement-" + creditorName + ".pdf";
+      let title = creditorName;
+      let address = await creditorStore().getCreditorAddress(
+        this.clientId,
+        this.creditorId,
+        false
+      );
       let period = this.fromDate + " To: " + this.toDate;
       let pdfColumns = this.columns.filter((col) => col.name !== "action");
       this.generatePDF(name, title, address, period, pdfColumns);
@@ -894,7 +848,7 @@ export default {
       this.getEntries();
     },
     getEntries() {
-      this.getCreditor();
+      // this.getCreditor();
 
       let request = {
         clientId: this.clientId,

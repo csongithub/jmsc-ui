@@ -123,14 +123,7 @@ export const commonMixin = {
       if (pref && pref.selectedFY) return pref.selectedFY;
       else return null;
     },
-    getUser() {
-      let auth = LocalStorage.getItem("auth");
-      if (auth && auth.user) {
-        return auth.user;
-      } else {
-        return null;
-      }
-    },
+
     getPermissions() {
       let auth = LocalStorage.getItem("auth");
       if (auth && auth.permissions) {
@@ -150,10 +143,24 @@ export const commonMixin = {
         return client.id;
       }
     },
-    getLogonId() {
+    getclientLogonId() {
       let client = this.getClient();
       if (client !== null) {
         return client.logonId;
+      }
+    },
+    getUser() {
+      let auth = LocalStorage.getItem("auth");
+      if (auth && auth.user) {
+        return auth.user;
+      } else {
+        return null;
+      }
+    },
+    getUserLogonId() {
+      let user = this.getUser();
+      if (user !== null) {
+        return user.logonId;
       }
     },
     getToken() {
@@ -184,7 +191,10 @@ export const commonMixin = {
       return !this.isNullOrUndefined(obj);
     },
     getErrorMessage(err) {
-      return err.response.data.message;
+      console.log(JSON.stringify(err));
+      return this.isNotNullOrUndefined(err.response)
+        ? err.response.data.message
+        : "";
     },
     notify(message) {
       this.$q.notify({
@@ -212,6 +222,13 @@ export const commonMixin = {
         message: message,
         caption: "",
         color: "primary",
+      });
+    },
+    success(message, color) {
+      this.$q.notify({
+        message: message,
+        caption: "",
+        color: color,
       });
     },
     fail(message) {

@@ -1,185 +1,286 @@
 <template>
-<div>
-  <q-table class="my-sticky-header-table"
-          :grid="grid"
-          :hide-header="grid"
-          dense
-          bordered
+  <div>
+    <q-table
+      class="my-sticky-header-table"
+      :grid="grid"
+      :hide-header="grid"
+      dense
+      bordered
+      flat
+      :rows="groupList"
+      :columns="columns"
+      row-key="id"
+      :loading="loading"
+      :pagination="groupPagination"
+      :filter="filter"
+      selection="single"
+      v-model:selected="selected"
+    >
+      <template v-slot:body-cell-groupLimit="props">
+        <q-td :props="props">
+          <div>
+            <q-icon :name="icons.rupee" />
+            {{ props.row.groupLimit.toLocaleString("en-IN") }}
+          </div>
+        </q-td>
+      </template>
+      <template v-slot:top-left>
+        <q-btn
+          class="q-mt-sm q-mr-sm text-capitalize"
+          color="primary"
+          label="New Group"
+          size="sm"
+          glossy
+          @click="openDialog('add')"
+          :icon="icons.plus"
+        />
+        <q-btn
+          class="q-mt-sm q-mr-sm text-capitalize"
+          outline
+          color="primary"
+          size="sm"
+          glossy
+          label="Refresh"
+          icon="refresh"
+          @click="getAllGroups()"
+        />
+      </template>
+      <template v-slot:body-selection="props">
+        <q-btn
+          class="pointer"
+          color="primary"
           flat
-          :rows="groupList"
-          :columns="columns"
-          row-key="id"
-          :loading="loading"
-          :pagination="groupPagination"
-          :filter="filter"
-          selection="single"
-          v-model:selected="selected"
-      >
-        <template v-slot:body-cell-groupLimit="props">
-          <q-td :props="props">
-            <div>
-            <q-icon :name="icons.rupee"/>
-                {{props.row.groupLimit.toLocaleString('en-IN')}}
-            </div>
-          </q-td>
-        </template>
-        <template v-slot:top-left>
-          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-               color="primary"
-               label="New Group" 
-               size="sm"
-               glossy
-               @click="openDialog('add')"
-               :icon="icons.plus"/>
-          <q-btn class="q-mt-sm q-mr-sm text-capitalize" 
-                outline
-                color="primary" 
-                size="sm"
-                glossy
-                label="Refresh"
-                icon="refresh" 
-                @click="getAllGroups()"/>
-        </template>
-        <template v-slot:body-selection="props">
-          <q-btn class="pointer" color="primary" flat round :icon="icons.rightArrow" @click="openGroupDetail(props.row)">
-            <q-tooltip>Open BG Group Details</q-tooltip>
-          </q-btn>
-        </template>
-        <template v-slot:top-right>
-          <q-btn class="q-mr-sm" 
-            flat
-            round
-            color="primary"
-            :icon="grid ? icons.list : icons.grid"
-            @click="grid = !grid">
-          </q-btn>
-          <q-input class="q-mr-sm"
-            borderless
-            dense
-            outlined
-            debounce="300"
-            v-model="filter"
-            placeholder="Search Group"
-          >
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-            <q-tooltip>Serch a BG Group</q-tooltip>
-          </q-input>
-        </template>
-  </q-table>
-  <q-dialog v-model="open"
-                    persistent
-                    @hide="onHide"
-                    ref="newGroupRef">
-    <q-card style="width: 1000px; max-width: 80vw;">
-      <q-bar class="bg-primary glossy">
-            {{ dialogLabel }}
-        <q-space />
-        <q-btn dense flat icon="close" v-close-popup>
-          <q-tooltip>Close</q-tooltip>
+          round
+          :icon="icons.rightArrow"
+          @click="openGroupDetail(props.row)"
+        >
+          <q-tooltip>Open BG Group Details</q-tooltip>
         </q-btn>
-      </q-bar>
-      <q-card-section>
-        <q-stepper v-model="step" color="primary" animated>
-          <q-step :name="1"  title="Configure Group" icon="settings" :done="step > 1">
-            <q-input v-model="group.groupName" dense outlined full-width lazy-rules label="Group Name"  
-                     :rules="[val => (val && val.length > 0) || 'Enter Group Name']"/>
-            <q-input type="textarea"  v-model="group.groupInfo" dense outlined full-width lazy-rules label="Group Info"
-                      :rules="[val => (val && val.length > 0) || 'EnterGroup Info']"/>
-            <q-input type="number" v-model="group.groupLimit" dense outlined full-width lazy-rules label="Group Limit"  
-                     :rules="[val => (val > 0) || 'Enter Group Limit']"/>
-            <q-stepper-navigation>
-              <q-btn class="text-capitalize" @click="step = 2" color="primary" label="Continue" />
-            </q-stepper-navigation>
-          </q-step>
+      </template>
+      <template v-slot:top-right>
+        <q-btn
+          class="q-mr-sm"
+          flat
+          round
+          color="primary"
+          :icon="grid ? icons.list : icons.grid"
+          @click="grid = !grid"
+        >
+        </q-btn>
+        <q-input
+          class="q-mr-sm"
+          borderless
+          dense
+          outlined
+          debounce="300"
+          v-model="filter"
+          placeholder="Search Group"
+        >
+          <template v-slot:append>
+            <q-icon name="search" />
+          </template>
+          <q-tooltip>Serch a BG Group</q-tooltip>
+        </q-input>
+      </template>
+    </q-table>
+    <q-dialog v-model="open" persistent @hide="onHide" ref="newGroupRef">
+      <q-card style="width: 1000px; max-width: 80vw">
+        <q-bar class="bg-primary glossy">
+          {{ dialogLabel }}
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip>Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+        <q-card-section>
+          <q-stepper v-model="step" color="primary" animated>
+            <q-step
+              :name="1"
+              title="Configure Group"
+              icon="settings"
+              :done="step > 1"
+            >
+              <q-input
+                v-model="group.groupName"
+                dense
+                outlined
+                full-width
+                lazy-rules
+                label="Group Name"
+                :rules="[
+                  (val) => (val && val.length > 0) || 'Enter Group Name',
+                ]"
+              />
+              <q-input
+                type="textarea"
+                v-model="group.groupInfo"
+                dense
+                outlined
+                full-width
+                lazy-rules
+                label="Group Info"
+                :rules="[(val) => (val && val.length > 0) || 'EnterGroup Info']"
+              />
+              <q-input
+                type="number"
+                v-model="group.groupLimit"
+                dense
+                outlined
+                full-width
+                lazy-rules
+                label="Group Limit"
+                :rules="[(val) => val > 0 || 'Enter Group Limit']"
+              />
+              <q-stepper-navigation>
+                <q-btn
+                  class="text-capitalize"
+                  @click="step = 2"
+                  color="primary"
+                  label="Continue"
+                />
+              </q-stepper-navigation>
+            </q-step>
 
-          <q-step :name="2" title="Select Deposits" caption="Optional" icon="create_new_folder" :done="step > 2">
-            <q-table class="my-sticky-header-table" title="Select Deposit(s)" dense bordered  flat
-                    :rows="deposits"
-                    :columns="facilityColumns"
-                    row-key="accountNumber"
-                    :loading="depositLoading"
-                    :pagination="facilityPagination"
-                    :filter="depositFilter"
-                    selection="multiple"
-                    @selection="printDetails"
-                    v-model:selected="depositSelected">
-                    <template v-slot:top-right>
-                      <q-input
-                        borderless
-                        dense
-                        outlined
-                        debounce="300"
-                        v-model="depositFilter"
-                        placeholder="Search Deposit">
-                        <template v-slot:append>
-                          <q-icon name="search" />
-                        </template>
-                      </q-input>
+            <q-step
+              :name="2"
+              title="Select Deposits"
+              caption="Optional"
+              icon="create_new_folder"
+              :done="step > 2"
+            >
+              <q-table
+                class="my-sticky-header-table"
+                title="Select Deposit(s)"
+                dense
+                bordered
+                flat
+                :rows="deposits"
+                :columns="facilityColumns"
+                row-key="accountNumber"
+                :loading="depositLoading"
+                :pagination="facilityPagination"
+                :filter="depositFilter"
+                selection="multiple"
+                @selection="printDetails"
+                v-model:selected="depositSelected"
+              >
+                <template v-slot:top-right>
+                  <q-input
+                    borderless
+                    dense
+                    outlined
+                    debounce="300"
+                    v-model="depositFilter"
+                    placeholder="Search Deposit"
+                  >
+                    <template v-slot:append>
+                      <q-icon name="search" />
                     </template>
-            </q-table>
-            <q-stepper-navigation>
-              <q-btn class="text-capitalize" @click="step = 3" color="primary" label="Continue" />
-              <q-btn class="q-ml-sm text-capitalize" flat @click="step = 1" color="primary" label="Back" />
-            </q-stepper-navigation>
-          </q-step>
-          <q-step :name="3" title="Select Guarantee" caption="Optional" icon="assignment">
-            <q-table class="my-sticky-header-table" title="Select Guarantee(s)" dense bordered  flat
-                    :rows="guarantees"
-                    :columns="facilityColumns"
-                    row-key="accountNumber"
-                    :loading="guaranteeLoading"
-                    :pagination="facilityPagination"
-                    :filter="depositFilter"
-                    selection="multiple"
-                    @selection="printGuaranteeDetails"
-                    v-model:selected="guaranteeSelected">
-                    <template v-slot:top-right>
-                      <q-input
-                        borderless
-                        dense
-                        outlined
-                        debounce="300"
-                        v-model="guaranteeFilter"
-                        placeholder="Search Deposit">
-                        <template v-slot:append>
-                          <q-icon name="search" />
-                        </template>
-                      </q-input>
+                  </q-input>
+                </template>
+              </q-table>
+              <q-stepper-navigation>
+                <q-btn
+                  class="text-capitalize"
+                  @click="step = 3"
+                  color="primary"
+                  label="Continue"
+                />
+                <q-btn
+                  class="q-ml-sm text-capitalize"
+                  flat
+                  @click="step = 1"
+                  color="primary"
+                  label="Back"
+                />
+              </q-stepper-navigation>
+            </q-step>
+            <q-step
+              :name="3"
+              title="Select Guarantee"
+              caption="Optional"
+              icon="assignment"
+            >
+              <q-table
+                class="my-sticky-header-table"
+                title="Select Guarantee(s)"
+                dense
+                bordered
+                flat
+                :rows="guarantees"
+                :columns="facilityColumns"
+                row-key="accountNumber"
+                :loading="guaranteeLoading"
+                :pagination="facilityPagination"
+                :filter="depositFilter"
+                selection="multiple"
+                @selection="printGuaranteeDetails"
+                v-model:selected="guaranteeSelected"
+              >
+                <template v-slot:top-right>
+                  <q-input
+                    borderless
+                    dense
+                    outlined
+                    debounce="300"
+                    v-model="guaranteeFilter"
+                    placeholder="Search Deposit"
+                  >
+                    <template v-slot:append>
+                      <q-icon name="search" />
                     </template>
-            </q-table>
-            <q-stepper-navigation>
-              <q-btn class="text-capitalize" color="primary" label="Finish" @click="createBGGroup"/>
-              <q-btn class="q-ml-sm text-capitalize" flat @click="step = 2" color="primary" label="Back"/>
-            </q-stepper-navigation>
-          </q-step>
-        </q-stepper>
-      </q-card-section>
-    </q-card>
-  </q-dialog>
-</div>
-<AdminAuth :options="openAuthorization" 
-               :title="authTitle"
-               :message="authMessage"
-               :data="authData"
-               @cancel="cancelAuth"
-               @success="postApproval"></AdminAuth>
+                  </q-input>
+                </template>
+              </q-table>
+              <q-stepper-navigation>
+                <q-btn
+                  class="text-capitalize"
+                  color="primary"
+                  label="Finish"
+                  @click="createBGGroup"
+                />
+                <q-btn
+                  class="q-ml-sm text-capitalize"
+                  flat
+                  @click="step = 2"
+                  color="primary"
+                  label="Back"
+                />
+              </q-stepper-navigation>
+            </q-step>
+          </q-stepper>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+  </div>
+  <AdminAuth
+    :options="openAuthorization"
+    :title="authTitle"
+    :message="authMessage"
+    :data="authData"
+    @cancel="cancelAuth"
+    @success="postApproval"
+  ></AdminAuth>
 </template>
 
 <script>
-import AdminAuth from "../../auth/AdminAuth.vue"
-import { fasTh, fasList} from "@quasar/extras/fontawesome-v5";
-import {matAdd, matRefresh, matArrowForwardIos, matCurrencyRupee} from "@quasar/extras/material-icons";
-import BgGroupService from "../../../services/BgGroupService"
-import CreditFacilityService from "../../../services/CreditFacilityService"
-import { commonMixin } from "../../../mixin/common"
-import { date } from 'quasar'
-import { ref } from 'vue'
+import AdminAuth from "../../auth/AdminAuth.vue";
+import { fasTh, fasList } from "@quasar/extras/fontawesome-v5";
+import {
+  matAdd,
+  matRefresh,
+  matArrowForwardIos,
+  matCurrencyRupee,
+} from "@quasar/extras/material-icons";
+import BgGroupService from "../../../services/BgGroupService";
+import CreditFacilityService from "../../../services/CreditFacilityService";
+import { commonMixin } from "../../../mixin/common";
+import { date } from "quasar";
+import { ref } from "vue";
 export default {
-  name: 'New FD',
+  name: "New FD",
   mixins: [commonMixin],
-  setup () {
+  setup() {
     return {
       selected: ref([]),
       depositSelected: ref([]),
@@ -191,7 +292,7 @@ export default {
         rightArrow: matArrowForwardIos,
         grid: fasTh,
         list: fasList,
-        rupee: matCurrencyRupee
+        rupee: matCurrencyRupee,
       },
       columns: [
         {
@@ -200,8 +301,8 @@ export default {
           label: "Group Name",
           align: "left",
           field: "groupName",
-          format: val => `${val}`,
-          sortable: true
+          format: (val) => `${val}`,
+          sortable: true,
         },
         {
           name: "groupInfo",
@@ -209,8 +310,8 @@ export default {
           label: "Group Info",
           align: "left",
           field: "groupInfo",
-          format: val => `${val}`,
-          sortable: true
+          format: (val) => `${val}`,
+          sortable: true,
         },
         {
           name: "groupLimit",
@@ -218,47 +319,77 @@ export default {
           label: "Group Limit",
           align: "left",
           field: "groupLimit",
-          format: val => val ? val.toLocaleString('en-IN') : 0,
-          sortable: true
-        }
+          format: (val) => (val ? val.toLocaleString("en-IN") : 0),
+          sortable: true,
+        },
       ],
       facilityColumns: [
         {
-          name: "accountNumber", required: true, label: "Account No", align: "left",  sortable: true,
-          field: row => row.accountNumber, format: val => `${val}`
+          name: "accountNumber",
+          required: true,
+          label: "Account No",
+          align: "left",
+          sortable: true,
+          field: (row) => row.accountNumber,
+          format: (val) => `${val}`,
         },
-        {name: "amount",  align: "left", label: "Amount", field: "amount", sortable: true},
         {
-          name: "openDate", align: "left", label: "Open Date", field: "openDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          name: "amount",
+          align: "left",
+          label: "Amount",
+          field: "amount",
+          sortable: true,
         },
         {
-          name: "maturityDate", align: "left", label: "Maturity Date", field: "maturityDate", sortable: true,
-          format: val => date.formatDate(val, 'DD-MM-YYYY')
+          name: "openDate",
+          align: "left",
+          label: "Open Date",
+          field: "openDate",
+          sortable: true,
+          format: (val) => date.formatDate(val, "DD-MM-YYYY"),
         },
-        {name: "issuerName",  align: "left", label: "Issuer Name", field: "issuerName", sortable: true},
-        {name: "issuerBranch",  align: "left", label: "Branch", field: "issuerBranch", sortable: true}
-      ]
-    }
+        {
+          name: "maturityDate",
+          align: "left",
+          label: "Maturity Date",
+          field: "maturityDate",
+          sortable: true,
+          format: (val) => date.formatDate(val, "DD-MM-YYYY"),
+        },
+        {
+          name: "issuerName",
+          align: "left",
+          label: "Issuer Name",
+          field: "issuerName",
+          sortable: true,
+        },
+        {
+          name: "issuerBranch",
+          align: "left",
+          label: "Branch",
+          field: "issuerBranch",
+          sortable: true,
+        },
+      ],
+    };
   },
-  watch: {
-  },
+  watch: {},
   components: {
-    AdminAuth
+    AdminAuth,
   },
   created() {},
   mounted() {
-    this.getAllGroups()
+    this.getAllGroups();
   },
   data() {
     return {
       clientId: this.getClientId(),
       openAuthorization: false,
-      authTitle: '',
-      authMessage: '',
+      authTitle: "",
+      authMessage: "",
       authData: null,
-      approvalType: '',
-      groupPagination:  { rowsPerPage: 10 },
+      approvalType: "",
+      groupPagination: { rowsPerPage: 10 },
       mode: "add",
       dialogLabel: "Create New Group",
       group: this.newGroup(),
@@ -272,126 +403,131 @@ export default {
       guarantees: [],
       guaranteeLoading: false,
       guaranteeFilter: "",
-      facilityPagination:  { rowsPerPage: 10 },
+      facilityPagination: { rowsPerPage: 10 },
     };
   },
   methods: {
-    newGroup () {
+    newGroup() {
       return {
-        groupName: '',
-        groupInfo: '',
-        groupLimit: 0
-      }
+        groupName: "",
+        groupInfo: "",
+        groupLimit: 0,
+      };
     },
     getAllGroups() {
       this.loading = true;
       BgGroupService.getAllGroups(this.clientId)
-        .then(response => {
-        this.groupList.splice(0, this.groupList.length)
-        this.groupList = response
-        console.log(JSON.stringify(this.groupList))
-        this.loading = false;
-      }).catch(err => {
-        this.loading = false;
-      });
+        .then((response) => {
+          this.groupList.splice(0, this.groupList.length);
+          this.groupList = response;
+          console.log(JSON.stringify(this.groupList));
+          this.loading = false;
+        })
+        .catch((err) => {
+          this.loading = false;
+        });
     },
     openDialog(mode) {
       this.mode = mode;
-      this.approvalType = 'create_bg_group'
-      this.openAuth('Are you an admin?', 
-                    'Only an admin can create BG Group',
-                    true,
-                    null)
+      this.approvalType = "create_bg_group";
+      this.openAuth(
+        "Are you an admin?",
+        "Only an admin can create BG Group",
+        true,
+        null
+      );
     },
     postApproval() {
-      if(this.approvalType === 'create_bg_group') {
+      if (this.approvalType === "create_bg_group") {
         if (this.mode === "add") {
-        this.dialogLabel = "Create New Group"
-      } else if (this.mode === "edit") {
-        this.group = this.selected[0]
-        console.log(JSON.stringify(this.group))
-        this.dialogLabel = "Update Group"
-      }
-      this.depositsList()
-      this.guaranteesList()
-      this.open = true;
+          this.dialogLabel = "Create New Group";
+        } else if (this.mode === "edit") {
+          this.group = this.selected[0];
+          console.log(JSON.stringify(this.group));
+          this.dialogLabel = "Update Group";
+        }
+        this.depositsList();
+        this.guaranteesList();
+        this.open = true;
       } else {
-
       }
     },
     closeDialog() {
-      this.open = false
+      this.open = false;
     },
     onHide() {
       this.reset();
-      this.mode='add'
-      this.step=ref(1)
+      this.mode = "add";
+      this.step = ref(1);
     },
     reset() {
       this.group = this.newGroup();
     },
     depositsList() {
-      let self = this
-      this.depositLoading = true
+      let self = this;
+      this.depositLoading = true;
       CreditFacilityService.getFreeCollateral(this.clientId)
-        .then(response => {
-        self.deposits.splice(0, this.deposits.length)
-        self.deposits = response
-        this.depositLoading = false;
-      }).catch(err => {
-        this.depositLoading = false;
-      });
+        .then((response) => {
+          self.deposits.splice(0, this.deposits.length);
+          self.deposits = response;
+          this.depositLoading = false;
+        })
+        .catch((err) => {
+          this.depositLoading = false;
+        });
     },
     guaranteesList() {
-      let self = this
-      this.guaranteeLoading = true
+      let self = this;
+      this.guaranteeLoading = true;
       CreditFacilityService.guaranteesForBgGroup(this.clientId)
-        .then(response => {
-        self.guarantees.splice(0, this.guarantees.length)
-        self.guarantees = response
-        this.guaranteeLoading = false;
-      }).catch(err => {
-        this.guaranteeLoading = false;
-      });
+        .then((response) => {
+          self.guarantees.splice(0, this.guarantees.length);
+          self.guarantees = response;
+          this.guaranteeLoading = false;
+        })
+        .catch((err) => {
+          this.guaranteeLoading = false;
+        });
     },
-    printDetails() {
-    },
-    printGuaranteeDetails() {
-    },
+    printDetails() {},
+    printGuaranteeDetails() {},
     createBGGroup() {
       let bgGroupDTO = {
-        "clientId": this.clientId,
-        "groupName": this.group.groupName,
-        "groupInfo": this.group.groupInfo,
-        "groupLimit": this.group.groupLimit,
-        "linkedBgList": this.guaranteeSelected,
-        "linkedFdList": this.depositSelected
-      }
-      console.log(JSON.stringify(bgGroupDTO))
+        clientId: this.clientId,
+        groupName: this.group.groupName,
+        groupInfo: this.group.groupInfo,
+        groupLimit: this.group.groupLimit,
+        linkedBgList: this.guaranteeSelected,
+        linkedFdList: this.depositSelected,
+      };
+      console.log(JSON.stringify(bgGroupDTO));
       BgGroupService.createGroup(bgGroupDTO)
-        .then(response => {
-        console.log('Bg Group Created: ' + JSON.stringify(response))
-        this.success('Group Created Successfully')
-        this.closeDialog()
-        this.getAllGroups()
-      }).catch(err => {
-        this.fail(this.getErrorMessage(err))
-      });
+        .then((response) => {
+          console.log("Bg Group Created: " + JSON.stringify(response));
+          this.success("Group Created Successfully");
+          this.closeDialog();
+          this.getAllGroups();
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
     },
     openGroupDetail(group) {
-      console.log(JSON.stringify(group.id))
-      this.$router.push({ name: "bgGroupDetails", params: { groupId: group.id}});
+      console.log(JSON.stringify(group.id));
+      this.$router.push({
+        name: "bgGroupDetails",
+        params: { account: group.id },
+      });
     },
-    openAuth(title, message, options, data){
-      this.authTitle = title,
-      this.authMessage = message
-      this.openAuthorization = options
-      this.authData = data
+    openAuth(title, message, options, data) {
+      (this.authTitle = title), (this.authMessage = message);
+      this.openAuthorization = options;
+      this.authData = data;
     },
     cancelAuth(val) {
-      this.openAuthorization = val
-    }
-  }
+      this.openAuthorization = val;
+    },
+  },
 };
 </script>
 <style>

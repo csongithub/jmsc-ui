@@ -1,7 +1,7 @@
 import { api } from "src/boot/axios";
 
 export default {
-  create(project) {
+  async create(project) {
     return api
       .post("/v1/projects/create_or_update/", project)
       .then((response) => {
@@ -29,8 +29,8 @@ export default {
         return Promise.reject(err);
       });
   },
-  getProjectList(client_id) {
-    return api
+  async getProjectList(client_id) {
+    return await api
       .get("/v1/projects/all/list/" + client_id)
       .then((response) => {
         let projects = response.data;

@@ -107,110 +107,112 @@
           </template>
 
           <template v-slot:top-right> </template>
+
           <template v-slot:body="props" v-if="items !== null">
             <q-tr :props="props" :ref="'itemRow-' + props.rowIndex">
-              <q-td key="receipt" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  style="max-width: 100px"
-                  v-model="props.row.receipt"
-                  dense
-                  outlined
-                  :placeholder="'challan'"
-                  @blur="
-                    validateChallan($event.target.value, props, props.rowIndex)
-                  "
-                />
+              <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                <template v-if="col.name === 'receipt'"
+                  ><q-input
+                    :disable="disable"
+                    class="custom-small-input"
+                    style="max-width: 100px"
+                    v-model="props.row.receipt"
+                    dense
+                    outlined
+                    :placeholder="'challan'"
+                    @blur="
+                      validateChallan(
+                        $event.target.value,
+                        props,
+                        props.rowIndex
+                      )
+                    "
+                /></template>
+                <template v-else-if="col.name === 'vehicle'"
+                  ><q-input
+                    :disable="disable"
+                    class="custom-small-input"
+                    style="max-width: 100px"
+                    v-model="props.row.vehicle"
+                    dense
+                    outlined
+                    placeholder="vehicle"
+                /></template>
+                <template v-else-if="col.name === 'item'"
+                  ><q-select
+                    :disable="disable"
+                    class="custom-small-select"
+                    style="max-width: 150px"
+                    dense
+                    outlined
+                    option-label="name"
+                    option-value="name"
+                    :options="itemOptions"
+                    v-model="props.row.item"
+                    option-disable="inactive"
+                    emit-value
+                    map-options
+                    use-input
+                    input-debounce="0"
+                    @filter="filterItem"
+                    @update:model-value="setRow(props.row)"
+                    hide-dropdown-icon
+                    :placeholder="props.row.item === null ? 'item' : ''"
+                  >
+                  </q-select
+                ></template>
+                <template v-else-if="col.name === 'quantity'"
+                  ><q-input
+                    :disable="disable"
+                    class="custom-small-input"
+                    type="number"
+                    style="max-width: 100px"
+                    v-model="props.row.quantity"
+                    dense
+                    outlined
+                    placeholder="qty"
+                    @update:model-value="setTotal(props.row)"
+                  >
+                    <template v-slot:append>
+                      <q-avatar>
+                        {{ props.row.unit }}
+                      </q-avatar>
+                    </template>
+                  </q-input></template
+                >
+                <template v-else-if="col.name === 'rate'">
+                  <q-input
+                    :disable="disable"
+                    class="custom-small-input"
+                    type="number"
+                    style="max-width: 100px"
+                    v-model="props.row.rate"
+                    dense
+                    outlined
+                    placeholder="rate"
+                    @update:model-value="setTotal(props.row)"
+                  />
+                </template>
+                <template v-else-if="col.name === 'credit'"
+                  ><span
+                    class="text-bold text-red"
+                    style="width: 150px; max-width: 200px"
+                  >
+                    {{ props.row.credit.toLocaleString("en-IN") + ".00" }}</span
+                  ></template
+                ><template v-else-if="col.name === 'remark'"
+                  ><q-input
+                    :disable="disable"
+                    class="custom-small-input"
+                    style="max-width: 100px"
+                    v-model="props.row.remark"
+                    dense
+                    outlined
+                    placeholder="remark"
+                /></template>
               </q-td>
 
-              <q-td key="item">
-                <q-select
-                  :disable="disable"
-                  class="custom-small-select"
-                  style="max-width: 150px"
-                  dense
-                  outlined
-                  option-label="name"
-                  option-value="name"
-                  :options="itemOptions"
-                  v-model="props.row.item"
-                  option-disable="inactive"
-                  emit-value
-                  map-options
-                  use-input
-                  input-debounce="0"
-                  @filter="filterItem"
-                  @update:model-value="setRow(props.row)"
-                  hide-dropdown-icon
-                  :placeholder="props.row.item === null ? 'item' : ''"
-                >
-                </q-select>
-              </q-td>
-
-              <q-td key="quantity" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  type="number"
-                  style="max-width: 100px"
-                  v-model="props.row.quantity"
-                  dense
-                  outlined
-                  placeholder="qty"
-                  @update:model-value="setTotal(props.row)"
-                >
-                  <template v-slot:append>
-                    <q-avatar>
-                      {{ props.row.unit }}
-                    </q-avatar>
-                  </template>
-                </q-input>
-              </q-td>
-              <q-td key="rate" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  type="number"
-                  style="max-width: 100px"
-                  v-model="props.row.rate"
-                  dense
-                  outlined
-                  placeholder="rate"
-                  @update:model-value="setTotal(props.row)"
-                />
-              </q-td>
-              <q-td key="vehicle" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  style="max-width: 100px"
-                  v-model="props.row.vehicle"
-                  dense
-                  outlined
-                  placeholder="vehicle"
-                />
-              </q-td>
-              <q-td key="remark" :props="props">
-                <q-input
-                  :disable="disable"
-                  class="custom-small-input"
-                  style="max-width: 100px"
-                  v-model="props.row.remark"
-                  dense
-                  outlined
-                  placeholder="remark"
-                />
-              </q-td>
-              <q-td
-                class="text-bold text-red"
-                key="credit"
-                :props="props"
-                style="width: 150px; max-width: 200px"
-              >
-                {{ props.row.credit.toLocaleString("en-IN") + ".00" }}
-              </q-td>
-              <q-td style="max-width: 20px">
+              <q-td v-if="props.cols.length > 0" style="max-width: 20px">
                 <q-icon
                   color="red"
                   size="10px"
@@ -289,7 +291,7 @@
               <template v-slot:no-option>
                 <q-item>
                   <q-item-section class="text-red">
-                    No Creditor Matched
+                    No Project Matched
                   </q-item-section>
                 </q-item>
               </template>
@@ -403,9 +405,11 @@
 import { fasPlus, fasTrash } from "@quasar/extras/fontawesome-v5";
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
-import ProjectService from "src/services/ProjectService";
 import { date } from "quasar";
-import { ref } from "vue";
+import { projectStore } from "src/pinia_stores/ProjectStore";
+import { filter } from "../Utils/filterUtils";
+import { defaultLedgerEntryColumns } from "../Utils/ledgerUtils";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
 AccountingService;
 export default {
   name: "Credit",
@@ -446,6 +450,7 @@ export default {
     // this.$emit("ledger-entry-init");
     this.disable = !(this.creditorId !== null && this.ledgerId !== null);
     this.getProjects();
+    this.getLedgerColumns();
     // this.getItems();
     window.addEventListener("keydown", this.keyDownHandlerForEntry);
     // this.$q.loading.show({
@@ -464,6 +469,7 @@ export default {
     },
     ledgerId(val) {
       this.disable = this.ledgerId === null || this.creditorId === null;
+      this.getLedgerColumns();
     },
     creditEntryDate(val) {
       const startDate = date.extractDate(this.startDate, "DD-MM-YYYY");
@@ -483,35 +489,6 @@ export default {
         add: fasPlus,
         delete: fasTrash,
       },
-      columns: [
-        {
-          name: "receipt",
-          align: "left",
-          label: "Challan/Receipt",
-          field: "receipt",
-        },
-        ,
-        // {
-        //   name: "date",
-        //   required: true,
-        //   label: "Date",
-        //   align: "left",
-        //   sortable: true,
-        // },
-        {
-          name: "item",
-          align: "left",
-          label: "item",
-          field: "item",
-          sortable: true,
-        },
-
-        { name: "quantity", align: "left", label: "Qty", field: "quantity" },
-        { name: "rate", align: "left", label: "Rate", field: "rate" },
-        { name: "vehicle", align: "left", label: "Vehicle", field: "vehicle" },
-        { name: "remark", align: "left", label: "Note", field: "remark" },
-        { name: "credit", align: "left", label: "Total", field: "credit" },
-      ],
       paymentColumns: [
         {
           name: "debit",
@@ -553,9 +530,31 @@ export default {
       items: [],
       keysPressed: null,
       debitEntries: this.initiate(),
+      columns: [],
     };
   },
   methods: {
+    getLedgerColumns() {
+      AccountingService.getLedger(this.clientId, this.creditorId, this.ledgerId)
+        .then((response) => {
+          if (response.columns === null) {
+            this.columns = defaultLedgerEntryColumns;
+          } else {
+            var temp = JSON.parse(response.columns);
+            var selectedColumns = [];
+            for (let col of temp) {
+              if (col.selected) {
+                if (col.customeLabel !== null && col.customeLabel !== "")
+                  col.label = col.customeLabel;
+                selectedColumns.push(col);
+              }
+            }
+
+            this.columns = selectedColumns;
+          }
+        })
+        .catch((err) => {});
+    },
     switchEntryMode() {
       this.$emit("changeMode");
     },
@@ -582,13 +581,13 @@ export default {
         credit: 0.0,
         entryType: null,
         debit: 0.0,
-        narration: null,
         paymentMode: null,
         paymentId: null,
         user: null,
       };
     },
     postEntries(entries) {
+      const index = this.columns.findIndex((obj) => obj.name === "receipt");
       entries.forEach((entry) => {
         entry.clientId = this.clientId;
         entry.creditorId = this.creditorId;
@@ -596,6 +595,7 @@ export default {
         entry.projectId = this.selectedProjectId;
         entry.date = this.creditEntryDate;
         entry.user = this.user;
+        entry.validateOnReceipt = index > -1 ? true : false;
         if (this.updatePayments) {
           entry.entryType = "DEBIT";
         } else {
@@ -616,8 +616,8 @@ export default {
             }
             this.$q.notify({
               message: message,
-              color: "green",
-              position: "center",
+              color: "secondary",
+              position: "bottom",
               timeout: 0,
               actions: [
                 {
@@ -636,15 +636,8 @@ export default {
           this.fail(this.getErrorMessage(err));
         });
     },
-    getProjects() {
-      ProjectService.getProjectList(this.clientId)
-        .then((response) => {
-          this.projects.splice(0, this.projects.length);
-          this.projectOptions.splice(0, this.projectOptions.length);
-          this.projects = response.list;
-          this.projectOptions = response.list;
-        })
-        .catch((err) => {});
+    async getProjects() {
+      this.projects = await projectStore().loadProjects(this.clientId, false);
     },
     keyDownHandlerForEntry(event) {
       // console.log(" keydown:", event.key);
@@ -692,12 +685,7 @@ export default {
       else this.debitEntries.push(this.newEntry());
     },
     filterProject(input, update, abort) {
-      update(() => {
-        const value = input.toLowerCase();
-        this.projectOptions = this.projects.filter((project) => {
-          return project.label.toLowerCase().indexOf(value) > -1;
-        });
-      });
+      this.projectOptions = filter(input, update, this.projects);
     },
     filterItem(input, update, abort) {
       update(() => {
@@ -728,7 +716,7 @@ export default {
     setTotal(row) {
       row.credit = Number(row.rate) * Number(row.quantity);
     },
-    validateChallan(val, props, rowIndex) {
+    async validateChallan(val, props, rowIndex) {
       for (let index = 0; index < this.entries.length; index++) {
         if (rowIndex === index) {
           continue;
@@ -740,7 +728,7 @@ export default {
             val.trim().toLowerCase()
         ) {
           props.row.receipt = null;
-          console.log(JSON.stringify(props));
+          // console.log(JSON.stringify(props));
           this.$q.notify({
             message: "Duplicate Receipt",
             caption: "Challan/Receipt: " + this.entries[index].receipt,
@@ -768,31 +756,49 @@ export default {
         date: this.creditEntryDate,
         receipt: val,
       };
+
       AccountingService.findEntryByDateAndChallan(req)
         .then((response) => {
           if (response.id !== null) {
-            this.$q.notify({
-              type: "warning",
-              message: "Duplicate Entry Found For Receipt: " + response.receipt,
-              timeout: 0,
-              caption:
-                "Date: " +
-                response.date +
-                ", Item: " +
-                response.item +
-                ", Qty: " +
-                response.quantity,
-              actions: [
-                {
-                  icon: "close",
-                  color: "white",
-                  round: true,
-                  handler: () => {
-                    /* ... */
-                  },
-                },
-              ],
-            });
+            creditorStore()
+              .getLedgerName(
+                this.clientId,
+                this.creditorId,
+                response.ledgerId,
+                false
+              )
+              .then((ledger) => {
+                this.$q.notify({
+                  type: "warning",
+                  message:
+                    "Duplicate Entry Found For Receipt: " +
+                    response.receipt +
+                    ", Ledger: " +
+                    ledger,
+                  timeout: 0,
+                  caption:
+                    "Date: " +
+                    response.date +
+                    ", Item: " +
+                    response.item +
+                    ", Qty: " +
+                    response.quantity,
+
+                  actions: [
+                    {
+                      icon: "close",
+                      color: "white",
+                      round: true,
+                      handler: () => {
+                        /* ... */
+                      },
+                    },
+                  ],
+                });
+              });
+          }
+          if (response.ledgerId === this.ledgerId) {
+            props.row.receipt = null;
           }
         })
         .catch((err) => {});

@@ -4,26 +4,24 @@
       <q-page class="row justify-center items-center bg-white text-bold">
         {{ "Coming Soon" }}
       </q-page>
-    </q-page-container>
-  </q-layout>
+    </q-page-container></q-layout
+  >
 </template>
 
 <script>
-import { commonMixin } from "src/mixin/common";
-
 export default {
-  mixins: [commonMixin],
+  name: "VoucherStatements",
+
   components: {},
-  async mounted() {
-    this.initiateData();
+  mounted() {},
+  beforeUnmount() {},
+  computed: {},
+  setup() {
+    return {};
   },
   data() {
     return {};
   },
-  methods: {
-    async initiateData() {},
-  },
+  methods: {},
 };
 </script>
-
-<style></style>

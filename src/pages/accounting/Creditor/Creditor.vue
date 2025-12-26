@@ -236,12 +236,13 @@
               <q-tr :props="props" ref="itemRow">
                 <q-td key="name" :props="props">
                   <q-input
+                    class="custom-small-input"
                     v-if="props.row.mode === 'edit'"
                     ref="nameRef"
                     v-model="props.row.name"
                     dense
                     outlined
-                    label="item name"
+                    placeholder="item"
                     @update:model-value="
                       (val) => {
                         props.row.name = val.toUpperCase();
@@ -255,12 +256,13 @@
                 </q-td>
                 <q-td key="unit" :props="props">
                   <q-input
+                    class="custom-small-input"
                     v-if="props.row.mode === 'edit'"
                     ref="unitRef"
                     v-model="props.row.unit"
                     dense
                     outlined
-                    label="item unit"
+                    placeholder="unit"
                     @update:model-value="
                       (val) => {
                         props.row.unit = val.toUpperCase();
@@ -274,13 +276,14 @@
                 </q-td>
                 <q-td key="rate" :props="props">
                   <q-input
+                    class="custom-small-input"
                     v-if="props.row.mode === 'edit'"
                     ref="rateRef"
                     type="number"
                     v-model="props.row.rate"
                     dense
                     outlined
-                    label="rate per unit"
+                    placeholder="rate per unit"
                     lazy-rules
                     :rules="[(val) => val > 0 || '']"
                     style="max-width: 150px"
@@ -290,10 +293,11 @@
                 <q-td>
                   <q-icon
                     v-if="props.row.mode === 'edit'"
-                    color="primary"
+                    color="green"
                     class="q-mr-sm pointer"
                     :name="icons.save"
                     @click="addItemToList(props.row)"
+                    size="10px"
                   />
                   <q-icon
                     v-if="props.row.mode === 'edit'"
@@ -301,13 +305,15 @@
                     class="q-mr-sm pointer"
                     :name="icons.delete"
                     @click="removeItem(props.rowIndex)"
+                    size="10px"
                   />
                   <q-icon
                     v-else
-                    color="primary"
+                    color="grey"
                     class="q-mr-sm pointer"
                     :name="icons.edit"
                     @click="props.row.mode = 'edit'"
+                    size="10px"
                   />
                 </q-td>
               </q-tr>
@@ -336,13 +342,14 @@ import {
   fasTrash,
 } from "@quasar/extras/fontawesome-v5";
 import { reset } from "numeral";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
 
 export default {
   name: "Creditors",
   mixins: [commonMixin],
   components: {},
   mounted() {
-    this.getAllCreditors();
+    this.getAllCreditors(false);
     this.getParties();
     window.addEventListener("keydown", this.globalKeyDownHandler);
   },
@@ -441,19 +448,17 @@ export default {
         .then((response) => {
           if (event !== "item saved")
             this.success("Creditor Saved Successfully");
-          this.getAllCreditors();
+          this.getAllCreditors(true);
           this.showCreate = false;
           this.disableSelectCreditor = false;
         })
         .catch((err) => {});
     },
-    getAllCreditors() {
-      AccountingService.getAllCreditors(this.clientId)
-        .then((response) => {
-          this.options = response.list;
-          this.creditors = response.list;
-        })
-        .catch((err) => {});
+    async getAllCreditors(refresh) {
+      this.creditors = await creditorStore().loadCreditors(
+        this.clientId,
+        refresh
+      );
     },
     getParties() {
       PartyService.list(this.clientId)
@@ -510,4 +515,31 @@ export default {
 };
 </script>
 
-<style lang="sass" scoped></style>
+<style lang="scss" scoped>
+.hint-red .q-field__messages {
+  color: red !important;
+}
+.custom-small-input,
+.custom-small-select {
+  // Target the control and marginal areas for height adjustment
+  :deep(.q-field__control),
+  :deep(.q-field__marginal) {
+    height: 32px !important; // Adjust height as needed
+    min-height: 32px !important; // Ensure minimum height
+  }
+  // Adjust padding for the native input element
+  :deep(.q-field__control),
+  :deep(.q-field__native) {
+    padding: 0 4px; // Adjust padding as needed
+  }
+  // Adjust font size for the native input text
+  :deep(.q-field__native) {
+    font-size: 12px; // Adjust font size as needed
+    min-height: 32px !important; // Ensure minimum height for native element
+  }
+  // Adjust label position for smaller inputs
+  :deep(.q-field__label) {
+    top: 6px !important; // Adjust label position
+  }
+}
+</style>
