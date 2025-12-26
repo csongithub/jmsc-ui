@@ -412,6 +412,7 @@ import {
   getAllColumns,
   getCreditColumns,
 } from "../Utils/ledgerUtils";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
 
 export default {
   name: "Statement",
@@ -689,17 +690,26 @@ export default {
         .onCancel(() => {})
         .onDismiss(() => {});
     },
-    getCreditor() {
-      AccountingService.getCreditor(this.clientId, this.creditorId)
-        .then((response) => {
-          this.creditor = response;
-        })
-        .catch((err) => {});
-    },
-    prepAndGenerate() {
-      let name = "Statement-" + this.creditor.name + ".pdf";
-      let title = this.creditor.name;
-      let address = this.creditor.address;
+    // getCreditor() {
+    //   AccountingService.getCreditor(this.clientId, this.creditorId)
+    //     .then((response) => {
+    //       this.creditor = response;
+    //     })
+    //     .catch((err) => {});
+    // },
+    async prepAndGenerate() {
+      let creditorName = await creditorStore().getCreditorName(
+        this.clientId,
+        this.creditorId,
+        false
+      );
+      let name = "Statement-" + creditorName + ".pdf";
+      let title = creditorName;
+      let address = await creditorStore().getCreditorAddress(
+        this.clientId,
+        this.creditorId,
+        false
+      );
       let period = this.fromDate + " To: " + this.toDate;
       let pdfColumns = this.columns.filter((col) => col.name !== "action");
       this.generatePDF(name, title, address, period, pdfColumns);
@@ -838,7 +848,7 @@ export default {
       this.getEntries();
     },
     getEntries() {
-      this.getCreditor();
+      // this.getCreditor();
 
       let request = {
         clientId: this.clientId,

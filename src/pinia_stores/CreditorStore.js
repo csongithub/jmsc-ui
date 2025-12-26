@@ -12,7 +12,7 @@ export const creditorStore = defineStore("creditorStore", {
       const response = await AccountingService.getAllCreditors(client_id);
       this.creditors = response.list;
     },
-    async getCreditorName(clientId, creditor_id, force_refresh = true) {
+    async getCreditorInternal(clientId, creditor_id, force_refresh) {
       // window.alert(clientId);
       if (this.creditors.length === 0 || force_refresh) {
         await this.fetchCreditorsFromBackend(clientId);
@@ -24,6 +24,25 @@ export const creditorStore = defineStore("creditorStore", {
           break;
         }
       }
+      return creditor;
+    },
+    async getCreditorAddress(clientId, creditor_id, force_refresh = true) {
+      const creditor = await this.getCreditorInternal(
+        clientId,
+        creditor_id,
+        force_refresh
+      );
+      if (creditor !== null) {
+        return creditor.text1;
+      }
+    },
+    async getCreditorName(clientId, creditor_id, force_refresh = true) {
+      const creditor = await this.getCreditorInternal(
+        clientId,
+        creditor_id,
+        force_refresh
+      );
+
       if (creditor !== null) {
         return creditor.label;
       }
