@@ -31,9 +31,9 @@
             <q-tab name="dashboard" label="Dashboard" />
             <q-tab name="project" label="Projects" />
             <q-tab name="capitalaccount" label="Capitals" />
+            <q-tab name="voucher" label="Voucher" />
             <q-tab name="creditor" label="Creditors" />
             <q-tab name="ledger" label="Leadger" />
-            <q-tab name="voucher" label="Voucher" />
           </q-tabs>
           <q-separator />
           <q-tab-panels v-model="tab" animated>
@@ -46,14 +46,14 @@
             <q-tab-panel name="capitalaccount">
               <CapitalAccountWrapper></CapitalAccountWrapper>
             </q-tab-panel>
+            <q-tab-panel name="voucher">
+              <Voucher></Voucher>
+            </q-tab-panel>
             <q-tab-panel name="creditor">
               <Creditor></Creditor>
             </q-tab-panel>
             <q-tab-panel name="ledger">
               <Leadger></Leadger>
-            </q-tab-panel>
-            <q-tab-panel name="voucher">
-              <Voucher></Voucher>
             </q-tab-panel>
           </q-tab-panels>
         </q-card>

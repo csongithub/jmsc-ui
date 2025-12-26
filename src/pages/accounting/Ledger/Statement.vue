@@ -411,7 +411,7 @@ import {
   defaultCreditColumns,
   getAllColumns,
   getCreditColumns,
-} from "./ledgerUtils";
+} from "../Utils/ledgerUtils";
 
 export default {
   name: "Statement",

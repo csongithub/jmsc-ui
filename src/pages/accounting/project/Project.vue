@@ -346,7 +346,6 @@ export default {
     return {
       selected: ref([]),
       visibleColumns: ref([
-        "clientName",
         "nickName",
         "fullName",
         "packageNo",

@@ -143,13 +143,21 @@
             <span v-else>{{ props.row.note }}</span>
           </q-td>
           <q-td key="credit" :props="props">{{
-            props.row.credit.toLocaleString("en-IN")
+            props.row !== null && props.row.credit !== 0
+              ? props.row.credit.toLocaleString("en-IN")
+              : ""
           }}</q-td>
           <q-td key="debit" :props="props"
-            >{{ props.row.debit.toLocaleString("en-IN") }}
+            >{{
+              props.row !== null && props.row.debit !== 0
+                ? props.row.debit.toLocaleString("en-IN")
+                : ""
+            }}
           </q-td>
           <q-td key="balance" :props="props">{{
-            props.row.balance.toLocaleString("en-IN")
+            props.row !== null && props.row.balance !== 0
+              ? props.row.balance.toLocaleString("en-IN")
+              : ""
           }}</q-td>
         </q-tr>
       </template>

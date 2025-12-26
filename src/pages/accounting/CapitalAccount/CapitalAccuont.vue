@@ -61,6 +61,9 @@
           <q-td key="accountType" :props="props">{{
             props.row.accountType
           }}</q-td>
+          <q-td key="accountOpeningDate" :props="props">{{
+            props.row.accountOpeningDate
+          }}</q-td>
           <q-td key="balance" :props="props">{{
             props.row.balance.toLocaleString("en-IN")
           }}</q-td>
@@ -269,18 +272,26 @@ export default {
           sortable: true,
         },
         {
+          name: "accountOpeningDate",
+          align: "left",
+          label: "A/C Opening Date",
+          field: "accountOpeningDate",
+        },
+        {
           name: "balance",
           align: "left",
           label: "Balance",
           field: "balance",
           sortable: true,
         },
+
         {
           name: "lastUpdated",
           align: "left",
           label: "Last Transaction",
           field: "lastUpdated",
         },
+
         {
           name: "status",
           align: "left",

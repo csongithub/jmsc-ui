@@ -555,7 +555,7 @@ import Statement from "./Statement.vue";
 import { creditorStore } from "src/pinia_stores/CreditorStore";
 import draggable from "vuedraggable";
 import { filter, filterOnName } from "../Utils/filterUtils";
-import { defaultLedgerEntryColumns } from "./ledgerUtils";
+import { defaultLedgerEntryColumns } from "../Utils/ledgerUtils";
 
 export default {
   name: "Ledger",

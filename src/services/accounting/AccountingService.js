@@ -109,7 +109,7 @@ export default {
         return Promise.reject(err);
       });
   },
-  findEntryByDateAndChallan(req) {
+  async findEntryByDateAndChallan(req) {
     return api
       .post("/v1/accounting/ledger/entries/validate_by_date_and_challan", req)
       .then((response) => {

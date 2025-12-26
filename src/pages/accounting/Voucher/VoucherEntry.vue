@@ -201,7 +201,7 @@
             </q-td>
             <q-td key="creditorId" :props="props">
               <q-select
-                :disable="props.row.group !== 'Party Advance'"
+                :disable="props.row.group !== 'Advance'"
                 class="custom-small-select"
                 dense
                 outlined

@@ -405,12 +405,11 @@
 import { fasPlus, fasTrash } from "@quasar/extras/fontawesome-v5";
 import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
-import ProjectService from "src/services/ProjectService";
 import { date } from "quasar";
-import { ref } from "vue";
 import { projectStore } from "src/pinia_stores/ProjectStore";
 import { filter } from "../Utils/filterUtils";
-import { defaultLedgerEntryColumns } from "./ledgerUtils";
+import { defaultLedgerEntryColumns } from "../Utils/ledgerUtils";
+import { creditorStore } from "src/pinia_stores/CreditorStore";
 AccountingService;
 export default {
   name: "Credit",
@@ -588,6 +587,7 @@ export default {
       };
     },
     postEntries(entries) {
+      const index = this.columns.findIndex((obj) => obj.name === "receipt");
       entries.forEach((entry) => {
         entry.clientId = this.clientId;
         entry.creditorId = this.creditorId;
@@ -595,6 +595,7 @@ export default {
         entry.projectId = this.selectedProjectId;
         entry.date = this.creditEntryDate;
         entry.user = this.user;
+        entry.validateOnReceipt = index > -1 ? true : false;
         if (this.updatePayments) {
           entry.entryType = "DEBIT";
         } else {
@@ -715,7 +716,7 @@ export default {
     setTotal(row) {
       row.credit = Number(row.rate) * Number(row.quantity);
     },
-    validateChallan(val, props, rowIndex) {
+    async validateChallan(val, props, rowIndex) {
       for (let index = 0; index < this.entries.length; index++) {
         if (rowIndex === index) {
           continue;
@@ -727,7 +728,7 @@ export default {
             val.trim().toLowerCase()
         ) {
           props.row.receipt = null;
-          console.log(JSON.stringify(props));
+          // console.log(JSON.stringify(props));
           this.$q.notify({
             message: "Duplicate Receipt",
             caption: "Challan/Receipt: " + this.entries[index].receipt,
@@ -755,31 +756,49 @@ export default {
         date: this.creditEntryDate,
         receipt: val,
       };
+
       AccountingService.findEntryByDateAndChallan(req)
         .then((response) => {
           if (response.id !== null) {
-            this.$q.notify({
-              type: "warning",
-              message: "Duplicate Entry Found For Receipt: " + response.receipt,
-              timeout: 0,
-              caption:
-                "Date: " +
-                response.date +
-                ", Item: " +
-                response.item +
-                ", Qty: " +
-                response.quantity,
-              actions: [
-                {
-                  icon: "close",
-                  color: "white",
-                  round: true,
-                  handler: () => {
-                    /* ... */
-                  },
-                },
-              ],
-            });
+            creditorStore()
+              .getLedgerName(
+                this.clientId,
+                this.creditorId,
+                response.ledgerId,
+                false
+              )
+              .then((ledger) => {
+                this.$q.notify({
+                  type: "warning",
+                  message:
+                    "Duplicate Entry Found For Receipt: " +
+                    response.receipt +
+                    ", Ledger: " +
+                    ledger,
+                  timeout: 0,
+                  caption:
+                    "Date: " +
+                    response.date +
+                    ", Item: " +
+                    response.item +
+                    ", Qty: " +
+                    response.quantity,
+
+                  actions: [
+                    {
+                      icon: "close",
+                      color: "white",
+                      round: true,
+                      handler: () => {
+                        /* ... */
+                      },
+                    },
+                  ],
+                });
+              });
+          }
+          if (response.ledgerId === this.ledgerId) {
+            props.row.receipt = null;
           }
         })
         .catch((err) => {});
