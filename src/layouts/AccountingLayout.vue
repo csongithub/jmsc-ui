@@ -3,14 +3,25 @@
     <q-header elevated>
       <q-toolbar class="glossy">
         <q-toolbar-title class="text-white text-bold">
-          {{ "JMSC-ACCOUNTING" }}
+          <q-icon
+            class="q-mr-sm"
+            :name="icons.back"
+            style="cursor: pointer"
+            @click="back"
+            color="grey"
+          ></q-icon>
+          <span class="text-title text-grey"> {{ "JMSC" }}</span>
         </q-toolbar-title>
+
         <q-space />
+        <span class="text-grey text-subtitle2 q-mr-sm"
+          >Welcome {{ userName }} !</span
+        >
         <q-icon
           :name="icons.logout"
-          color="white"
+          color="red"
           style="cursor: pointer"
-          size="sm"
+          size="xs"
           @click="logout"
         ></q-icon>
       </q-toolbar>
@@ -71,7 +82,7 @@ import Creditor from "../pages/accounting/Creditor/Creditor.vue";
 import Leadger from "../pages/accounting/Ledger/Leadger.vue";
 import Voucher from "src/pages/accounting/Voucher/Voucher.vue";
 import CapitalAccountWrapper from "src/pages/accounting/CapitalAccount/CapitalAccountWrapper.vue";
-import { fasPowerOff } from "@quasar/extras/fontawesome-v5";
+import { fasBackward, fasPowerOff } from "@quasar/extras/fontawesome-v5";
 
 import { ref } from "vue";
 
@@ -86,22 +97,34 @@ export default {
     CapitalAccountWrapper,
   },
   created() {},
-  mounted() {},
+  mounted() {
+    if (this.isAdmin()) {
+      this.userName = "Admin";
+    } else {
+      this.userName = this.getUser().name;
+    }
+  },
   setup() {
     return {
       tab: ref("dashboard"),
       icons: {
         logout: fasPowerOff,
+        back: fasBackward,
       },
     };
   },
   data() {
-    return {};
+    return {
+      userName: null,
+    };
   },
   methods: {
     logout() {
       LocalStorage.clear();
       this.openLoginLayout();
+    },
+    back() {
+      this.$router.push({ name: "home" });
     },
   },
 };
