@@ -22,7 +22,12 @@
               dense
               outlined
               v-model="creditEntryDate"
-              :rules="['DD-MM-YYYY']"
+              @blur="validateEntryDate($event.target.value)"
+              :rules="[
+                (val) => !!val || 'required',
+                (val) =>
+                  /^\d{2}-\d{2}-\d{4}$/.test(val) || 'Invalid date format',
+              ]"
               placeholder="dd-mm-yyyy"
             >
               <template v-slot:append>
@@ -37,6 +42,8 @@
                       v-model="creditEntryDate"
                       mask="DD-MM-YYYY"
                       minimal
+                      lazy-rules
+                      @update:model-value="$refs.qDateProxy.hide()"
                     />
                   </q-popup-proxy>
                 </q-icon>
@@ -237,7 +244,6 @@
         >
           <template v-slot:top="">
             <q-input
-              bg-color="secondary"
               filled
               class="custom-small-input"
               style="max-width: 150px"
@@ -260,13 +266,14 @@
                       v-model="creditEntryDate"
                       mask="DD-MM-YYYY"
                       minimal
+                      lazy-rules
+                      @update:model-value="$refs.qDateProxy.hide()"
                     />
                   </q-popup-proxy>
                 </q-icon>
               </template>
             </q-input>
             <q-select
-              bg-color="secondary"
               filled
               class="q-ml-sm custom-small-select"
               dense
@@ -346,7 +353,14 @@
                   class="custom-small-select"
                   dense
                   outlined
-                  :options="['Cheque', 'Online', 'UPI', 'Cash']"
+                  :options="[
+                    'Cheque',
+                    'Online',
+                    'UPI',
+                    'Cash',
+                    'Supply',
+                    'Other',
+                  ]"
                   v-model="props.row.paymentMode"
                   :placeholder="
                     props.row.paymentMode === null ? 'payment mode' : ''
@@ -471,17 +485,7 @@ export default {
       this.disable = this.ledgerId === null || this.creditorId === null;
       this.getLedgerColumns();
     },
-    creditEntryDate(val) {
-      const startDate = date.extractDate(this.startDate, "DD-MM-YYYY");
-      const entryDate = date.extractDate(val, "DD-MM-YYYY");
-      if (startDate > entryDate) {
-        this.creditEntryDate = null;
-        this.$q.notify({
-          message: "Invalid Date",
-          caption: "Entry date can not be before ledger opening date",
-        });
-      }
-    },
+    creditEntryDate(val) {},
   },
   setup() {
     return {
@@ -534,6 +538,17 @@ export default {
     };
   },
   methods: {
+    validateEntryDate(val) {
+      const startDate = date.extractDate(this.startDate, "DD-MM-YYYY");
+      const entryDate = date.extractDate(val, "DD-MM-YYYY");
+      if (startDate > entryDate) {
+        this.creditEntryDate = null;
+        this.$q.notify({
+          message: "Invalid Date",
+          caption: "Entry date can not be before ledger opening date",
+        });
+      }
+    },
     getLedgerColumns() {
       AccountingService.getLedger(this.clientId, this.creditorId, this.ledgerId)
         .then((response) => {

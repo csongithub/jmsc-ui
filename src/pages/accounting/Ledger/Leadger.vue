@@ -293,6 +293,8 @@
                             v-model="ledger.startDate"
                             mask="DD-MM-YYYY"
                             minimal
+                            lazy-rules
+                            @update:model-value="$refs.qDateProxy.hide()"
                           />
                         </q-popup-proxy>
                       </q-icon>

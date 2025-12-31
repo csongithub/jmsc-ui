@@ -22,7 +22,11 @@
             dense
             outlined
             v-model="fromDate"
-            :rules="['DD-MM-YYYY']"
+            @blur="validateFromDate($event.target.value)"
+            :rules="[
+              (val) => !!val || 'required',
+              (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || 'Invalid date format',
+            ]"
             placeholder="dd-mm-yyyy"
           >
             <template v-slot:append>
@@ -33,7 +37,13 @@
                   transition-show="scale"
                   transition-hide="scale"
                 >
-                  <q-date v-model="fromDate" mask="DD-MM-YYYY" minimal />
+                  <q-date
+                    v-model="fromDate"
+                    mask="DD-MM-YYYY"
+                    minimal
+                    lazy-rules
+                    @update:model-value="$refs.qDateProxy.hide()"
+                  />
                 </q-popup-proxy>
               </q-icon>
             </template>
@@ -47,7 +57,10 @@
             dense
             outlined
             v-model="toDate"
-            :rules="['DD-MM-YYYY']"
+            :rules="[
+              (val) => !!val || 'required',
+              (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || 'Invalid date format',
+            ]"
             placeholder="dd-mm-yyyy"
           >
             <template v-slot:append>
@@ -58,7 +71,13 @@
                   transition-show="scale"
                   transition-hide="scale"
                 >
-                  <q-date v-model="toDate" mask="DD-MM-YYYY" minimal />
+                  <q-date
+                    v-model="toDate"
+                    mask="DD-MM-YYYY"
+                    minimal
+                    lazy-rules
+                    @update:model-value="$refs.qDateProxy.hide()"
+                  />
                 </q-popup-proxy>
               </q-icon>
             </template>
@@ -460,17 +479,7 @@ export default {
       this.columns = [];
       this.entries = [];
     },
-    fromDate(val) {
-      const startDate = date.extractDate(this.startDate, "DD-MM-YYYY");
-      const statementFromDate = date.extractDate(val, "DD-MM-YYYY");
-      if (startDate > statementFromDate) {
-        this.fromDate = null;
-        this.$q.notify({
-          message: "Invalid Date",
-          caption: "From date can not be before ledger opening date",
-        });
-      }
-    },
+    fromDate(val) {},
   },
   setup() {
     return {
@@ -542,6 +551,17 @@ export default {
     };
   },
   methods: {
+    validateFromDate(val) {
+      const startDate = date.extractDate(this.startDate, "DD-MM-YYYY");
+      const statementFromDate = date.extractDate(val, "DD-MM-YYYY");
+      if (startDate > statementFromDate) {
+        this.fromDate = null;
+        this.$q.notify({
+          message: "Invalid Date",
+          caption: "From date can not be before ledger opening date",
+        });
+      }
+    },
     async getLedgerColumns() {
       await AccountingService.getLedger(
         this.clientId,

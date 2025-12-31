@@ -290,6 +290,34 @@
                   />
                   <span v-else>{{ props.row.rate }}</span>
                 </q-td>
+                <q-td key="gst" :props="props">
+                  <q-checkbox
+                    v-if="props.row.mode === 'edit'"
+                    color="secondary"
+                    class="q-pa-non"
+                    size="xs"
+                    v-model="props.row.gst"
+                  />
+                  <span v-else>{{ props.row.gst ? "Yes" : "No" }}</span>
+                </q-td>
+                <q-td key="gstRate" :props="props">
+                  <q-input
+                    class="custom-small-input"
+                    v-if="props.row.gst && props.row.mode === 'edit'"
+                    ref="gstRateRef"
+                    type="number"
+                    v-model="props.row.gstRate"
+                    dense
+                    outlined
+                    placeholder="gst rate"
+                    lazy-rules
+                    :rules="[(val) => val > 0 || '']"
+                    style="max-width: 50px"
+                  />
+                  <span v-else-if="props.row.gst">{{
+                    props.row.gstRate + "%"
+                  }}</span>
+                </q-td>
                 <q-td>
                   <q-icon
                     v-if="props.row.mode === 'edit'"
@@ -380,6 +408,18 @@ export default {
         },
         { name: "unit", align: "left", label: "Unit", field: "unit" },
         { name: "rate", align: "left", label: "Rate", field: "rate" },
+        {
+          name: "gst",
+          align: "left",
+          label: "GST",
+          field: "gst",
+        },
+        {
+          name: "gstRate",
+          align: "left",
+          label: "GST Rate",
+          field: "gstRate",
+        },
       ],
     };
   },
@@ -495,6 +535,8 @@ export default {
         name: "",
         unit: "",
         rate: 0,
+        gst: false,
+        gstRate: 0,
         mode: "edit",
       });
     },
