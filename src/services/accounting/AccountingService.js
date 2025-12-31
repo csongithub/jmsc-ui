@@ -275,4 +275,30 @@ export default {
         return Promise.reject(err);
       });
   },
+  async getAllStocks(clientId) {
+    return api
+      .get("/v1/accounting/stocks/" + clientId)
+      .then((response) => {
+        let stocks = response.data;
+        return stocks;
+      })
+      .catch((err) => {
+        console.log("Error in getting stocks: " + JSON.stringify(err));
+        return Promise.reject(err);
+      });
+  },
+  createStock(stock) {
+    return api
+      .post("/v1/accounting/stock/create", stock)
+      .then((response) => {
+        let stock = response.data;
+        return stock;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in creating stock: " + JSON.stringify(err.response.data)
+        );
+        return Promise.reject(err);
+      });
+  },
 };
