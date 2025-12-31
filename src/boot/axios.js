@@ -70,7 +70,7 @@ export default boot(({ app }) => {
       const originalRequest = error.config;
 
       if (!error.response && error.message.includes("Network Error")) {
-        window.alert("server not available, please try after sometime");
+        // window.alert("server not available, please try after sometime");
       }
 
       if (
