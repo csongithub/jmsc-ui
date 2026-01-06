@@ -13,6 +13,15 @@ export function getAllParty({ commit, state }, payload) {
     .catch((err) => console.log("get party returns: " + err));
 }
 
+export function loadAllParties({ commit, state }, payload) {
+  // window.alert("loading parties: " + payload.client_id);
+  PartyService.all(payload.client_id)
+    .then((response) => {
+      commit("LOAD_PARTIES", response);
+    })
+    .catch((err) => console.log("get party returns: " + err));
+}
+
 export function updateParty({ commit }, payload) {
   commit("UPDATE_PARTY", payload.party);
 }

@@ -222,7 +222,7 @@ function addFormatter(columns) {
     if (col.name === "credit" || col.name === "debit" || col.name === "total") {
       return {
         ...col,
-        format: (val) => (val > 0 ? val.toLocaleString("en-IN") : ""),
+        format: (val) => (val !== null ? val.toLocaleString("en-IN") : ""),
       };
     }
     return col;

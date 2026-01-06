@@ -5,7 +5,7 @@ export function isBefore(date1, date2) {
   const targetDate = date.extractDate(date2, "DD-MM-YYYY");
   if (sourceDate < targetDate) {
     return true;
-  }
+  } else return false;
 }
 
 export function isEqual(date1, date2) {
@@ -13,7 +13,7 @@ export function isEqual(date1, date2) {
   const targetDate = date.extractDate(date2, "DD-MM-YYYY");
   if (sourceDate === targetDate) {
     return true;
-  }
+  } else return false;
 }
 
 export function isAfter(date1, date2) {
@@ -21,5 +21,5 @@ export function isAfter(date1, date2) {
   const targetDate = date.extractDate(date2, "DD-MM-YYYY");
   if (sourceDate > targetDate) {
     return true;
-  }
+  } else return false;
 }

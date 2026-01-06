@@ -386,6 +386,10 @@ export default {
     if (!this.getClient()) {
       this.openLoginLayout();
     } else {
+      //load all parties in store
+      this.$store.dispatch("party/loadAllParties", {
+        client_id: LocalStorage.getItem("auth").client.id,
+      });
       this.updateNotificationCache(this.client.id);
       if (this.$store.getters["notification/count"] > 0)
         this.info(
