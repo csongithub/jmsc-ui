@@ -312,7 +312,7 @@
                     label="Opening Balance"
                     full-width
                     lazy-rules
-                    :rules="[(val) => (val && val > 0) || 'Opening Balance']"
+                    :rules="[(val) => val !== null || 'Opening Balance']"
                   />
                 </div>
                 <div class="row q-mb-sm">
