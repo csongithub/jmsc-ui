@@ -13,6 +13,74 @@
           :pagination="credit_pagination"
         >
           <template v-slot:top="">
+            <q-toggle
+              class="q-mr-sm"
+              size="sm"
+              v-model="stockDump"
+              label="Stock Dump"
+              color="secondary"
+            ></q-toggle>
+
+            <q-select
+              v-if="!stockDump"
+              bg-color="secondary"
+              filled
+              class="q-mr-sm custom-small-select"
+              dense
+              outlined
+              hide-bottom-space
+              label-color="secondary"
+              :options="projectOptions"
+              v-model="selectedProjectId"
+              option-disable="inactive"
+              emit-value
+              map-options
+              use-input
+              input-debounce="0"
+              @filter="filterProject"
+              :placeholder="selectedProjectId === null ? 'select project' : ''"
+            >
+              <template #label
+                ><span class="text-subtitle2">Select Project</span></template
+              >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-red">
+                    No Creditor Matched
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+            <q-select
+              v-if="stockDump"
+              bg-color="secondary"
+              filled
+              class="q-mr-sm custom-small-select"
+              dense
+              outlined
+              hide-bottom-space
+              label-color="secondary"
+              :options="projectOptions"
+              v-model="selectedProjectId"
+              option-disable="inactive"
+              emit-value
+              map-options
+              use-input
+              input-debounce="0"
+              @filter="filterProject"
+              :placeholder="selectedProjectId === null ? 'select project' : ''"
+            >
+              <template #label
+                ><span class="text-subtitle2">Select Project</span></template
+              >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-red">
+                    No Creditor Matched
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
             <q-input
               bg-color="secondary"
               filled
@@ -49,35 +117,6 @@
                 </q-icon>
               </template>
             </q-input>
-            <q-select
-              bg-color="secondary"
-              filled
-              class="q-ml-sm custom-small-select"
-              dense
-              outlined
-              hide-bottom-space
-              label-color="secondary"
-              :options="projectOptions"
-              v-model="selectedProjectId"
-              option-disable="inactive"
-              emit-value
-              map-options
-              use-input
-              input-debounce="0"
-              @filter="filterProject"
-              :placeholder="selectedProjectId === null ? 'select project' : ''"
-            >
-              <template #label
-                ><span class="text-subtitle2">Select Project</span></template
-              >
-              <template v-slot:no-option>
-                <q-item>
-                  <q-item-section class="text-red">
-                    No Creditor Matched
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
             <q-space />
             <q-btn
               class="text-capitalize"
@@ -519,6 +558,7 @@ export default {
   },
   data() {
     return {
+      stockDump: false,
       clientId: this.getClientId(),
       user: this.isAdmin()
         ? "admin"
