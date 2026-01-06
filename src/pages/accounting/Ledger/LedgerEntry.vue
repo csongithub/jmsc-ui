@@ -463,6 +463,7 @@ import { projectStore } from "src/pinia_stores/ProjectStore";
 import { filter } from "../Utils/filterUtils";
 import { defaultLedgerEntryColumns } from "../Utils/ledgerUtils";
 import { creditorStore } from "src/pinia_stores/CreditorStore";
+import { isBefore } from "../Utils/DateUtils";
 AccountingService;
 export default {
   name: "Credit",
@@ -579,9 +580,7 @@ export default {
   },
   methods: {
     validateEntryDate(val) {
-      const startDate = date.extractDate(this.startDate, "DD-MM-YYYY");
-      const entryDate = date.extractDate(val, "DD-MM-YYYY");
-      if (startDate > entryDate) {
+      if (isBefore(this.creditEntryDate, this.startDate)) {
         this.creditEntryDate = null;
         this.$q.notify({
           message: "Invalid Date",

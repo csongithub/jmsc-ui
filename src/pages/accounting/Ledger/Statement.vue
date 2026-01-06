@@ -185,7 +185,6 @@
                           v-model="entry.date"
                           mask="DD-MM-YYYY"
                           minimal
-                          :options="disableFutureDates"
                         />
                       </q-popup-proxy>
                     </q-icon>
@@ -432,6 +431,7 @@ import {
   getCreditColumns,
 } from "../Utils/ledgerUtils";
 import { creditorStore } from "src/pinia_stores/CreditorStore";
+import { isBefore } from "../Utils/DateUtils";
 
 export default {
   name: "Statement",
@@ -479,7 +479,6 @@ export default {
       this.columns = [];
       this.entries = [];
     },
-    fromDate(val) {},
   },
   setup() {
     return {
@@ -552,9 +551,7 @@ export default {
   },
   methods: {
     validateFromDate(val) {
-      const startDate = date.extractDate(this.startDate, "DD-MM-YYYY");
-      const statementFromDate = date.extractDate(val, "DD-MM-YYYY");
-      if (startDate > statementFromDate) {
+      if (isBefore(val, this.startDate)) {
         this.fromDate = null;
         this.$q.notify({
           message: "Invalid Date",
@@ -580,17 +577,17 @@ export default {
         .catch((err) => {});
     },
 
-    disableFutureDates(dateString) {
-      const today = new Date();
-      const inputDate = new Date(dateString); // QDate passes 'YYYY/MM/DD'
+    // disableFutureDates(dateString) {
+    //   const today = new Date();
+    //   const inputDate = new Date(dateString); // QDate passes 'YYYY/MM/DD'
 
-      // Compare the input date with today's date
-      // Return true if the input date is today or in the past, false otherwise.
-      return (
-        date.isSameDate(inputDate, today, "day") ||
-        date.isBefore(inputDate, today, "day")
-      );
-    },
+    //   // Compare the input date with today's date
+    //   // Return true if the input date is today or in the past, false otherwise.
+    //   return (
+    //     date.isSameDate(inputDate, today, "day") ||
+    //     date.isBefore(inputDate, today, "day")
+    //   );
+    // },
     postEntries() {
       let entries = [this.entry];
       AccountingService.postEntries(entries)
@@ -858,7 +855,11 @@ export default {
         Math.abs(Number(today.getDate())) < 10
           ? "0" + today.getDate()
           : today.getDate(); // 1–31
-      const month = today.getMonth() + 1; // 1–12 (because 0-based)
+      const month =
+        Math.abs(Number(today.getMonth() + 1)) < 10
+          ? "0" + (today.getMonth() + 1)
+          : today.getDate(); // 1–12 (because 0-based)
+
       const year = today.getFullYear(); // 2025
 
       this.fromDate = "01" + "-" + month + "-" + year;
