@@ -46,15 +46,6 @@ export const defaultLedgerEntryColumns = [
   },
   {
     selected: true,
-    name: "gst",
-    align: "left",
-    label: "GST",
-    customeLabel: null,
-    field: "gst",
-    disable: true,
-  },
-  {
-    selected: true,
     name: "credit",
     align: "left",
     label: "Amount",
