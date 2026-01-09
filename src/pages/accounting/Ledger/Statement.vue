@@ -115,8 +115,44 @@
         >
           <q-td :props="props">
             {{
-              props.row.quantity !== 0
+              props.row.quantity !== 0 && props.row.quantity !== null
                 ? props.row.quantity + " " + props.row.unit
+                : ""
+            }}
+          </q-td>
+        </template>
+        <template
+          v-slot:body-cell-debit="props"
+          v-if="entryType === 'DEBIT' || entryType === 'ALL'"
+        >
+          <q-td :props="props">
+            {{
+              props.row.debit !== 0 && props.row.debit !== null
+                ? props.row.debit.toLocaleString("en-IN")
+                : ""
+            }}
+          </q-td>
+        </template>
+        <template
+          v-slot:body-cell-credit="props"
+          v-if="entryType === 'CREDIT' || entryType === 'ALL'"
+        >
+          <q-td :props="props">
+            {{
+              props.row.credit !== 0 && props.row.credit !== null
+                ? props.row.credit.toLocaleString("en-IN")
+                : ""
+            }}
+          </q-td>
+        </template>
+        <template
+          v-slot:body-cell-rate="props"
+          v-if="entryType === 'CREDIT' || entryType === 'ALL'"
+        >
+          <q-td :props="props">
+            {{
+              props.row.rate !== 0 && props.row.rate !== null
+                ? props.row.rate.toLocaleString("en-IN")
                 : ""
             }}
           </q-td>
@@ -551,7 +587,8 @@ export default {
   },
   methods: {
     validateFromDate(val) {
-      if (isBefore(val, this.startDate)) {
+      if (this.isNullOrUndefined(this.fromDate)) return;
+      if (isBefore(this.fromDate, this.startDate)) {
         this.fromDate = null;
         this.$q.notify({
           message: "Invalid Date",
@@ -748,7 +785,9 @@ export default {
         body.push(
           columns.map((col) => ({
             text:
-              row[col.name] === null || Number(row[col.name]) === 0.0
+              row[col.name] === null ||
+              row[col.name] === 0 ||
+              row[col.name] === "0"
                 ? ""
                 : col.name === "quantity"
                 ? row[col.name] + " " + row["unit"]
@@ -773,14 +812,14 @@ export default {
             text: "Statement From: " + period,
             style: this.entryType === "ALL" ? "period" : "ob",
           },
-          this.entryType === "ALL"
-            ? {
-                text:
-                  "Opengin Balance: " +
-                  this.openingBalance.toLocaleString("en-IN"),
-                style: "ob",
-              }
-            : null,
+          {
+            text:
+              "Statement Type: " +
+              (this.entryType === "ALL"
+                ? "ALL (DEBIT-CREDIT)"
+                : this.entryType),
+            style: "ob",
+          },
           {
             table: {
               headerRows: 1,
