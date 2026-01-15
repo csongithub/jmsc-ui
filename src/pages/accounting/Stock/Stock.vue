@@ -55,6 +55,17 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
+          <q-td style="width: 90px">
+            <q-btn
+              size="xs"
+              color="secondary"
+              outline
+              dense
+              @click="props.expand = !props.expand"
+              :icon="!props.expand ? icons.expand : icons.collaps"
+            >
+            </q-btn>
+          </q-td>
           <q-td key="stockName" :props="props">
             {{ props.row.stockName }}
           </q-td>
@@ -88,6 +99,7 @@
             > -->
           </q-td>
         </q-tr>
+        <q-tr v-show="props.expand" :props="props"> ok </q-tr>
       </template>
     </q-table>
   </div>
@@ -243,7 +255,12 @@
 <script>
 import AccountingService from "src/services/accounting/AccountingService";
 import { commonMixin } from "../../../mixin/common";
-import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
+import {
+  fasPlus,
+  fasEdit,
+  fasPlusSquare,
+  fasMinusSquare,
+} from "@quasar/extras/fontawesome-v5";
 import { ref } from "vue";
 import { capitalAccountStore } from "src/pinia_stores/CapitalAccountStore";
 export default {
@@ -254,6 +271,13 @@ export default {
       selected: ref([]),
 
       columns: [
+        {
+          name: "expand",
+          align: "left",
+          label: "",
+          field: "expand",
+          sortable: false,
+        },
         {
           name: "stockName",
           align: "left",
@@ -300,6 +324,8 @@ export default {
       icons: {
         plus: fasPlus,
         edit: fasEdit,
+        expand: fasPlusSquare,
+        collaps: fasMinusSquare,
       },
     };
   },
@@ -325,6 +351,7 @@ export default {
     };
   },
   methods: {
+    expand(row) {},
     newStock() {
       return {
         id: null,

@@ -22,6 +22,7 @@
                 @update:model-value="
                   getLedgers(true);
                   detectPayments();
+                  getItems();
                 "
               >
                 <template v-slot:no-option>
@@ -150,6 +151,7 @@
                   selectedLedger !== null ? selectedLedger.startDate : null
                 "
                 :updatePayments="updatePayments"
+                :items="items"
                 @changeMode="updatePayments = !updatePayments"
               ></LedgerEntry
             ></q-tab-panel>
@@ -663,7 +665,7 @@ export default {
       ledger: this.newLedger(),
       showCreateLedger: false,
       keysPressed: null,
-      items: null,
+      items: [],
       updatePayments: ref(false),
       payments: [],
       showPaymentsDetected: false,
@@ -813,6 +815,14 @@ export default {
         .catch((err) => {
           this.fail(this.getErrorMessage(err));
         });
+    },
+    getItems() {
+      AccountingService.getMaterials(this.clientId, this.selectedCreditorId)
+        .then((response) => {
+          this.items = [];
+          this.items = JSON.parse(response);
+        })
+        .catch((err) => {});
     },
   },
 };

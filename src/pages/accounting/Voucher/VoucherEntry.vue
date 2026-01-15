@@ -130,6 +130,9 @@
             size="10px"
           />
           <q-space />
+          <span class="text-bold">{{
+            "Total: " + totalVaoucherAmount.toLocaleString("en-IN")
+          }}</span>
           <q-btn
             color="secondary"
             class="text-secondary text-capitalize q-ml-md float-right"
@@ -356,20 +359,24 @@ export default {
       groups: [
         "Advance",
         "Bank",
-        "BikeRent",
+        "Bike Rent",
         "Vehicle Maintenace.",
         "Car Rent",
         "Diesel",
-        "Departmenatal",
+        "Departmental",
+        "Donation",
         "Water",
         "Equipment Purchage",
         "Electricity Bill",
         "Food & Snacks",
+        "Gift",
         "GST",
         "Ration",
         "House Rent",
         "House HoldItem",
         "Labour",
+        "Medicine",
+        "Medical",
         "Mobile Recharge",
         "Milk & Vegetables",
         "MachineRent",
@@ -501,7 +508,22 @@ export default {
         : this.getUserLogonId();
       AccountingService.createVoucher(this.voucher)
         .then((response) => {
-          // window.alert("Voucher Created: " + JSON.stringify(response));
+          this.$q.notify({
+            message: "Voucher Created Successfully",
+            color: "secondary",
+            position: "bottom",
+            timeout: 0,
+            actions: [
+              {
+                icon: "close",
+                color: "white",
+                round: true,
+                handler: () => {
+                  /* ... */
+                },
+              },
+            ],
+          });
           this.reset();
         })
         .catch((err) => {
