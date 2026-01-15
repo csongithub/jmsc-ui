@@ -580,6 +580,7 @@ export default {
   },
   methods: {
     validateEntryDate(val) {
+      if (this.isNullOrUndefined(this.creditEntryDate)) return;
       if (isBefore(this.creditEntryDate, this.startDate)) {
         this.creditEntryDate = null;
         this.$q.notify({
