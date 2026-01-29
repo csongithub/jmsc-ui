@@ -6,7 +6,7 @@
       class="text-grey bg-grey-3"
       active-color="primary"
       indicator-color="primary"
-      align="justify"
+      align="left"
       narrow-indicator
     >
       <q-tab name="accounts" label="Accounts" />

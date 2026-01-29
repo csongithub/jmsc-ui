@@ -22,6 +22,7 @@
                 @update:model-value="
                   getLedgers(true);
                   detectPayments();
+                  getItems();
                 "
               >
                 <template v-slot:no-option>
@@ -130,7 +131,7 @@
             class="text-grey"
             active-color="primary"
             indicator-color="primary"
-            align="justify"
+            align="left"
             narrow-indicator
             :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
           >
@@ -150,6 +151,7 @@
                   selectedLedger !== null ? selectedLedger.startDate : null
                 "
                 :updatePayments="updatePayments"
+                :items="items"
                 @changeMode="updatePayments = !updatePayments"
               ></LedgerEntry
             ></q-tab-panel>
@@ -663,7 +665,7 @@ export default {
       ledger: this.newLedger(),
       showCreateLedger: false,
       keysPressed: null,
-      items: null,
+      items: [],
       updatePayments: ref(false),
       payments: [],
       showPaymentsDetected: false,
@@ -762,7 +764,7 @@ export default {
     async getAllCreditors() {
       this.creditors = await creditorStore().loadCreditors(
         this.clientId,
-        false
+        false,
       );
     },
 
@@ -774,7 +776,7 @@ export default {
       this.ledgers = await creditorStore().loadLedgers(
         this.clientId,
         this.selectedCreditorId,
-        refresh
+        refresh,
       );
     },
 
@@ -786,7 +788,7 @@ export default {
           if (this.payments.length > 0) {
             this.showPaymentsDetected = true;
             this.selectedCreditorName = this.creditors.find(
-              (item) => Number(item.value) === 11
+              (item) => Number(item.value) === 11,
             ).label;
           }
         })
@@ -813,6 +815,14 @@ export default {
         .catch((err) => {
           this.fail(this.getErrorMessage(err));
         });
+    },
+    getItems() {
+      AccountingService.getMaterials(this.clientId, this.selectedCreditorId)
+        .then((response) => {
+          this.items = [];
+          this.items = JSON.parse(response);
+        })
+        .catch((err) => {});
     },
   },
 };

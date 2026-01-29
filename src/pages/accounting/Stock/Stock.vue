@@ -2,7 +2,7 @@
   <div>
     <q-table
       class="my-sticky-header-table"
-      :rows="accounts"
+      :rows="stocks"
       :columns="columns"
       row-key="id"
       :loading="loading"
@@ -25,7 +25,7 @@
         <q-btn
           class="q-mt-sm q-mr-sm text-capitalize"
           color="secondary"
-          label="New Account"
+          label="New Stock"
           size="10px"
           @click="openDialog('add', null)"
           :icon="icons.add"
@@ -39,7 +39,7 @@
           outlined
           debounce="300"
           v-model="filter"
-          placeholder="Search accounts"
+          placeholder="Search Stock"
         >
           <template v-slot:append>
             <q-icon name="search" />
@@ -55,21 +55,37 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td key="accountName" :props="props">
-            {{ props.row.accountName }}
+          <!-- <q-td style="width: 90px">
+            <q-btn
+              size="xs"
+              color="secondary"
+              outline
+              dense
+              @click="props.expand = !props.expand"
+              :icon="!props.expand ? icons.expand : icons.collaps"
+            >
+            </q-btn>
+          </q-td> -->
+          <q-td key="name" :props="props">
+            {{ props.row.name }}
           </q-td>
-          <q-td key="accountType" :props="props">{{
-            props.row.accountType
-          }}</q-td>
-          <q-td key="accountOpeningDate" :props="props">{{
-            props.row.accountOpeningDate
+          <q-td key="item" :props="props">
+            {{ props.row.item }}
+          </q-td>
+          <!-- <q-td key="stockUnit" :props="props">{{ props.row.stockUnit }}</q-td> -->
+          <q-td key="creationDate" :props="props">{{
+            props.row.creationDate
           }}</q-td>
           <q-td key="balance" :props="props">{{
-            props.row.balance.toLocaleString("en-IN")
+            props.row.balance.toLocaleString("en-IN") + " " + props.row.unit
+          }}</q-td>
+          <q-td key="price" :props="props">{{
+            props.row.price + "/" + props.row.unit
           }}</q-td>
           <q-td key="lastUpdated" :props="props">{{
             props.row.lastUpdated
           }}</q-td>
+
           <q-td key="status" :props="props">{{ props.row.status }}</q-td>
 
           <q-td>
@@ -88,6 +104,7 @@
             > -->
           </q-td>
         </q-tr>
+        <!-- <q-tr v-show="props.expand" :props="props"> </q-tr> -->
       </template>
     </q-table>
   </div>
@@ -97,7 +114,7 @@
       persistent
       @hide="onHide"
       @before-show="beforeShow"
-      ref="newCapitalAccountRef"
+      ref="newStockRef"
       position="right"
     >
       <q-card style="width: 300px; max-width: 80vw">
@@ -117,8 +134,8 @@
                 class="full-width"
                 dense
                 outlined
-                v-model="account.accountName"
-                label="Account Name"
+                v-model="stock.name"
+                label="Stock Name"
                 full-width
                 lazy-rules
                 :rules="[(val) => (val && val.length > 0) || '']"
@@ -126,26 +143,55 @@
                 counter
                 @update:model-value="
                   (val) => {
-                    account.accountName = val.toUpperCase();
+                    stock.name = val.toUpperCase();
                   }
                 "
               />
             </div>
-
-            <div classs="row">
-              <q-select
-                :disable="mode === 'edit'"
+            <div class="row">
+              <q-input
+                hide-bottom-space
                 class="full-width"
                 dense
                 outlined
-                hide-bottom-space
-                label="Account Type"
-                label-color="secondary"
-                :options="['Bank Account', 'Cash']"
-                v-model="account.accountType"
-                option-disable="inactive"
+                v-model="stock.item"
+                label="Stock Item"
+                full-width
                 lazy-rules
                 :rules="[(val) => (val && val.length > 0) || '']"
+                maxlength="20"
+                counter
+              />
+            </div>
+            <div class="row">
+              <q-input
+                hide-bottom-space
+                class="full-width"
+                dense
+                outlined
+                v-model="stock.unit"
+                label="Stock Unit"
+                full-width
+                lazy-rules
+                :rules="[(val) => (val && val.length > 0) || '']"
+                maxlength="10"
+                counter
+              />
+            </div>
+            <div class="row">
+              <q-input
+                type="number"
+                class="full-width"
+                hide-bottom-space
+                dense
+                outlined
+                v-model="stock.price"
+                label="Stock Price"
+                full-width
+                lazy-rules
+                :rules="[
+                  (val) => (val && val > 0) || 'please enter a positive value',
+                ]"
               />
             </div>
 
@@ -156,12 +202,12 @@
                 hide-bottom-space
                 dense
                 outlined
-                v-model="account.accountOpeningDate"
+                v-model="stock.creationDate"
                 :rules="[
                   (val) => !!val || '',
                   (val) => /^\d{2}-\d{2}-\d{4}$/.test(val) || '',
                 ]"
-                label="Account Opening Date"
+                label="Stock Opening Date"
                 placeholder="dd-mm-yyyy"
               >
                 <template v-slot:append>
@@ -173,7 +219,7 @@
                       transition-hide="scale"
                     >
                       <q-date
-                        v-model="account.accountOpeningDate"
+                        v-model="stock.creationDate"
                         mask="DD-MM-YYYY"
                         minimal
                         lazy-rules
@@ -186,15 +232,13 @@
             </div>
             <div class="row">
               <q-input
-                :disable="
-                  account.accountType === 'Bank Account' || mode === 'edit'
-                "
+                :disable="mode === 'edit'"
                 type="number"
                 class="full-width"
                 hide-bottom-space
                 dense
                 outlined
-                v-model="account.balance"
+                v-model="stock.balance"
                 label="Openeing Balance"
                 full-width
                 lazy-rules
@@ -209,8 +253,8 @@
                 hide-bottom-space
                 label="Status"
                 label-color="secondary"
-                :options="['ACTIVE', 'INACTIVE']"
-                v-model="account.status"
+                :options="['RUNNING', 'CLOSE']"
+                v-model="stock.status"
                 option-disable="inactive"
                 lazy-rules
                 :rules="[(val) => (val && val.length > 0) || '']"
@@ -247,37 +291,57 @@
 <script>
 import AccountingService from "src/services/accounting/AccountingService";
 import { commonMixin } from "../../../mixin/common";
-import { fasPlus, fasEdit } from "@quasar/extras/fontawesome-v5";
+import {
+  fasPlus,
+  fasEdit,
+  fasPlusSquare,
+  fasMinusSquare,
+} from "@quasar/extras/fontawesome-v5";
 import { ref } from "vue";
-import { capitalAccountStore } from "src/pinia_stores/CapitalAccountStore";
+
 export default {
-  name: "Project",
+  name: "Stock",
   mixins: [commonMixin],
   setup() {
     return {
       selected: ref([]),
 
       columns: [
+        // {
+        //   name: "expand",
+        //   align: "left",
+        //   label: "",
+        //   field: "expand",
+        //   sortable: false,
+        // },
         {
-          name: "accountName",
+          name: "name",
           align: "left",
-          label: "Account Name",
-          field: "accountName",
+          label: "Stock Name",
+          field: "name",
+          sortable: true,
+        },
+        {
+          name: "item",
+          align: "left",
+          label: "Item",
+          field: "item",
           sortable: true,
         },
 
+        // {
+        //   name: "stockUnit",
+        //   align: "left",
+        //   label: "Stock Unit",
+        //   field: "stockUnit",
+        //   sortable: true,
+        // },
+
         {
-          name: "accountType",
+          name: "creationDate",
           align: "left",
-          label: "Account Type",
-          field: "accountType",
-          sortable: true,
-        },
-        {
-          name: "accountOpeningDate",
-          align: "left",
-          label: "A/C Opening Date",
-          field: "accountOpeningDate",
+          label: "Stock Opening Date",
+          field: "creationDate",
         },
         {
           name: "balance",
@@ -286,7 +350,13 @@ export default {
           field: "balance",
           sortable: true,
         },
-
+        {
+          name: "price",
+          align: "left",
+          label: "Stock Price",
+          field: "price",
+          sortable: true,
+        },
         {
           name: "lastUpdated",
           align: "left",
@@ -304,13 +374,15 @@ export default {
       icons: {
         plus: fasPlus,
         edit: fasEdit,
+        expand: fasPlusSquare,
+        collaps: fasMinusSquare,
       },
     };
   },
   components: {},
   created() {},
   mounted() {
-    this.getAllAccounts(true);
+    this.getAllStocks(true);
   },
   beforeUnmount() {},
   data() {
@@ -320,33 +392,35 @@ export default {
       grid: true,
       filter: "",
       loading: true,
-      accounts: [],
-      account: this.newAccount(),
+      stocks: [],
+      stock: this.newStock(),
       open: false,
       mode: "add",
-      dialog_label: "New Account",
+      dialog_label: "New Stock",
       submitButtonLabel: "Create",
     };
   },
   methods: {
-    newAccount() {
+    expand(row) {},
+    newStock() {
       return {
         id: null,
         clientId: this.client_id,
-        accountName: null,
-        accountType: null,
+        name: null,
+        unit: null,
+        price: null,
         balance: null,
         lastUpdated: null,
-        accountOpeningDate: null,
+        creationDate: null,
         status: null,
       };
     },
-    async getAllAccounts(refresh) {
+    async getAllStocks(refresh) {
       this.loading = true;
-      await AccountingService.getAllCapitalAccounts(this.client_id)
+      await AccountingService.getAllStocks(this.client_id)
         .then((response) => {
-          this.accounts.splice(0, this.accounts.length);
-          this.accounts = response;
+          this.stocks.splice(0, this.stocks.length);
+          this.stocks = response;
           this.loading = false;
         })
         .catch((err) => {
@@ -354,18 +428,18 @@ export default {
           this.fail(this.getErrorMessage(err));
         });
 
-      await capitalAccountStore().loadCapitalAccounts(this.client_id, refresh);
+      // await capitalAccountStore().loadCapitalAccounts(this.client_id, refresh);
     },
     async create() {
-      this.account.clientId = this.client_id;
-      AccountingService.createCapitalAccount(this.account)
+      this.stock.clientId = this.client_id;
+      AccountingService.createStock(this.stock)
         .then((response) => {
           if (this.mode === "add") {
-            this.success("Account create Successfully");
+            this.success("Stock create Successfully");
           } else if (this.mode === "edit") {
-            this.success("Account Updated Successfully");
+            this.success("Stock Updated Successfully");
           }
-          this.getAllAccounts(true);
+          this.getAllStocks(true);
           this.open = false;
         })
         .catch((err) => {
@@ -373,8 +447,8 @@ export default {
         });
     },
     editAccount(row) {
-      this.account = row;
-      this.dialog_label = "Update Account";
+      this.stock = row;
+      this.dialog_label = "Update Stock";
       this.submitButtonLabel = "Update";
       this.open = true;
       this.mode = "edit";
@@ -383,7 +457,7 @@ export default {
     openDialog(mode, row) {
       this.mode = mode;
       if (this.mode === "add") {
-        this.dialog_label = "New Account";
+        this.dialog_label = "New Stock";
         this.submitButtonLabel = "Create";
       }
       this.open = true;
@@ -393,7 +467,7 @@ export default {
       this.mode = "add";
     },
     reset() {
-      this.account = this.newAccount();
+      this.stock = this.newStock();
     },
   },
 };

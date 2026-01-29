@@ -70,7 +70,8 @@ export default boot(({ app }) => {
       const originalRequest = error.config;
 
       if (!error.response && error.message.includes("Network Error")) {
-        window.alert("server not available, please try after sometime");
+        return;
+        // window.alert("server not available, please try after sometime");
       }
 
       if (
@@ -88,7 +89,7 @@ export default boot(({ app }) => {
           if (currentRefreshToken === originalRequest.headers.Authorization) {
             logout = true;
             window.alert(
-              "Current session was inactive for too long, please login again"
+              "Current session was inactive for too long, please login again",
             );
             redirectToLogin();
           }
@@ -140,7 +141,7 @@ export default boot(({ app }) => {
         }
       }
       return Promise.reject(error);
-    }
+    },
   );
 
   downloadAPI.interceptors.request.use(function (config) {

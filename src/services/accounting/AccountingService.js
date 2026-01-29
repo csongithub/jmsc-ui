@@ -1,7 +1,19 @@
 import { api } from "src/boot/axios";
 
 export default {
-  getAllCreditors(clientId) {
+  async getAllCreditorsList(clientId) {
+    return api
+      .get("/v1/accounting/creditors/list/" + clientId)
+      .then((response) => {
+        let creditors = response.data;
+        return creditors;
+      })
+      .catch((err) => {
+        console.log("Error in getting creditors: " + JSON.stringify(err));
+        return Promise.reject(err);
+      });
+  },
+  async getAllCreditors(clientId) {
     return api
       .get("/v1/accounting/creditors/" + clientId)
       .then((response) => {
@@ -34,7 +46,7 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error in getting records: " + JSON.stringify(err.response.data)
+          "Error in getting records: " + JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });
@@ -60,7 +72,7 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error in creating ledger: " + JSON.stringify(err.response.data)
+          "Error in creating ledger: " + JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });
@@ -74,7 +86,7 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error while getting ledgers: " + JSON.stringify(err.response.data)
+          "Error while getting ledgers: " + JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });
@@ -82,7 +94,7 @@ export default {
   async getLedger(clientId, creditorId, ledgerId) {
     return api
       .get(
-        "/v1/accounting/ledger/" + clientId + "/" + creditorId + "/" + ledgerId
+        "/v1/accounting/ledger/" + clientId + "/" + creditorId + "/" + ledgerId,
       )
       .then((response) => {
         let ledger = response.data;
@@ -90,7 +102,7 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error while getting ledger: " + JSON.stringify(err.response.data)
+          "Error while getting ledger: " + JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });
@@ -104,7 +116,7 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error in getting records: " + JSON.stringify(err.response.data)
+          "Error in getting records: " + JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });
@@ -118,7 +130,7 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error in getting entry: " + JSON.stringify(err.response.data)
+          "Error in getting entry: " + JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });
@@ -132,7 +144,7 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error in getting entries: " + JSON.stringify(err.response.data)
+          "Error in getting entries: " + JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });
@@ -171,7 +183,7 @@ export default {
           "/" +
           ledgerId +
           "/" +
-          entryId
+          entryId,
       )
       .then((response) => {
         let status = response.data;
@@ -191,7 +203,7 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error in getting capital accounts: " + JSON.stringify(err)
+          "Error in getting capital accounts: " + JSON.stringify(err),
         );
         return Promise.reject(err);
       });
@@ -205,7 +217,7 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error in getting capital accounts: " + JSON.stringify(err)
+          "Error in getting capital accounts: " + JSON.stringify(err),
         );
         return Promise.reject(err);
       });
@@ -220,7 +232,7 @@ export default {
       .catch((err) => {
         console.log(
           "Error in creating capital account: " +
-            JSON.stringify(err.response.data)
+            JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });
@@ -235,7 +247,7 @@ export default {
       .catch((err) => {
         console.log(
           "Error in getting capital account records: " +
-            JSON.stringify(err.response.data)
+            JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });
@@ -249,7 +261,7 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error in creating voucher: " + JSON.stringify(err.response.data)
+          "Error in creating voucher: " + JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });
@@ -262,7 +274,7 @@ export default {
           "/" +
           voucherId +
           "/" +
-          accountId
+          accountId,
       )
       .then((response) => {
         let voucher = response.data;
@@ -270,7 +282,75 @@ export default {
       })
       .catch((err) => {
         console.log(
-          "Error in getting voucher: " + JSON.stringify(err.response.data)
+          "Error in getting voucher: " + JSON.stringify(err.response.data),
+        );
+        return Promise.reject(err);
+      });
+  },
+  createStock(stock) {
+    return api
+      .post("/v1/accounting/stock/create", stock)
+      .then((response) => {
+        let stock = response.data;
+        return stock;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in creating stock: " + JSON.stringify(err.response.data),
+        );
+        return Promise.reject(err);
+      });
+  },
+  async getAllStocks(clientId) {
+    return api
+      .get("/v1/accounting/stocks/" + clientId)
+      .then((response) => {
+        let stocks = response.data;
+        return stocks;
+      })
+      .catch((err) => {
+        console.log("Error in getting stocks: " + JSON.stringify(err));
+        return Promise.reject(err);
+      });
+  },
+  async getStockList(clientId) {
+    return api
+      .get("/v1/accounting/stocks/list/" + clientId)
+      .then((response) => {
+        let stocks = response.data;
+        return stocks;
+      })
+      .catch((err) => {
+        console.log("Error in getting stocks: " + JSON.stringify(err));
+        return Promise.reject(err);
+      });
+  },
+  async addStockTransaction(transaction) {
+    return api
+      .post("/v1/accounting/stock/add_transaction", transaction)
+      .then((response) => {
+        let status = response.data;
+        return status;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in posting stock transaction: " +
+            JSON.stringify(err.response.data),
+        );
+        return Promise.reject(err);
+      });
+  },
+  async stockTransactions(request) {
+    return api
+      .post("/v1/accounting/stock/transactions", request)
+      .then((response) => {
+        let records = response.data;
+        return records;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting stock ransactions: " +
+            JSON.stringify(err.response.data),
         );
         return Promise.reject(err);
       });

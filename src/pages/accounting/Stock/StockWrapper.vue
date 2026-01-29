@@ -3,20 +3,21 @@
     <q-tabs
       v-model="tab"
       dense
-      class="text-grey"
+      class="text-grey bg-grey-3"
       active-color="primary"
       indicator-color="primary"
       align="left"
       narrow-indicator
-      :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
     >
-      <q-tab name="entry" label="Create" :disable="disableTab" />
-      <q-tab name="statement" label="Recent Vouchers" :disable="disableTab" />
+      <q-tab name="stock" label="Stock" />
+      <q-tab name="supply" label="Supply" />
+      <q-tab name="transaction" label="Transactions" />
     </q-tabs>
     <q-separator />
     <q-tab-panels v-model="tab" animated class="">
-      <q-tab-panel name="entry"><VoucherEntry /></q-tab-panel>
-      <q-tab-panel name="statement"><VoucherStatement /></q-tab-panel>
+      <q-tab-panel name="stock"> <Stock /> </q-tab-panel>
+      <q-tab-panel name="supply"> <StockSupply /> </q-tab-panel>
+      <q-tab-panel name="transaction"><StockTransaction /></q-tab-panel>
     </q-tab-panels>
   </q-layout>
 </template>
@@ -24,25 +25,25 @@
 <script>
 import { ref } from "vue";
 import { commonMixin } from "../../../mixin/common";
-import VoucherEntry from "./VoucherEntry.vue";
-import VoucherStatement from "./VoucherStatement.vue";
 
+import Stock from "./Stock.vue";
+import StockSupply from "./StockSupply.vue";
+import StockTransaction from "./StockTransaction.vue";
 export default {
-  name: "Ledger",
+  name: "StockWrapper",
   mixins: [commonMixin],
-  components: { VoucherEntry, VoucherStatement },
+  components: { Stock, StockSupply, StockTransaction },
   mounted() {},
   beforeUnmount() {},
   computed: {},
   setup() {
     return {
-      tab: ref("entry"),
+      tab: ref("stock"),
     };
   },
   data() {
     return {
       clientId: this.getClientId(),
-      projects: [],
     };
   },
   methods: {},

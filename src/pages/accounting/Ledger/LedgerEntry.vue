@@ -49,7 +49,9 @@
                 </q-icon>
               </template>
             </q-input>
+
             <q-select
+              v-if="!stockDump"
               bg-color="secondary"
               filled
               class="q-ml-sm custom-small-select"
@@ -78,6 +80,44 @@
                 </q-item>
               </template>
             </q-select>
+
+            <q-select
+              v-if="stockDump"
+              bg-color="secondary"
+              filled
+              class="q-ml-sm custom-small-select"
+              dense
+              outlined
+              hide-bottom-space
+              label-color="secondary"
+              :options="stockOptions"
+              v-model="selectedStockId"
+              option-disable="inactive"
+              emit-value
+              map-options
+              use-input
+              input-debounce="0"
+              @filter="filterStock"
+              :placeholder="selectedStockId === null ? 'select stock' : ''"
+            >
+              <template #label
+                ><span class="text-subtitle2">Select Stock</span></template
+              >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-red">
+                    No Stock Matched
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+            <q-toggle
+              class="q-mr-sm"
+              size="xs"
+              v-model="stockDump"
+              label="Stock Dump"
+              color="secondary"
+            ></q-toggle>
             <q-space />
             <q-btn
               class="text-capitalize"
@@ -131,7 +171,7 @@
                       validateChallan(
                         $event.target.value,
                         props,
-                        props.rowIndex
+                        props.rowIndex,
                       )
                     "
                 /></template>
@@ -421,10 +461,11 @@ import { commonMixin } from "../../../mixin/common";
 import AccountingService from "src/services/accounting/AccountingService";
 import { date } from "quasar";
 import { projectStore } from "src/pinia_stores/ProjectStore";
-import { filter } from "../Utils/filterUtils";
+import { filter, filterOnName } from "../Utils/filterUtils";
 import { defaultLedgerEntryColumns } from "../Utils/ledgerUtils";
 import { creditorStore } from "src/pinia_stores/CreditorStore";
 import { isBefore } from "../Utils/DateUtils";
+import { stockStore } from "src/pinia_stores/StockStore";
 AccountingService;
 export default {
   name: "Credit",
@@ -446,6 +487,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    items: {
+      type: Array,
+      default: null,
+    },
   },
   computed: {
     enableScreen() {
@@ -455,22 +500,21 @@ export default {
       );
     },
     disable() {
+      if (this.isNullOrUndefined(this.creditEntryDate)) return true;
+
       return (
-        this.isNullOrUndefined(this.creditEntryDate) ||
-        this.isNullOrUndefined(this.selectedProjectId)
+        this.isNullOrUndefined(this.selectedProjectId) &&
+        this.isNullOrUndefined(this.selectedStockId)
       );
     },
   },
   mounted() {
-    // this.$emit("ledger-entry-init");
     this.disable = !(this.creditorId !== null && this.ledgerId !== null);
     this.getProjects();
+    this.getStocks();
     this.getLedgerColumns();
-    // this.getItems();
+
     window.addEventListener("keydown", this.keyDownHandlerForEntry);
-    // this.$q.loading.show({
-    //   message: "Some important process  is in progress. Hang on...",
-    // });
   },
   beforeUnmount() {
     // Remove event listener before the component is unmounted to prevent memory leaks
@@ -479,7 +523,6 @@ export default {
   components: {},
   watch: {
     creditorId(val) {
-      this.getItems();
       this.disable = this.creditorId === null || this.ledgerId === null;
     },
     ledgerId(val) {
@@ -487,6 +530,10 @@ export default {
       this.getLedgerColumns();
     },
     creditEntryDate(val) {},
+    stockDump(val) {
+      if (val) this.selectedProjectId = null;
+      else this.selectedStockId = null;
+    },
   },
   setup() {
     return {
@@ -520,6 +567,7 @@ export default {
   },
   data() {
     return {
+      stockDump: false,
       clientId: this.getClientId(),
       user: this.isAdmin()
         ? "admin"
@@ -532,10 +580,12 @@ export default {
       entries: this.initiate(),
       selectedItem: null,
       itemOptions: [],
-      items: [],
       keysPressed: null,
       debitEntries: this.initiate(),
       columns: [],
+      stocks: [],
+      stockOptions: [],
+      selectedStockId: null,
     };
   },
   methods: {
@@ -585,6 +635,7 @@ export default {
         creditorId: null,
         ledgerId: null,
         projectId: null,
+        stockId: null,
         receipt: null,
         date: null,
         item: null,
@@ -608,6 +659,7 @@ export default {
         entry.creditorId = this.creditorId;
         entry.ledgerId = this.ledgerId;
         entry.projectId = this.selectedProjectId;
+        entry.stockId = this.selectedStockId;
         entry.date = this.creditEntryDate;
         entry.user = this.user;
         entry.validateOnReceipt = index > -1 ? true : false;
@@ -653,6 +705,9 @@ export default {
     },
     async getProjects() {
       this.projects = await projectStore().loadProjects(this.clientId, false);
+    },
+    async getStocks() {
+      this.stocks = await stockStore().loadStocks(this.clientId, false);
     },
     keyDownHandlerForEntry(event) {
       // console.log(" keydown:", event.key);
@@ -702,27 +757,15 @@ export default {
     filterProject(input, update, abort) {
       this.projectOptions = filter(input, update, this.projects);
     },
-    filterItem(input, update, abort) {
-      update(() => {
-        const value = input.toLowerCase();
-        this.itemOptions = this.items.filter((item) => {
-          return item.name.toLowerCase().indexOf(value) > -1;
-        });
-      });
+    filterStock(input, update, abort) {
+      this.stockOptions = filter(input, update, this.stocks);
     },
-    getItems() {
-      AccountingService.getMaterials(this.clientId, this.creditorId)
-        .then((response) => {
-          this.itemOptions.splice(0, this.itemOptions.length);
-          this.items.splice(0, this.items.length);
-          this.itemOptions = JSON.parse(response);
-          this.items = JSON.parse(response);
-        })
-        .catch((err) => {});
+    filterItem(input, update, abort) {
+      this.itemOptions = filterOnName(input, update, this.items);
     },
     setRow(row) {
       let item = this.items.find(
-        (item) => item.name.toLowerCase() === row.item.toLowerCase()
+        (item) => item.name.toLowerCase() === row.item.toLowerCase(),
       );
 
       row.rate = Number(item.rate);
@@ -780,7 +823,7 @@ export default {
                 this.clientId,
                 this.creditorId,
                 response.ledgerId,
-                false
+                false,
               )
               .then((ledger) => {
                 this.$q.notify({

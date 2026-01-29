@@ -35,7 +35,7 @@
             class="text-primary bg-secondary"
             active-color="white"
             indicator-color="primary"
-            align="justify"
+            align="left"
             narrow-indicator
             active-bg-color=""
           >
@@ -45,6 +45,7 @@
             <q-tab name="voucher" label="Voucher" />
             <q-tab name="creditor" label="Creditors" />
             <q-tab name="ledger" label="Leadger" />
+            <q-tab name="stock" label="Stocks" />
           </q-tabs>
           <q-separator />
           <q-tab-panels v-model="tab" animated>
@@ -61,10 +62,13 @@
               <Voucher></Voucher>
             </q-tab-panel>
             <q-tab-panel name="creditor">
-              <Creditor></Creditor>
+              <CreditorWrapper></CreditorWrapper>
             </q-tab-panel>
             <q-tab-panel name="ledger">
               <Leadger></Leadger>
+            </q-tab-panel>
+            <q-tab-panel name="stock">
+              <StockWrapper></StockWrapper>
             </q-tab-panel>
           </q-tab-panels>
         </q-card>
@@ -78,23 +82,26 @@ import { LocalStorage } from "quasar";
 import { commonMixin } from "../mixin/common";
 import Dashboard from "../pages/accounting/Dashboard.vue";
 import Project from "../pages/accounting/project/Project.vue";
-import Creditor from "../pages/accounting/Creditor/Creditor.vue";
+import CreditorWrap from "../pages/accounting/Creditor/Creditor.vue";
 import Leadger from "../pages/accounting/Ledger/Leadger.vue";
 import Voucher from "src/pages/accounting/Voucher/Voucher.vue";
 import CapitalAccountWrapper from "src/pages/accounting/CapitalAccount/CapitalAccountWrapper.vue";
+import StockWrapper from "src/pages/accounting/Stock/StockWrapper.vue";
 import { fasBackward, fasPowerOff } from "@quasar/extras/fontawesome-v5";
 
 import { ref } from "vue";
+import CreditorWrapper from "src/pages/accounting/Creditor/CreditorWrapper.vue";
 
 export default {
   mixins: [commonMixin],
   components: {
     Dashboard,
     Project,
-    Creditor,
+    CreditorWrapper,
     Leadger,
     Voucher,
     CapitalAccountWrapper,
+    StockWrapper,
   },
   created() {},
   mounted() {
