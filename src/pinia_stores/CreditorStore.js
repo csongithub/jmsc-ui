@@ -9,7 +9,7 @@ export const creditorStore = defineStore("creditorStore", {
 
   actions: {
     async fetchCreditorsFromBackend(client_id) {
-      const response = await AccountingService.getAllCreditors(client_id);
+      const response = await AccountingService.getAllCreditorsList(client_id);
       this.creditors = response.list;
     },
     async getCreditorInternal(clientId, creditor_id, force_refresh) {
@@ -30,7 +30,7 @@ export const creditorStore = defineStore("creditorStore", {
       const creditor = await this.getCreditorInternal(
         clientId,
         creditor_id,
-        force_refresh
+        force_refresh,
       );
       if (creditor !== null) {
         return creditor.text1;
@@ -40,7 +40,7 @@ export const creditorStore = defineStore("creditorStore", {
       const creditor = await this.getCreditorInternal(
         clientId,
         creditor_id,
-        force_refresh
+        force_refresh,
       );
 
       if (creditor !== null) {
@@ -68,7 +68,7 @@ export const creditorStore = defineStore("creditorStore", {
       const ledgers = await this.loadLedgers(
         client_id,
         creditor_id,
-        force_refresh
+        force_refresh,
       );
       if (ledgers.length > 0) {
         for (let ledger of ledgers) {
@@ -97,7 +97,7 @@ export const creditorStore = defineStore("creditorStore", {
 
       const ledgerList = await AccountingService.getLedgers(
         client_id,
-        creditor_id
+        creditor_id,
       );
 
       this.ledgersCache.set(creditor_id, ledgerList);
@@ -120,7 +120,7 @@ export const creditorStore = defineStore("creditorStore", {
 
       const ledgerList = await AccountingService.getLedgers(
         client_id,
-        creditor_id
+        creditor_id,
       );
       this.ledgersCache.set(creditor_id, ledgerList);
 

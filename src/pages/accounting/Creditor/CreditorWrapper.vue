@@ -3,20 +3,19 @@
     <q-tabs
       v-model="tab"
       dense
-      class="text-grey"
+      class="text-grey bg-grey-3"
       active-color="primary"
       indicator-color="primary"
       align="left"
       narrow-indicator
-      :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
     >
-      <q-tab name="entry" label="Create" :disable="disableTab" />
-      <q-tab name="statement" label="Recent Vouchers" :disable="disableTab" />
+      <q-tab name="create" label="Create" />
+      <q-tab name="view" label="View" />
     </q-tabs>
     <q-separator />
     <q-tab-panels v-model="tab" animated class="">
-      <q-tab-panel name="entry"><VoucherEntry /></q-tab-panel>
-      <q-tab-panel name="statement"><VoucherStatement /></q-tab-panel>
+      <q-tab-panel name="create"> <Creditor /> </q-tab-panel>
+      <q-tab-panel name="view"> <CreditorList /> </q-tab-panel>
     </q-tab-panels>
   </q-layout>
 </template>
@@ -24,25 +23,24 @@
 <script>
 import { ref } from "vue";
 import { commonMixin } from "../../../mixin/common";
-import VoucherEntry from "./VoucherEntry.vue";
-import VoucherStatement from "./VoucherStatement.vue";
+import Creditor from "./Creditor.vue";
+import CreditorList from "./CreditorList.vue";
 
 export default {
-  name: "Ledger",
+  name: "StockWrapper",
   mixins: [commonMixin],
-  components: { VoucherEntry, VoucherStatement },
+  components: { Creditor, CreditorList },
   mounted() {},
   beforeUnmount() {},
   computed: {},
   setup() {
     return {
-      tab: ref("entry"),
+      tab: ref("create"),
     };
   },
   data() {
     return {
       clientId: this.getClientId(),
-      projects: [],
     };
   },
   methods: {},

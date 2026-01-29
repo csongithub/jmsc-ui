@@ -55,7 +55,7 @@
       </template>
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td style="width: 90px">
+          <!-- <q-td style="width: 90px">
             <q-btn
               size="xs"
               color="secondary"
@@ -65,22 +65,27 @@
               :icon="!props.expand ? icons.expand : icons.collaps"
             >
             </q-btn>
+          </q-td> -->
+          <q-td key="name" :props="props">
+            {{ props.row.name }}
           </q-td>
-          <q-td key="stockName" :props="props">
-            {{ props.row.stockName }}
+          <q-td key="item" :props="props">
+            {{ props.row.item }}
           </q-td>
           <!-- <q-td key="stockUnit" :props="props">{{ props.row.stockUnit }}</q-td> -->
           <q-td key="creationDate" :props="props">{{
             props.row.creationDate
           }}</q-td>
           <q-td key="balance" :props="props">{{
-            props.row.balance.toLocaleString("en-IN") +
-            " " +
-            props.row.stockUnit
+            props.row.balance.toLocaleString("en-IN") + " " + props.row.unit
+          }}</q-td>
+          <q-td key="price" :props="props">{{
+            props.row.price + "/" + props.row.unit
           }}</q-td>
           <q-td key="lastUpdated" :props="props">{{
             props.row.lastUpdated
           }}</q-td>
+
           <q-td key="status" :props="props">{{ props.row.status }}</q-td>
 
           <q-td>
@@ -99,7 +104,7 @@
             > -->
           </q-td>
         </q-tr>
-        <q-tr v-show="props.expand" :props="props"> ok </q-tr>
+        <!-- <q-tr v-show="props.expand" :props="props"> </q-tr> -->
       </template>
     </q-table>
   </div>
@@ -129,7 +134,7 @@
                 class="full-width"
                 dense
                 outlined
-                v-model="stock.stockName"
+                v-model="stock.name"
                 label="Stock Name"
                 full-width
                 lazy-rules
@@ -138,7 +143,7 @@
                 counter
                 @update:model-value="
                   (val) => {
-                    stock.stockName = val.toUpperCase();
+                    stock.name = val.toUpperCase();
                   }
                 "
               />
@@ -149,13 +154,44 @@
                 class="full-width"
                 dense
                 outlined
-                v-model="stock.stockUnit"
+                v-model="stock.item"
+                label="Stock Item"
+                full-width
+                lazy-rules
+                :rules="[(val) => (val && val.length > 0) || '']"
+                maxlength="20"
+                counter
+              />
+            </div>
+            <div class="row">
+              <q-input
+                hide-bottom-space
+                class="full-width"
+                dense
+                outlined
+                v-model="stock.unit"
                 label="Stock Unit"
                 full-width
                 lazy-rules
                 :rules="[(val) => (val && val.length > 0) || '']"
                 maxlength="10"
                 counter
+              />
+            </div>
+            <div class="row">
+              <q-input
+                type="number"
+                class="full-width"
+                hide-bottom-space
+                dense
+                outlined
+                v-model="stock.price"
+                label="Stock Price"
+                full-width
+                lazy-rules
+                :rules="[
+                  (val) => (val && val > 0) || 'please enter a positive value',
+                ]"
               />
             </div>
 
@@ -262,7 +298,7 @@ import {
   fasMinusSquare,
 } from "@quasar/extras/fontawesome-v5";
 import { ref } from "vue";
-import { capitalAccountStore } from "src/pinia_stores/CapitalAccountStore";
+
 export default {
   name: "Stock",
   mixins: [commonMixin],
@@ -271,18 +307,25 @@ export default {
       selected: ref([]),
 
       columns: [
+        // {
+        //   name: "expand",
+        //   align: "left",
+        //   label: "",
+        //   field: "expand",
+        //   sortable: false,
+        // },
         {
-          name: "expand",
-          align: "left",
-          label: "",
-          field: "expand",
-          sortable: false,
-        },
-        {
-          name: "stockName",
+          name: "name",
           align: "left",
           label: "Stock Name",
-          field: "stockName",
+          field: "name",
+          sortable: true,
+        },
+        {
+          name: "item",
+          align: "left",
+          label: "Item",
+          field: "item",
           sortable: true,
         },
 
@@ -293,6 +336,7 @@ export default {
         //   field: "stockUnit",
         //   sortable: true,
         // },
+
         {
           name: "creationDate",
           align: "left",
@@ -306,7 +350,13 @@ export default {
           field: "balance",
           sortable: true,
         },
-
+        {
+          name: "price",
+          align: "left",
+          label: "Stock Price",
+          field: "price",
+          sortable: true,
+        },
         {
           name: "lastUpdated",
           align: "left",
@@ -356,8 +406,9 @@ export default {
       return {
         id: null,
         clientId: this.client_id,
-        stockName: null,
-        stockUnit: null,
+        name: null,
+        unit: null,
+        price: null,
         balance: null,
         lastUpdated: null,
         creationDate: null,

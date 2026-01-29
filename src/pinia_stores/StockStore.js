@@ -23,5 +23,14 @@ export const stockStore = defineStore("stockStore", {
         return this.stockList;
       }
     },
+
+    async getStockUnit(stock_id) {
+      const stock = this.stockList.find((stock) => stock.value === stock_id);
+      return stock.text2;
+    },
+    async getStockBalance(stock_id) {
+      const stock = this.stockList.find((stock) => stock.value === stock_id);
+      return stock.text1;
+    },
   },
 });

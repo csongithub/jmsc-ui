@@ -106,7 +106,7 @@
               <template v-slot:no-option>
                 <q-item>
                   <q-item-section class="text-red">
-                    No Creditor Matched
+                    No Stock Matched
                   </q-item-section>
                 </q-item>
               </template>
@@ -171,7 +171,7 @@
                       validateChallan(
                         $event.target.value,
                         props,
-                        props.rowIndex
+                        props.rowIndex,
                       )
                     "
                 /></template>
@@ -765,7 +765,7 @@ export default {
     },
     setRow(row) {
       let item = this.items.find(
-        (item) => item.name.toLowerCase() === row.item.toLowerCase()
+        (item) => item.name.toLowerCase() === row.item.toLowerCase(),
       );
 
       row.rate = Number(item.rate);
@@ -823,7 +823,7 @@ export default {
                 this.clientId,
                 this.creditorId,
                 response.ledgerId,
-                false
+                false,
               )
               .then((ledger) => {
                 this.$q.notify({

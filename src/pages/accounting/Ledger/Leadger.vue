@@ -131,7 +131,7 @@
             class="text-grey"
             active-color="primary"
             indicator-color="primary"
-            align="justify"
+            align="left"
             narrow-indicator
             :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
           >
@@ -764,7 +764,7 @@ export default {
     async getAllCreditors() {
       this.creditors = await creditorStore().loadCreditors(
         this.clientId,
-        false
+        false,
       );
     },
 
@@ -776,7 +776,7 @@ export default {
       this.ledgers = await creditorStore().loadLedgers(
         this.clientId,
         this.selectedCreditorId,
-        refresh
+        refresh,
       );
     },
 
@@ -788,7 +788,7 @@ export default {
           if (this.payments.length > 0) {
             this.showPaymentsDetected = true;
             this.selectedCreditorName = this.creditors.find(
-              (item) => Number(item.value) === 11
+              (item) => Number(item.value) === 11,
             ).label;
           }
         })
