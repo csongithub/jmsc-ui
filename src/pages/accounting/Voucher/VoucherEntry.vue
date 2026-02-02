@@ -146,7 +146,7 @@
             class="text-bold text-grey q-ml-md"
             v-if="voucher.capitalAccountId"
             >{{
-              "Remaining Balance: " +
+              "Closing Balance: " +
               (openingBalance - totalVaoucherAmount).toLocaleString("en-IN")
             }}</span
           >
