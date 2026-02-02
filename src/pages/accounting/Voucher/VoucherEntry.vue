@@ -83,6 +83,7 @@
             hide-dropdown-icon
             lazy-rules
             :rules="[(val) => val > 0 || 'required']"
+            @update:model-value="fetchBalance"
           >
             <template v-slot:no-option>
               <q-item>
@@ -129,10 +130,27 @@
             @click="addItem"
             size="10px"
           />
-          <q-space />
-          <span class="text-bold">{{
-            "Total: " + totalVaoucherAmount.toLocaleString("en-IN")
+
+          <span
+            class="text-bold text-grey q-ml-md"
+            v-if="voucher.capitalAccountId"
+            >{{
+              "Opening Balance: " + openingBalance.toLocaleString("en-IN")
+            }}</span
+          >
+
+          <span class="text-bold text-grey q-ml-md">{{
+            "Voucher Amount: " + totalVaoucherAmount.toLocaleString("en-IN")
           }}</span>
+          <span
+            class="text-bold text-grey q-ml-md"
+            v-if="voucher.capitalAccountId"
+            >{{
+              "Closing Balance: " +
+              (openingBalance - totalVaoucherAmount).toLocaleString("en-IN")
+            }}</span
+          >
+          <q-space />
           <q-btn
             color="secondary"
             class="text-secondary text-capitalize q-ml-md float-right"
@@ -262,6 +280,35 @@
                 </template>
               </q-select>
             </q-td>
+            <q-td key="toCapitalId" :props="props">
+              <q-select
+                :disable="props.row.group !== 'Transfer'"
+                style="max-width: 200px"
+                class="custom-small-select"
+                dense
+                outlined
+                hide-bottom-space
+                :options="toCapitalOptions"
+                v-model="props.row.toCapitalId"
+                option-disable="inactive"
+                emit-value
+                map-options
+                use-input
+                input-debounce="0"
+                @filter="filterToCapitalAccounts"
+                hide-dropdown-icon
+                lazy-rules
+                :rules="[(val) => val > 0 || 'required']"
+              >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-red">
+                      No Capital Account Matched
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </q-td>
             <q-td key="action" :props="props">
               <q-icon
                 color="red"
@@ -332,6 +379,12 @@ export default {
           label: "Ledger",
           field: "ledgerId",
         },
+        {
+          name: "toCapitalId",
+          align: "left",
+          label: "To Capital",
+          field: "toCapitalId",
+        },
         { name: "action", align: "left", label: "", field: "action" },
       ],
       icons: {
@@ -351,10 +404,9 @@ export default {
       capitals: [],
       projectOptions: [],
       capitalOptions: [],
-
+      toCapitalOptions: [],
       creditors: [],
       creditorOptions: [],
-
       groupOptions: [],
       groups: [
         "Advance",
@@ -385,9 +437,11 @@ export default {
         "Personal Payment",
         "Site Material",
         "Salary",
+        "Transfer",
         "Khoraki",
         "Other",
       ],
+      openingBalance: 0,
     };
   },
   methods: {
@@ -415,28 +469,36 @@ export default {
           group: null,
           creditorId: null,
           ledgerId: null,
+          toCapitalId: null,
         },
       ];
     },
     async initiateData() {
       this.projects = await projectStore().loadProjects(
         this.getClientId(),
-        false
+        false,
       );
 
       this.capitals = await capitalAccountStore().loadCapitalAccounts(
         this.getClientId(),
-        false
+        false,
       );
 
       this.creditors = await creditorStore().loadCreditors(
         this.getClientId(),
-        false
+        false,
       );
     },
-
     filterProject(input, update, abort) {
       this.projectOptions = filter(input, update, this.projects);
+    },
+    filterToCapitalAccounts(input, update, abort) {
+      var temp = filter(input, update, this.capitals);
+      this.toCapitalOptions = temp.filter((c) => {
+        return Number(c.value) !== Number(this.voucher.capitalAccountId);
+      });
+      console.log(temp);
+      console.log(this.toCapitalOptions);
     },
     filterCapital(input, update, abort) {
       this.capitalOptions = filter(input, update, this.capitals);
@@ -451,14 +513,13 @@ export default {
       row.ledgers = await creditorStore().getLedgerList(
         this.getClientId(),
         row.creditorId,
-        false
+        false,
       );
       row.ledgerOptions = [];
     },
     filterList(input, update, abort) {
       this.groupOptions = filterFn(input, update, this.groups);
     },
-
     newitem() {
       return {
         item: null,
@@ -487,6 +548,7 @@ export default {
       this.voucher = this.newVoucher();
       this.items = this.emptyItems();
       this.$refs.myForm.resetValidation();
+      this.openingBalance = 0;
     },
     async saveVoucher() {
       this.items.forEach((item) => {
@@ -525,6 +587,19 @@ export default {
             ],
           });
           this.reset();
+        })
+        .catch((err) => {
+          this.fail(this.getErrorMessage(err));
+        });
+    },
+
+    fetchBalance() {
+      AccountingService.getCapitalAccountBalance(
+        this.clientId,
+        this.voucher.capitalAccountId,
+      )
+        .then((response) => {
+          this.openingBalance = response;
         })
         .catch((err) => {
           this.fail(this.getErrorMessage(err));

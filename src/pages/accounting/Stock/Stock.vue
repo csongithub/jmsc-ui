@@ -298,6 +298,7 @@ import {
   fasMinusSquare,
 } from "@quasar/extras/fontawesome-v5";
 import { ref } from "vue";
+import { stockStore } from "src/pinia_stores/StockStore";
 
 export default {
   name: "Stock",
@@ -382,7 +383,7 @@ export default {
   components: {},
   created() {},
   mounted() {
-    this.getAllStocks(true);
+    this.getAllStocks();
   },
   beforeUnmount() {},
   data() {
@@ -415,20 +416,19 @@ export default {
         status: null,
       };
     },
-    async getAllStocks(refresh) {
+    async getAllStocks() {
       this.loading = true;
       await AccountingService.getAllStocks(this.client_id)
-        .then((response) => {
+        .then(async (response) => {
           this.stocks.splice(0, this.stocks.length);
           this.stocks = response;
           this.loading = false;
+          await stockStore().loadStocks(this.client_id, true);
         })
         .catch((err) => {
           this.loading = false;
           this.fail(this.getErrorMessage(err));
         });
-
-      // await capitalAccountStore().loadCapitalAccounts(this.client_id, refresh);
     },
     async create() {
       this.stock.clientId = this.client_id;
@@ -439,7 +439,7 @@ export default {
           } else if (this.mode === "edit") {
             this.success("Stock Updated Successfully");
           }
-          this.getAllStocks(true);
+          this.getAllStocks();
           this.open = false;
         })
         .catch((err) => {
