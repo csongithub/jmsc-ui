@@ -355,4 +355,20 @@ export default {
         return Promise.reject(err);
       });
   },
+  async getCapitalAccountBalance(clientId, accountId) {
+    return api
+      .get(
+        "/v1/accounting/capital_account_balance/" + clientId + "/" + accountId,
+      )
+      .then((response) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(
+          "Error in getting account balance: " +
+            JSON.stringify(err.response.data),
+        );
+        return Promise.reject(err);
+      });
+  },
 };
